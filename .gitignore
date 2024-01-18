@@ -1,0 +1,10 @@
+.idea/
+.vscode/
+build/
+dist/
+steamcmd/
+mods/
+*.spec
+*.bak
+*.log
+version.txt
