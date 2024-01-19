@@ -43,16 +43,22 @@ Restore previously saved mods (after disabling them):
 Conay.exe --restore
 ```
 
+Verify downloads before continuing (retry on fail):
+```sh
+Conay.exe --verify
+```
+
 Choosing a server to load and order modlist automatically:
 
 ```sh
-Conay.exe --server halcyon --launch
+Conay.exe --server halcyon
 ```
 
 You can find the supported servers in [servers](https://github.com/RatajVaver/conay/tree/main/servers) directory.
 
 Add `--launch` parameter to run the game automatically after updates are done.
 If you wan't to use Conay just to switch your modlist or update the mods without running the game, do not use this parameter.
+You can combine parameters as you wish. You can also use parameter `-h` to display help with list of all parameters.
 
 ## Bug reports
 

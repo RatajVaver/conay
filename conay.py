@@ -3,6 +3,7 @@ import re
 import sys
 import time
 import json
+import shutil
 import argparse
 import requests
 import subprocess
@@ -13,6 +14,7 @@ from datetime import datetime
 
 LAUNCH = False
 UPDATE_ALL = False
+VERIFY = False
 SERVER_IP = ""
 
 STEAMCMD_PATH = "./steamcmd"
@@ -30,7 +32,7 @@ WORKSHOP_CHANGELOG_URL = "https://steamcommunity.com/sharedfiles/filedetails/cha
 
 def main(): 
     parseArguments()
-    print("Steam Library Path: {}".format(STEAM_LIBRARY_PATH))
+    print("📂 Steam Library Path: {}".format(STEAM_LIBRARY_PATH))
 
     pathCheck()
     installSteamCmd()
@@ -41,27 +43,31 @@ def main():
     else:
         checkUpdates(mods, modNames)
 
-    print("Done!")
+    print("🆗 All done!")
 
     if SERVER_IP == "":
         if LAUNCH:
-            print("Launching the game..".format(SERVER_IP))
+            print("🎲 Launching the game..".format(SERVER_IP))
             webbrowser.open("steam://run/440900/")
             time.sleep(10)
     else:
         if LAUNCH:
-            print("Launching the game and connecting to the selected server ({})..".format(SERVER_IP))
+            print("🎲 Launching the game and connecting to the selected server ({})..".format(SERVER_IP))
             webbrowser.open("steam://run/440900//+connect {}/".format(SERVER_IP))
 
         subprocess.check_call("echo {}|clip".format(SERVER_IP), shell=True)
-        print("TIP: Server IP was saved to your clipboard. If the launcher doesn't connect you directly to the server, you can use Ctrl+V in Direct Connect.")
+
+        if LAUNCH:
+            print("🔔 TIP: Server IP was saved to your clipboard. If the launcher doesn't connect you directly to the server, you can use Ctrl+V in Direct Connect.")
+        else:
+            print("🔔 TIP: Server IP was saved to your clipboard. You can use Ctrl+V later on in Direct Connect.")
 
         time.sleep(10)
 
     time.sleep(2)
 
 def parseArguments():
-    global STEAMCMD_PATH, STEAM_LIBRARY_PATH, MODLIST_PATH, UPDATE_ALL, LAUNCH
+    global STEAMCMD_PATH, STEAM_LIBRARY_PATH, MODLIST_PATH, UPDATE_ALL, LAUNCH, VERIFY
 
     parser = argparse.ArgumentParser(description="Conan Exiles Mod Launcher")
     parser.add_argument('-d','--dev', help="Debugging outside of Conan Exiles folder", action='store_true')
@@ -70,11 +76,12 @@ def parseArguments():
     parser.add_argument('-n','--nomods', help="Clear the modlist", action='store_true')
     parser.add_argument('-r','--restore', help="Restore the modlist", action='store_true')
     parser.add_argument('-s','--server', help="Load modlist of supported server")
+    parser.add_argument('-v','--verify', help="Verify download of every mod and repeat on fail", action='store_true')
     args = vars(parser.parse_args())
 
     if args['dev']:
         STEAMCMD_PATH = "../tests/steamcmd"
-        STEAM_LIBRARY_PATH = "../tests/mods"
+        STEAM_LIBRARY_PATH = os.path.abspath("../tests/mods")
         MODLIST_PATH = "../tests/modlist.txt"
 
     if args['force']:
@@ -82,6 +89,9 @@ def parseArguments():
 
     if args['launch']:
         LAUNCH = True
+
+    if args['verify']:
+        VERIFY = True
 
     if args['server']:
         loadServerData(args['server'])
@@ -91,7 +101,7 @@ def parseArguments():
         restoreMods()
 
 def disableMods():
-    print("Disabling mods..")
+    print("🔃 Disabling mods..")
     if os.path.exists(MODLIST_PATH):
         try:
             os.rename(MODLIST_PATH, MODLIST_PATH.replace(".txt",".bak"))
@@ -100,7 +110,7 @@ def disableMods():
             os.rename(MODLIST_PATH, MODLIST_PATH.replace(".txt",".bak"))
 
 def restoreMods():
-    print("Restoring mods..")
+    print("🔃 Restoring mods..")
     if os.path.exists(MODLIST_PATH.replace(".txt",".bak")):
         try:
             os.rename(MODLIST_PATH.replace(".txt",".bak"), MODLIST_PATH)
@@ -111,16 +121,16 @@ def restoreMods():
 def loadServerData(server):
     global SERVER_IP
 
-    print("Searching for server '{}'..".format(server))
+    print("🔍 Searching for server '{}'..".format(server))
     response = SESSION.get("https://raw.githubusercontent.com/RatajVaver/conay/main/servers/{}.json".format(server))
     if response.status_code == 404:
-        print("Unsupported server! Cannot fetch data.")
+        print("❌ Unsupported server! Cannot fetch data.")
         time.sleep(5)
         sys.exit(1)
 
     response = response.content.decode("utf-8")
-    serverData = json.loads(response.read())
-    print("Processing modlist for server {}..".format(serverData['name']))
+    serverData = json.loads(response)
+    print("🔮 Processing modlist for server {}..".format(serverData['name']))
     SERVER_IP = serverData['ip']
 
     if os.path.exists(MODLIST_PATH):
@@ -135,23 +145,23 @@ def loadServerData(server):
         f.write(os.path.abspath(os.path.join(STEAM_LIBRARY_PATH, "steamapps/workshop/content/440900", modFile)) + '\n')
     f.close()
 
-    print("Modlist saved! Proceeding..")
+    print("✅ Modlist saved! Proceeding..")
 
 def pathCheck():
     if not os.path.exists(MODLIST_PATH.replace("modlist.txt","")) or not os.path.exists(os.path.join(STEAM_LIBRARY_PATH, "steamapps")):
-        print("Conay is not installed in the correct path! Please follow install instructions.")
+        print("❌ Conay is not installed in the correct path! Please follow install instructions.")
         time.sleep(5)
         sys.exit(1)
 
 def parseModlist():
-    print("Reading modlist..")
+    print("👓 Reading modlist..")
     modlistIds, modlistNames = [], []
 
     if os.path.exists(MODLIST_PATH):
         modlistFile = open(MODLIST_PATH, 'r')
         modlistLines = modlistFile.readlines()
 
-        print("Parsing modlist..")
+        print("🔮 Parsing modlist..")
         count = 0
         for line in modlistLines:
             count += 1
@@ -163,16 +173,16 @@ def parseModlist():
                 modlistIds.append(modId)
                 modlistNames.append(modName)
 
-        print("{} mods found!".format(count))
+        print("✅ \033[1m{}\033[0m mods found!".format(count))
     else:
-        print("Modlist file not found! Running without mods..")
+        print("❎ Modlist file not found! Running without mods..")
 
     return modlistIds, modlistNames
 
 def installSteamCmd():
     try:
         if not os.path.exists(os.path.join(STEAMCMD_PATH, "steamcmd.exe")):
-            print("Downloading SteamCMD..")
+            print("🔽 Downloading SteamCMD..")
 
             steamCmdMirrors = [
                 "https://steamcdn-a.akamaihd.net/client/installer/steamcmd.zip",
@@ -188,18 +198,18 @@ def installSteamCmd():
                 if response.status_code == 200:
                     with open(downloadPath, 'wb') as f:
                         f.write(response.content)
-                    print(f"Downloaded from {downloadPath}")
+                    print(f"✅ Downloaded from {downloadPath}")
                     downloaded = True
                     break
                 else:
-                    print(f"Failed to download {url}")
+                    print(f"❌ Failed to download {url}")
 
             if not downloaded:
-                print("All download attempts failed!")
+                print("❌ All download attempts failed!")
                 time.sleep(5)
                 sys.exit(1)
 
-            print("Extracting SteamCMD..")
+            print("📦 Extracting SteamCMD..")
             with ZipFile(downloadPath, 'r') as zipRef:
                 zipRef.extractall(STEAMCMD_PATH)
 
@@ -210,34 +220,34 @@ def installSteamCmd():
         time.sleep(5)
         sys.exit(1)
 
-def streamProcess(process):
-    go = process.poll() is None
-    for line in process.stdout:
-        print(line)
-    return go
-
 def downloadList(modlist):
     args = [os.path.join(STEAMCMD_PATH, 'steamcmd.exe')]
     args.append('+force_install_dir "{}"'.format(STEAM_LIBRARY_PATH))
     args.append("+login anonymous")
     for modId in modlist:
-        args.append("+workshop_download_item 440900 {}".format(int(modId)))
+        args.append("+workshop_download_item 440900 {} validate".format(int(modId)))
     args.append("+quit")
 
-    process = subprocess.Popen(args, stdout=subprocess.PIPE, errors='ignore', creationflags=subprocess.CREATE_NO_WINDOW)
-    while streamProcess(process):
-        sleep(0.1)
+    try:
+        subprocess.call(args)
+    except Exception as ex:
+        print(ex)
+        time.sleep(5)
+    print("")
 
 def downloadMod(modId):
-    args = [os.path.join(STEAMCMD_PATH, 'steamcmd.exe')]
+    args = [os.path.abspath(os.path.join(STEAMCMD_PATH, 'steamcmd.exe'))]
     args.append('+force_install_dir "{}"'.format(STEAM_LIBRARY_PATH))
     args.append("+login anonymous")
     args.append("+workshop_download_item 440900 {} validate".format(int(modId)))
     args.append("+quit")
 
-    process = subprocess.Popen(args, stdout=subprocess.PIPE, errors='ignore', creationflags=subprocess.CREATE_NO_WINDOW)
-    while streamProcess(process):
-        sleep(0.1)
+    try:
+        subprocess.call(args)
+    except Exception as ex:
+        print(ex)
+        time.sleep(5)
+    print("")
 
 def needsUpdate(modId, path):
     if os.path.isdir(path):
@@ -247,26 +257,50 @@ def needsUpdate(modId, path):
         matchTitle = TITLE_PATTERN.search(response)
 
         if matchUpdate and matchTitle:
-            updated_at = datetime.fromtimestamp(int(matchUpdate.group(1)))
-            created_at = datetime.fromtimestamp(os.path.getmtime(path))
+            updated = datetime.fromtimestamp(int(matchUpdate.group(1)))
+            created = datetime.fromtimestamp(os.path.getmtime(path))
 
-            return updated_at >= created_at, matchTitle.group(1).replace("&amp;", "&")
+            return updated >= created, matchTitle.group(1).replace("&amp;", "&")
 
     return True, ""
 
 def checkUpdates(modlistIds, modlistNames):
-    print("Checking mod updates..")
+    print("🔽 Checking mod updates..")
     for x, modId in enumerate(modlistIds):
-        updateNeeded, modTitle = needsUpdate(modId, os.path.join(STEAM_LIBRARY_PATH, "steamapps/workshop/content/440900", modId))
+        modPath = os.path.join(STEAM_LIBRARY_PATH, "steamapps/workshop/content/440900", modId)
+        updateNeeded, modTitle = needsUpdate(modId, modPath)
         if modTitle == "":
             modTitle = modlistNames[x]
         modTitle = modTitle.strip()
 
         if updateNeeded:
-            print("Downloading mod #{} ({})..".format(modId, modTitle))
-            downloadMod(modId)
+            if VERIFY:
+                print("⌛ Downloading mod #{} ({})..".format(modId, modTitle))
+
+                createdOld = datetime.fromtimestamp(0)
+                if os.path.isdir(modPath):
+                    createdOld = datetime.fromtimestamp(os.path.getmtime(modPath))
+                    shutil.rmtree(modPath)
+
+                verified = False
+
+                while not verified:
+                    downloadMod(modId)
+                    if os.path.isdir(modPath):
+                        createdNew = datetime.fromtimestamp(os.path.getmtime(modPath))
+                        if createdNew > createdOld:
+                            verified = True
+                            print("✅ Download complete and verified!")
+                        else:
+                            print("❌ Failed to verify download, retrying..")
+                    else:
+                        print("❌ Failed to verify download, retrying..")
+
+            else:
+                print("⌛ Downloading mod #{} ({})..".format(modId, modTitle))
+                downloadMod(modId)
         else:
-            print("No update required for #{} ({})".format(modId, modTitle))
+            print("✅ No update required for #{} ({})".format(modId, modTitle))
 
 if __name__ == "__main__":
     main()
