@@ -1,7 +1,6 @@
 import os
 import re
 import sys
-import time
 import json
 import shutil
 import argparse
@@ -15,7 +14,11 @@ from datetime import datetime
 LAUNCH = False
 UPDATE_ALL = False
 VERIFY = False
+KEEP_OPEN = False
 SERVER_IP = ""
+
+VERSION = "0.0.3-pre"
+GITHUB_REPOSITORY = "RatajVaver/conay"
 
 STEAMCMD_PATH = "./steamcmd"
 STEAM_LIBRARY_PATH = "../../../../../" # from steamapps\common\Conan Exiles\ConanSandbox\Conay
@@ -35,6 +38,7 @@ def main():
     print("📂 Steam Library Path: {}".format(STEAM_LIBRARY_PATH))
 
     pathCheck()
+    versionCheck()
     installSteamCmd()
     mods, modNames = parseModlist()
 
@@ -43,13 +47,14 @@ def main():
     else:
         checkUpdates(mods, modNames)
 
-    print("🆗 All done!")
+    print("🆗\033[96m All done!\033[0m")
 
     if SERVER_IP == "":
         if LAUNCH:
             print("🎲 Launching the game..".format(SERVER_IP))
             webbrowser.open("steam://run/440900/")
-            time.sleep(10)
+            if not KEEP_OPEN:
+                sleep(10)
     else:
         if LAUNCH:
             print("🎲 Launching the game and connecting to the selected server ({})..".format(SERVER_IP))
@@ -59,24 +64,29 @@ def main():
 
         if LAUNCH:
             print("🔔 TIP: Server IP was saved to your clipboard. If the launcher doesn't connect you directly to the server, you can use Ctrl+V in Direct Connect.")
+            if not KEEP_OPEN:
+                sleep(10)
         else:
             print("🔔 TIP: Server IP was saved to your clipboard. You can use Ctrl+V later on in Direct Connect.")
 
-        time.sleep(10)
-
-    time.sleep(2)
+    if KEEP_OPEN:
+        print("🙏 Conay will remain open until you close it or press a key.")
+        os.system("pause")
+    else:
+        sleep(3)
 
 def parseArguments():
-    global STEAMCMD_PATH, STEAM_LIBRARY_PATH, MODLIST_PATH, UPDATE_ALL, LAUNCH, VERIFY
+    global STEAMCMD_PATH, STEAM_LIBRARY_PATH, MODLIST_PATH, UPDATE_ALL, LAUNCH, VERIFY, KEEP_OPEN
 
     parser = argparse.ArgumentParser(description="Conan Exiles Mod Launcher")
     parser.add_argument('-d','--dev', help="Debugging outside of Conan Exiles folder", action='store_true')
-    parser.add_argument('-f','--force', help="Force update of all mods", action='store_true')
+    parser.add_argument('-f','--force', help="Force update of all mods, let SteamCMD decide", action='store_true')
     parser.add_argument('-l','--launch', help="Launch the game after updates are downloaded", action='store_true')
     parser.add_argument('-n','--nomods', help="Clear the modlist", action='store_true')
     parser.add_argument('-r','--restore', help="Restore the modlist", action='store_true')
-    parser.add_argument('-s','--server', help="Load modlist of supported server")
+    parser.add_argument('-s','--server', help="Load a modlist of supported server")
     parser.add_argument('-v','--verify', help="Verify download of every mod and repeat on fail", action='store_true')
+    parser.add_argument('-k','--keep', help="Keep the app open after everything is done", action='store_true')
     args = vars(parser.parse_args())
 
     if args['dev']:
@@ -93,11 +103,17 @@ def parseArguments():
     if args['verify']:
         VERIFY = True
 
+    if args['keep']:
+        KEEP_OPEN = True
+
     if args['server']:
+        pathCheck()
         loadServerData(args['server'])
     elif args['nomods']:
+        pathCheck()
         disableMods()
     elif args['restore']:
+        pathCheck()
         restoreMods()
 
 def disableMods():
@@ -122,15 +138,15 @@ def loadServerData(server):
     global SERVER_IP
 
     print("🔍 Searching for server '{}'..".format(server))
-    response = SESSION.get("https://raw.githubusercontent.com/RatajVaver/conay/main/servers/{}.json".format(server))
+    response = SESSION.get("https://raw.githubusercontent.com/{}/main/servers/{}.json".format(GITHUB_REPOSITORY, server))
     if response.status_code == 404:
-        print("❌ Unsupported server! Cannot fetch data.")
-        time.sleep(5)
+        print("❌\033[91m Unsupported server! Cannot fetch data.\033[0m")
+        sleep(5)
         sys.exit(1)
 
     response = response.content.decode("utf-8")
     serverData = json.loads(response)
-    print("🔮 Processing modlist for server {}..".format(serverData['name']))
+    print("🔮 Processing modlist for server \033[1m\033[92m{}\033[0m..".format(serverData['name']))
     SERVER_IP = serverData['ip']
 
     if os.path.exists(MODLIST_PATH):
@@ -147,10 +163,43 @@ def loadServerData(server):
 
     print("✅ Modlist saved! Proceeding..")
 
+def versionCheck():
+    print("🧰 Checking Conay updates..")
+    try:
+        if "-" in VERSION:
+            print("🔶 You are using unreleased version of Conay ({}) - this might affect stability!".format(VERSION))
+        else:
+            response = SESSION.get("https://api.github.com/repos/{}/releases/latest".format(GITHUB_REPOSITORY))
+            if response.status_code == 200:
+                response = response.content.decode("utf-8")
+                releaseData = json.loads(response)
+                if releaseData['tag_name']:
+                    if releaseData['tag_name'] == VERSION:
+                        print("✅ You are using the latest version of Conay ({})".format(VERSION))
+                    else:
+                        localVersion = re.sub(r'[^0-9.]', '', VERSION).split('.')
+                        remoteVersion = releaseData['tag_name'].split('.')
+                        if remoteVersion[0] > localVersion[0]:
+                            print("🔶 There's a new major update available for Conay, consider updating the app! (\033[1m\033[92m{}\033[0m > \033[91m{}\033[0m)".format(releaseData['tag_name'], VERSION))
+                            print("👉 {}".format(releaseData['html_url']))
+                            sleep(7)
+                        elif remoteVersion[0] == localVersion[0] and remoteVersion[1] > localVersion[1]:
+                            print("🔶 There's a new minor update available for Conay, consider updating the app! (\033[1m\033[92m{}\033[0m > \033[91m{}\033[0m)".format(releaseData['tag_name'], VERSION))
+                            print("👉 {}".format(releaseData['html_url']))
+                            sleep(5)
+                        elif remoteVersion[0] == localVersion[0] and remoteVersion[1] == localVersion[1] and remoteVersion[2] > localVersion[2]:
+                            print("🔶 There's a new patch available for Conay, consider updating the app! (\033[1m\033[92m{}\033[0m > \033[91m{}\033[0m)".format(releaseData['tag_name'], VERSION))
+                            print("👉 {}".format(releaseData['html_url']))
+                            sleep(3)
+                        else:
+                            print("🔶 Your version ({}) doesn't match the latest release ({})".format(VERSION, releaseData['tag_name']))
+    except:
+        print("❌\033[91m Checking Conay updates failed.\033[0m")
+
 def pathCheck():
     if not os.path.exists(MODLIST_PATH.replace("modlist.txt","")) or not os.path.exists(os.path.join(STEAM_LIBRARY_PATH, "steamapps")):
-        print("❌ Conay is not installed in the correct path! Please follow install instructions.")
-        time.sleep(5)
+        print("❌\033[91m Conay is not installed in the correct path! Please follow install instructions.\033[0m")
+        sleep(5)
         sys.exit(1)
 
 def parseModlist():
@@ -173,7 +222,7 @@ def parseModlist():
                 modlistIds.append(modId)
                 modlistNames.append(modName)
 
-        print("✅ \033[1m{}\033[0m mods found!".format(count))
+        print("✅ \033[1m\033[92m{}\033[0m mods found!".format(count))
     else:
         print("❎ Modlist file not found! Running without mods..")
 
@@ -202,11 +251,11 @@ def installSteamCmd():
                     downloaded = True
                     break
                 else:
-                    print(f"❌ Failed to download {url}")
+                    print("❌\033[91m Failed to download {}\033[0m".format(url))
 
             if not downloaded:
-                print("❌ All download attempts failed!")
-                time.sleep(5)
+                print("❌\033[91m All download attempts failed!\033[0m")
+                sleep(5)
                 sys.exit(1)
 
             print("📦 Extracting SteamCMD..")
@@ -217,7 +266,7 @@ def installSteamCmd():
 
     except Exception as ex:
         print(ex)
-        time.sleep(5)
+        sleep(5)
         sys.exit(1)
 
 def downloadList(modlist):
@@ -232,7 +281,7 @@ def downloadList(modlist):
         subprocess.call(args)
     except Exception as ex:
         print(ex)
-        time.sleep(5)
+        sleep(5)
     print("")
 
 def downloadMod(modId):
@@ -246,7 +295,7 @@ def downloadMod(modId):
         subprocess.call(args)
     except Exception as ex:
         print(ex)
-        time.sleep(5)
+        sleep(5)
     print("")
 
 def needsUpdate(modId, path):
@@ -292,9 +341,9 @@ def checkUpdates(modlistIds, modlistNames):
                             verified = True
                             print("✅ Download complete and verified!")
                         else:
-                            print("❌ Failed to verify download, retrying..")
+                            print("❌\033[91m Failed to verify download, retrying..\033[0m")
                     else:
-                        print("❌ Failed to verify download, retrying..")
+                        print("❌\033[91m Failed to verify download, retrying..\033[0m")
 
             else:
                 print("⌛ Downloading mod #{} ({})..".format(modId, modTitle))
