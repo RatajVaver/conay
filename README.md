@@ -43,9 +43,9 @@ Restore previously saved mods (after disabling them):
 Conay.exe --restore
 ```
 
-Verify downloads before continuing (retry on fail):
+Display only plain text (hide emojis and colors on older CMD):
 ```sh
-Conay.exe --verify
+Conay.exe --plain
 ```
 
 Choosing a server to load and order modlist automatically:
