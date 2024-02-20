@@ -344,7 +344,13 @@ def checkUpdates(modlistIds, modlistNames):
                 createdOld = datetime.fromtimestamp(0)
                 if os.path.isdir(modPath):
                     createdOld = datetime.fromtimestamp(os.path.getmtime(modPath))
-                    shutil.rmtree(modPath)
+                    try:
+                        shutil.rmtree(modPath)
+                    except Exception as ex:
+                        print(ex)
+                        fprint("<❌\033[91m> Cannot edit files, the game might be running!<\033[0m>")
+                        sleep(5)
+                        sys.exit(1)
 
                 verified = False
 
