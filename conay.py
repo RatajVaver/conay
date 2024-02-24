@@ -153,14 +153,32 @@ def loadServerData(server):
     global SERVER_IP
 
     fprint("<🔍> Searching for server '{}'..".format(server))
-    response = SESSION.get("https://raw.githubusercontent.com/{}/main/servers/{}.json".format(GITHUB_REPOSITORY, server))
-    if response.status_code == 404:
-        fprint("<❌\033[91m> Unsupported server! Cannot fetch data.<\033[0m>")
+
+    if not server.isalnum():
+        fprint("<❌\033[91m> Invalid server name format, use alphanumeric characters only!<\033[0m>")
         sleep(5)
         sys.exit(1)
 
-    response = response.content.decode("utf-8")
-    serverData = json.loads(response)
+    serverData = None
+    if os.path.exists("./servers/{}.json".format(server)):
+        try:
+            fprint("<🧰> Using local server file..")
+            file = open("./servers/{}.json".format(server), 'r', encoding="utf-8")
+            serverData = json.load(file)
+        except:
+            fprint("<❌\033[91m> Failed to parse the local file, likely invalid JSON.<\033[0m>")
+            sleep(5)
+            sys.exit(1)
+    else:
+        response = SESSION.get("https://raw.githubusercontent.com/{}/main/servers/{}.json".format(GITHUB_REPOSITORY, server))
+        if response.status_code == 404:
+            fprint("<❌\033[91m> Unsupported server! Cannot fetch data.<\033[0m>")
+            sleep(5)
+            sys.exit(1)
+
+        response = response.content.decode("utf-8")
+        serverData = json.loads(response)
+
     fprint("<🔮> Processing modlist for server <\033[1m\033[92m>{}<\033[0m>..".format(serverData['name']))
     SERVER_IP = serverData['ip']
 
