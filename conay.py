@@ -393,7 +393,7 @@ def downloadMod(modId):
                     fileCreated = os.path.exists(os.path.join(STEAM_LIBRARY_PATH, "steamapps/workshop/downloads/440900", modId))
 
                 if secondsPassed > 10 and not fileCreated:
-                    fprint("\n<❌\033[91m> SteamCMD failed to download the mod!<\033[0m>")
+                    fprint("\n<❌\033[91m> SteamCMD failed to download the mod!<\033[0m>", False)
                     while proc.poll() is None:
                         proc.kill()
                         sleep(1)
@@ -454,9 +454,9 @@ def checkUpdates(modlistIds, modlistNames):
                             verified = True
                             fprint("<✅> Download complete and verified!")
                         else:
-                            fprint("<🔃> Failed to verify download, retrying..")
+                            fprint("<🔃> Failed to verify download, retrying ", VERBOSE)
                     else:
-                        fprint("<🔃> Failed to verify download, retrying..")
+                        fprint("<🔃> Failed to verify download, retrying ", VERBOSE)
 
             else:
                 fprint("<⌛> Downloading mod #{} ({})..".format(modId, modTitle))
