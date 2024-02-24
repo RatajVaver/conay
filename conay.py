@@ -14,11 +14,12 @@ from datetime import datetime
 LAUNCH = False
 UPDATE_ALL = False
 VERIFY = True
+VERBOSE = False
 KEEP_OPEN = False
 PLAIN = False
 SERVER_IP = ""
 
-VERSION = "0.0.3"
+VERSION = "0.0.4-pre"
 GITHUB_REPOSITORY = "RatajVaver/conay"
 
 STEAMCMD_PATH = "./steamcmd"
@@ -77,7 +78,7 @@ def main():
         sleep(3)
 
 def parseArguments():
-    global STEAMCMD_PATH, STEAM_LIBRARY_PATH, MODLIST_PATH, UPDATE_ALL, LAUNCH, VERIFY, KEEP_OPEN, PLAIN
+    global STEAMCMD_PATH, STEAM_LIBRARY_PATH, MODLIST_PATH, UPDATE_ALL, LAUNCH, VERIFY, VERBOSE, KEEP_OPEN, PLAIN
 
     parser = argparse.ArgumentParser(description="Conan Exiles Mod Launcher")
     parser.add_argument('-d','--dev', help="Debugging outside of Conan Exiles folder", action='store_true')
@@ -87,7 +88,7 @@ def parseArguments():
     parser.add_argument('-r','--restore', help="Restore the modlist", action='store_true')
     parser.add_argument('-s','--server', help="Load a modlist of a supported server or from local file")
     parser.add_argument('-c','--copy', help="Copy the current modlist into a server modlist file")
-    parser.add_argument('-v','--verify', help="Verify download of every mod and repeat on fail", action='store_true')
+    parser.add_argument('-v','--verbose', help="Print all SteamCMD output", action='store_true')
     parser.add_argument('-x','--skip', help="Skip verifying of mod downloads, just trust SteamCMD", action='store_true')
     parser.add_argument('-k','--keep', help="Keep the app open after everything is done", action='store_true')
     parser.add_argument('-p','--plain', help="Display only plain text, no emojis or colors", action='store_true')
@@ -104,9 +105,10 @@ def parseArguments():
     if args['launch']:
         LAUNCH = True
 
-    if args['verify']:
-        VERIFY = True
-    elif args['skip']:
+    if args['verbose']:
+        VERBOSE = True
+
+    if args['skip']:
         VERIFY = False
 
     if args['keep']:
@@ -128,12 +130,16 @@ def parseArguments():
         pathCheck()
         saveServerData(args['copy'])
 
-def fprint(text):
+def fprint(text, newLine=True):
     if PLAIN:
         text = re.sub(r'\<.+?\>', '', text).strip()
     else:
         text = text.replace('<','').replace('>','')
-    print(text)
+
+    if newLine:
+        print(text)
+    else:
+        print(text, end='')
 
 def disableMods():
     fprint("<🔃> Disabling mods..")
@@ -338,6 +344,12 @@ def installSteamCmd():
         sleep(5)
         sys.exit(1)
 
+    fprint("<🔥> Performing SteamCMD warmup and checking updates..")
+    if VERBOSE:
+        subprocess.call([os.path.abspath(os.path.join(STEAMCMD_PATH, 'steamcmd.exe')), "+quit"])
+    else:
+        subprocess.call([os.path.abspath(os.path.join(STEAMCMD_PATH, 'steamcmd.exe')), "+quit"], stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
+
 def downloadList(modlist):
     args = [os.path.join(STEAMCMD_PATH, 'steamcmd.exe')]
     args.append('+force_install_dir "{}"'.format(STEAM_LIBRARY_PATH))
@@ -361,7 +373,33 @@ def downloadMod(modId):
     args.append("+quit")
 
     try:
-        subprocess.call(args)
+        if VERIFY:
+            proc = None
+            if VERBOSE:
+                proc = subprocess.Popen(args)
+            else:
+                proc = subprocess.Popen(args, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
+
+            fileCreated = False
+            secondsPassed = 0
+            while proc.poll() is None:
+                if not VERBOSE:
+                    print(".", end='', flush=True)
+
+                sleep(3)
+                secondsPassed += 3
+
+                if not fileCreated:
+                    fileCreated = os.path.exists(os.path.join(STEAM_LIBRARY_PATH, "steamapps/workshop/downloads/440900", modId))
+
+                if secondsPassed > 10 and not fileCreated:
+                    fprint("\n<❌\033[91m> SteamCMD failed to download the mod!<\033[0m>")
+                    while proc.poll() is None:
+                        proc.kill()
+                        sleep(1)
+        else:
+            subprocess.call(args)
+
     except Exception as ex:
         print(ex)
         sleep(5)
@@ -393,7 +431,7 @@ def checkUpdates(modlistIds, modlistNames):
 
         if updateNeeded:
             if VERIFY:
-                fprint("<⌛> Downloading mod #{} ({})..".format(modId, modTitle))
+                fprint("<⌛> Downloading mod #{} ({}) ".format(modId, modTitle), VERBOSE)
 
                 createdOld = datetime.fromtimestamp(0)
                 if os.path.isdir(modPath):
@@ -416,9 +454,9 @@ def checkUpdates(modlistIds, modlistNames):
                             verified = True
                             fprint("<✅> Download complete and verified!")
                         else:
-                            fprint("<❌\033[91m> Failed to verify download, retrying..<\033[0m>")
+                            fprint("<🔃> Failed to verify download, retrying..")
                     else:
-                        fprint("<❌\033[91m> Failed to verify download, retrying..<\033[0m>")
+                        fprint("<🔃> Failed to verify download, retrying..")
 
             else:
                 fprint("<⌛> Downloading mod #{} ({})..".format(modId, modTitle))
