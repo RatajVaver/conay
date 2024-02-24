@@ -85,7 +85,8 @@ def parseArguments():
     parser.add_argument('-l','--launch', help="Launch the game after updates are downloaded", action='store_true')
     parser.add_argument('-n','--nomods', help="Clear the modlist", action='store_true')
     parser.add_argument('-r','--restore', help="Restore the modlist", action='store_true')
-    parser.add_argument('-s','--server', help="Load a modlist of supported server")
+    parser.add_argument('-s','--server', help="Load a modlist of a supported server or from local file")
+    parser.add_argument('-c','--copy', help="Copy the current modlist into a server modlist file")
     parser.add_argument('-v','--verify', help="Verify download of every mod and repeat on fail", action='store_true')
     parser.add_argument('-x','--skip', help="Skip verifying of mod downloads, just trust SteamCMD", action='store_true')
     parser.add_argument('-k','--keep', help="Keep the app open after everything is done", action='store_true')
@@ -123,6 +124,9 @@ def parseArguments():
     elif args['restore']:
         pathCheck()
         restoreMods()
+    elif args['copy']:
+        pathCheck()
+        saveServerData(args['copy'])
 
 def fprint(text):
     if PLAIN:
@@ -148,6 +152,38 @@ def restoreMods():
         except WindowsError:
             os.remove(MODLIST_PATH)
             os.rename(MODLIST_PATH.replace(".txt",".bak"), MODLIST_PATH)
+
+def saveServerData(server):
+    if not server.isalnum():
+        fprint("<❌\033[91m> Invalid server name format, use alphanumeric characters only!<\033[0m>")
+        sleep(5)
+        sys.exit(1)
+
+    if not os.path.exists("./servers"):
+        os.mkdir("./servers")
+
+    modlist = []
+    mods, modNames = parseModlist()
+
+    for x, modId in enumerate(mods):
+        entry = "{}/{}.pak".format(modId, modNames[x])
+        modlist.append(entry)
+
+    serverData = { "name": server, "ip": "", "mods": modlist }
+    jsonData = json.dumps(serverData, indent=4)
+
+    with open("./servers/{}.json".format(server), "w") as outfile:
+        outfile.write(jsonData)
+
+    fprint("<✅> Modlist was saved to a local server file (servers/{}.json)".format(server))
+
+    if KEEP_OPEN:
+        fprint("<🙏> Conay will remain open until you close it or press a key.")
+        os.system("pause")
+    else:
+        sleep(3)
+
+    sys.exit(0)
 
 def loadServerData(server):
     global SERVER_IP
