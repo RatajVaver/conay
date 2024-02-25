@@ -19,7 +19,7 @@ KEEP_OPEN = False
 PLAIN = False
 SERVER_IP = ""
 
-VERSION = "0.0.4-pre"
+VERSION = "0.0.4"
 GITHUB_REPOSITORY = "RatajVaver/conay"
 
 STEAMCMD_PATH = "./steamcmd"
@@ -128,6 +128,7 @@ def parseArguments():
         restoreMods()
     elif args['copy']:
         pathCheck()
+        MODLIST_PATH = "../servermodlist.txt"
         saveServerData(args['copy'])
 
 def fprint(text, newLine=True):
