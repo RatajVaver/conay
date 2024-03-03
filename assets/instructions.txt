@@ -1,0 +1,39 @@
+ ________  ________  ________   ________      ___    ___ 
+|\   ____\|\   __  \|\   ___  \|\   __  \    |\  \  /  /|
+\ \  \___|\ \  \|\  \ \  \\ \  \ \  \|\  \   \ \  \/  / /
+ \ \  \    \ \  \\\  \ \  \\ \  \ \   __  \   \ \    / / 
+  \ \  \____\ \  \\\  \ \  \\ \  \ \  \ \  \   \/  /  /  
+   \ \_______\ \_______\ \__\\ \__\ \__\ \__\__/  / /    
+    \|_______|\|_______|\|__| \|__|\|__|\|__|\___/ /     
+                                            \|___|/      
+
+########################################################################################
+
+INSTALL INSTRUCTIONS
+
+1. Extract Conay.exe into: steamapps\common\Conan Exiles\ConanSandbox\Conay
+
+2. Create desktop shortcut for Conay.exe
+
+3. Run the application to update currently loaded modlist
+
+########################################################################################
+
+OPTIONAL PARAMETERS
+
+Add any (or combination) of these parameters to the Target in your desktop shortcut's Properties.
+
+-f, --force                  Force update of all mods, let SteamCMD decide
+-l, --launch                 Launch the game after updates are downloaded
+-n, --nomods                 Clear the modlist
+-r, --restore                Restore the modlist
+-s SERVER, --server SERVER   Load a modlist of a supported server or from local file
+-c COPY, --copy COPY         Copy the current modlist into a server modlist file
+-v, --verbose                Print all SteamCMD output
+-x, --skip                   Skip verifying of mod downloads, just trust SteamCMD
+-k, --keep                   Keep the app open after everything is done
+-p, --plain                  Display only plain text, no emojis or colors
+
+########################################################################################
+
+Need assistance with installation? Join my Discord: discord.gg/3WJNxCTn8m
