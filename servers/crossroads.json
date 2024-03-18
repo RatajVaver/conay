@@ -1,6 +1,6 @@
 {
     "name": "Crossroads",
-    "ip": "45.143.197.83:7777",
+    "ip": "43.143.197.83:8000",
     "mods": [
         "1823412793/ModControlPanel.pak",
         "2846119484/ThrallWarsUtilities.pak",
@@ -15,6 +15,7 @@
         "2571367240/AGmods_Characters.pak",
         "2528309873/AbyssWarpaint.pak",
         "3008860121/Cookie_Skinnery.pak",
+        "3172623603/wrweazNewFaces_for_totCustom.pak",
         "2961309071/LoD_Warpaints.pak",
         "3100719163/EvilSA.pak",
         "2854276803/EvilsCabinet.pak",
