@@ -19,12 +19,14 @@ KEEP_OPEN = False
 PLAIN = False
 SERVER_IP = ""
 
-VERSION = "0.0.4"
+VERSION = "0.0.5-pre"
 GITHUB_REPOSITORY = "RatajVaver/conay"
 
 STEAMCMD_PATH = "./steamcmd"
 STEAM_LIBRARY_PATH = "../../../../../" # from steamapps\common\Conan Exiles\ConanSandbox\Conay
 MODLIST_PATH = "../Mods/modlist.txt"
+GAMEINI_PATH = "../Saved/Config/WindowsNoEditor/Game.ini"
+EXE_PATH = "../Binaries/Win64/ConanSandbox.exe"
 
 STEAM_LIBRARY_PATH = os.path.abspath(STEAM_LIBRARY_PATH)
 
@@ -60,7 +62,25 @@ def main():
     else:
         if LAUNCH:
             fprint("<🎲> Launching the game and connecting to the selected server ({})..".format(SERVER_IP))
-            webbrowser.open("steam://run/440900//+connect {}/".format(SERVER_IP))
+
+            if os.path.exists(GAMEINI_PATH) and os.path.exists(EXE_PATH):
+                try:
+                    content = ""
+                    with open(GAMEINI_PATH, "r", encoding="utf16") as file:
+                        for line in file:
+                            if line.startswith("LastConnected="):
+                                content = content + "LastConnected=" + SERVER_IP + "\n"
+                            else:
+                                content = content + line
+
+                    with open(GAMEINI_PATH, "w", encoding="utf16") as file:
+                        file.write(content)
+
+                    subprocess.Popen("\"{}\" -continuesession".format(os.path.abspath(EXE_PATH)))
+                except:
+                    webbrowser.open("steam://run/440900//+connect {}/".format(SERVER_IP))
+            else:
+                webbrowser.open("steam://run/440900//+connect {}/".format(SERVER_IP))
 
         subprocess.check_call("echo {}|clip".format(SERVER_IP), shell=True)
 
@@ -429,6 +449,7 @@ def checkUpdates(modlistIds, modlistNames):
         if modTitle == "":
             modTitle = modlistNames[x]
         modTitle = modTitle.strip()
+        modTitle = modTitle.replace("&quot;", "\"")
 
         if updateNeeded:
             if VERIFY:
