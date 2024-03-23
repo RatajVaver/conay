@@ -71,6 +71,8 @@ def main():
                         for line in file:
                             if line.startswith("LastConnected="):
                                 content = content + "LastConnected=" + SERVER_IP + "\n"
+                            elif line.startsWith("StartedListenServerSession"):
+                                content = content + "StartedListenServerSession=False\n"
                             else:
                                 content = content + line
 
