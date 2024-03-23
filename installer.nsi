@@ -43,8 +43,10 @@ InstallDir "$PROGRAMFILES\Steam\steamapps\common\Conan Exiles\ConanSandbox"
 !define MUI_PAGE_HEADER_SUBTEXT "Choose which servers do you want added to your desktop as shortcuts."
 !insertmacro MUI_PAGE_COMPONENTS
 
+!define MUI_PAGE_CUSTOMFUNCTION_LEAVE post_install
 !insertmacro MUI_PAGE_INSTFILES
 
+!define MUI_FINISHPAGE_RUN_NOTCHECKED
 !define MUI_FINISHPAGE_RUN "$INSTDIR\${MAIN_APP_EXE}"
 !define MUI_FINISHPAGE_RUN_PARAMETERS "--plain"
 !define MUI_FINISHPAGE_RUN_TEXT "Run Conay and update current mods"
@@ -67,6 +69,10 @@ Function dir_leave
     messagebox mb_ok|mb_iconstop "This is not the correct path to your Conan Exiles folder! Conay has to be installed into: steamapps\common\Conan Exiles\ConanSandbox!"
     Abort
   end:
+Functionend
+
+Function post_install
+  SetOutPath "$INSTDIR\Conay"
 Functionend
 
 Section "Default desktop shortcut (current modlist)"
