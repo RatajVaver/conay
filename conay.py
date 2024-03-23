@@ -19,7 +19,7 @@ KEEP_OPEN = False
 PLAIN = False
 SERVER_IP = ""
 
-VERSION = "0.0.5-pre"
+VERSION = "0.0.5"
 GITHUB_REPOSITORY = "RatajVaver/conay"
 
 STEAMCMD_PATH = "./steamcmd"

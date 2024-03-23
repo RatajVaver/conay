@@ -8,3 +8,4 @@ mods/
 *.bak
 *.log
 version.txt
+*.exe
