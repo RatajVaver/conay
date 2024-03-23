@@ -9,3 +9,4 @@ mods/
 *.log
 version.txt
 *.exe
+*.lnk

@@ -9,3 +9,5 @@ cp ../assets/instructions.txt Conay/README.txt
 cp Conay.exe Conay/Conay.exe
 zip -r Conay.zip Conay
 rm -r Conay
+
+makensis installer.nsi
