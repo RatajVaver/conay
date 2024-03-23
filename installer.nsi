@@ -48,7 +48,7 @@ InstallDir "$PROGRAMFILES\Steam\steamapps\common\Conan Exiles\ConanSandbox"
 
 !define MUI_FINISHPAGE_RUN_NOTCHECKED
 !define MUI_FINISHPAGE_RUN "$INSTDIR\${MAIN_APP_EXE}"
-!define MUI_FINISHPAGE_RUN_PARAMETERS "--plain"
+!define MUI_FINISHPAGE_RUN_PARAMETERS ""
 !define MUI_FINISHPAGE_RUN_TEXT "Run Conay and update current mods"
 !define MUI_FINISHPAGE_LINK "Join my Discord"
 !define MUI_FINISHPAGE_LINK_LOCATION "https://discord.gg/3WJNxCTn8m"
@@ -77,12 +77,14 @@ Functionend
 
 Section "Default desktop shortcut (current modlist)"
   SectionIn 1
-  CreateShortcut "$DESKTOP\Conay.lnk" "$INSTDIR\Conay\Conay.exe" "--launch --plain"
+  SetOutPath "$INSTDIR\Conay"
+  CreateShortcut "$DESKTOP\Conay.lnk" "$INSTDIR\Conay\Conay.exe" "--launch"
 SectionEnd
 
 Section /o "Halcyon D&D"
   SectionIn 1
   SetOutPath "$INSTDIR\Conay\servers"
   File "servers\halcyon.ico"
-  CreateShortcut "$DESKTOP\Halcyon.lnk" "$INSTDIR\Conay\Conay.exe" "--server halcyon --launch --plain" "$INSTDIR\Conay\servers\halcyon.ico" 0
+  SetOutPath "$INSTDIR\Conay"
+  CreateShortcut "$DESKTOP\Halcyon.lnk" "$INSTDIR\Conay\Conay.exe" "--server halcyon --launch" "$INSTDIR\Conay\servers\halcyon.ico" 0
 SectionEnd

@@ -33,6 +33,7 @@ Add any (or combination) of these parameters to the Target in your desktop short
 -x, --skip                   Skip verifying of mod downloads, just trust SteamCMD
 -k, --keep                   Keep the app open after everything is done
 -p, --plain                  Display only plain text, no emojis or colors
+-e, --emoji                  Display emojis and colors (default on W11)
 
 ########################################################################################
 

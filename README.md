@@ -13,6 +13,12 @@ Conay is also useful for people who want to play on multiple servers with mods o
 
 Download the latest release from the [Releases](https://github.com/RatajVaver/conay/releases) tab.
 
+If you're using the new **Conay Installer**, follow the instructions from the installation wizard and ignore everything below this line.
+
+---
+
+### Manual installation
+
 Extract the Conay folder into `steamapps\common\Conan Exiles\ConanSandbox`.
 
 It should look like this:

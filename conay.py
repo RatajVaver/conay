@@ -11,6 +11,8 @@ from time import sleep
 from zipfile import ZipFile
 from datetime import datetime
 
+os.chdir(os.path.dirname(os.path.abspath(sys.argv[0])))
+
 LAUNCH = False
 UPDATE_ALL = False
 VERIFY = True
@@ -39,9 +41,8 @@ WORKSHOP_CHANGELOG_URL = "https://steamcommunity.com/sharedfiles/filedetails/cha
 
 def main(): 
     parseArguments()
-    fprint("<📂> Steam Library Path: {}".format(STEAM_LIBRARY_PATH))
-
     pathCheck()
+    fprint("<📂> Steam Library Path: {}".format(STEAM_LIBRARY_PATH))
     versionCheck()
     installSteamCmd()
     mods, modNames = parseModlist()
@@ -119,6 +120,7 @@ def parseArguments():
     parser.add_argument('-x','--skip', help="Skip verifying of mod downloads, just trust SteamCMD", action='store_true')
     parser.add_argument('-k','--keep', help="Keep the app open after everything is done", action='store_true')
     parser.add_argument('-p','--plain', help="Display only plain text, no emojis or colors", action='store_true')
+    parser.add_argument('-e','--emoji', help="Display emojis and colors (default on W11)", action='store_true')
     args = vars(parser.parse_args())
 
     if args['dev']:
@@ -143,6 +145,10 @@ def parseArguments():
 
     if args['plain']:
         PLAIN = True
+    elif args['emoji']:
+        PLAIN = False
+    else:
+        PLAIN = not isWin11()
 
     if args['server']:
         pathCheck()
@@ -168,6 +174,9 @@ def fprint(text, newLine=True):
         print(text)
     else:
         print(text, end='')
+
+def isWin11():
+    return sys.getwindowsversion().build >= 22000
 
 def disableMods():
     fprint("<🔃> Disabling mods..")
@@ -421,7 +430,9 @@ def downloadMod(modId):
                     fileCreated = os.path.exists(os.path.join(STEAM_LIBRARY_PATH, "steamapps/workshop/downloads/440900", modId))
 
                 if secondsPassed > 10 and not fileCreated:
-                    fprint("\n<❌\033[91m> SteamCMD failed to download the mod!<\033[0m>", False)
+                    if VERBOSE:
+                        fprint("\n<❌\033[91m> SteamCMD failed to download the mod!<\033[0m>", False)
+
                     while proc.poll() is None:
                         proc.kill()
                         sleep(1)
