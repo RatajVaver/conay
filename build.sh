@@ -10,4 +10,5 @@ cp Conay.exe Conay/Conay.exe
 zip -r Conay.zip Conay
 rm -r Conay
 
+cd ..
 makensis installer.nsi
