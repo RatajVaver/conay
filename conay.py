@@ -60,6 +60,7 @@ def main():
             if not KEEP_OPEN:
                 sleep(10)
     else:
+        continueSession = False
         if LAUNCH:
             fprint("<🎲> Launching the game and connecting to the selected server ({})..".format(SERVER_IP))
 
@@ -77,6 +78,7 @@ def main():
                         file.write(content)
 
                     subprocess.Popen("\"{}\" -continuesession".format(os.path.abspath(EXE_PATH)))
+                    continueSession = True
                 except:
                     webbrowser.open("steam://run/440900//+connect {}/".format(SERVER_IP))
             else:
@@ -87,6 +89,9 @@ def main():
         if LAUNCH:
             fprint("<🔔> TIP: Server IP was saved to your clipboard. If the launcher doesn't connect you directly to the server, you can use Ctrl+V in Direct Connect.")
             if not KEEP_OPEN:
+                if continueSession:
+                    fprint("<🗿> This window will close in 20 seconds, or you can close it manually. Conan Exiles might take a moment to launch.")
+                    sleep(10)
                 sleep(10)
         else:
             fprint("<🔔> TIP: Server IP was saved to your clipboard. You can use Ctrl+V later on in Direct Connect.")
