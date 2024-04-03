@@ -34,6 +34,7 @@ Add any (or combination) of these parameters to the Target in your desktop short
 -k, --keep                   Keep the app open after everything is done
 -p, --plain                  Display only plain text, no emojis or colors
 -e, --emoji                  Display emojis and colors (default on W11)
+-g, --single                 Runs the selected modlist and starts a singleplayer session
 
 ########################################################################################
 

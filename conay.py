@@ -20,8 +20,9 @@ VERBOSE = False
 KEEP_OPEN = False
 PLAIN = False
 SERVER_IP = ""
+SINGLEPLAYER = False
 
-VERSION = "0.0.5"
+VERSION = "0.0.6"
 GITHUB_REPOSITORY = "RatajVaver/conay"
 
 STEAMCMD_PATH = "./steamcmd"
@@ -39,7 +40,7 @@ UPDATE_PATTERN = re.compile(r"workshopAnnouncement.*?<p id=\"(\d+)\">", re.DOTAL
 TITLE_PATTERN = re.compile(r"(?<=<div class=\"workshopItemTitle\">)(.*?)(?=<\/div>)", re.DOTALL)
 WORKSHOP_CHANGELOG_URL = "https://steamcommunity.com/sharedfiles/filedetails/changelog"
 
-def main(): 
+def main():
     parseArguments()
     pathCheck()
     fprint("<📂> Steam Library Path: {}".format(STEAM_LIBRARY_PATH))
@@ -63,17 +64,21 @@ def main():
     else:
         continueSession = False
         if LAUNCH:
-            fprint("<🎲> Launching the game and connecting to the selected server ({})..".format(SERVER_IP))
+            if not SINGLEPLAYER:
+                fprint("<🎲> Launching the game and connecting to the selected server ({})..".format(SERVER_IP))
 
             if os.path.exists(GAMEINI_PATH) and os.path.exists(EXE_PATH):
                 try:
                     content = ""
                     with open(GAMEINI_PATH, "r", encoding="utf16") as file:
                         for line in file:
-                            if line.startswith("LastConnected="):
+                            if line.startswith("LastConnected=") and SERVER_IP != "singleplayer":
                                 content = content + "LastConnected=" + SERVER_IP + "\n"
                             elif line.startswith("StartedListenServerSession="):
-                                content = content + "StartedListenServerSession=False\n"
+                                if SINGLEPLAYER:
+                                    content = content + "StartedListenServerSession=True\n"
+                                else:
+                                    content = content + "StartedListenServerSession=False\n"
                             else:
                                 content = content + line
 
@@ -89,7 +94,14 @@ def main():
 
         subprocess.check_call("echo {}|clip".format(SERVER_IP), shell=True)
 
-        if LAUNCH:
+        if SINGLEPLAYER:
+            fprint("<🎲> Launching the game and starting a singleplayer session..")
+            if not KEEP_OPEN:
+                if continueSession:
+                    fprint("<🗿> This window will close in 20 seconds, or you can close it manually. Conan Exiles might take a moment to launch.")
+                    sleep(10)
+                sleep(10)
+        elif LAUNCH:
             fprint("<🔔> TIP: Server IP was saved to your clipboard. If the launcher doesn't connect you directly to the server, you can use Ctrl+V in Direct Connect.")
             if not KEEP_OPEN:
                 if continueSession:
@@ -106,7 +118,7 @@ def main():
         sleep(3)
 
 def parseArguments():
-    global STEAMCMD_PATH, STEAM_LIBRARY_PATH, MODLIST_PATH, UPDATE_ALL, LAUNCH, VERIFY, VERBOSE, KEEP_OPEN, PLAIN
+    global STEAMCMD_PATH, STEAM_LIBRARY_PATH, MODLIST_PATH, UPDATE_ALL, LAUNCH, VERIFY, VERBOSE, KEEP_OPEN, PLAIN, SINGLEPLAYER
 
     parser = argparse.ArgumentParser(description="Conan Exiles Mod Launcher")
     parser.add_argument('-d','--dev', help="Debugging outside of Conan Exiles folder", action='store_true')
@@ -121,6 +133,7 @@ def parseArguments():
     parser.add_argument('-k','--keep', help="Keep the app open after everything is done", action='store_true')
     parser.add_argument('-p','--plain', help="Display only plain text, no emojis or colors", action='store_true')
     parser.add_argument('-e','--emoji', help="Display emojis and colors (default on W11)", action='store_true')
+    parser.add_argument('-g','--single', help="Runs the selected modlist and starts a singleplayer session", action='store_true')
     args = vars(parser.parse_args())
 
     if args['dev']:
@@ -149,6 +162,10 @@ def parseArguments():
         PLAIN = False
     else:
         PLAIN = not isWin11()
+
+    if args['single']:
+        LAUNCH = True
+        SINGLEPLAYER = True
 
     if args['server']:
         pathCheck()
@@ -229,7 +246,7 @@ def saveServerData(server):
     sys.exit(0)
 
 def loadServerData(server):
-    global SERVER_IP
+    global SERVER_IP, SINGLEPLAYER
 
     fprint("<🔍> Searching for server '{}'..".format(server))
 
@@ -260,6 +277,9 @@ def loadServerData(server):
 
     fprint("<🔮> Processing modlist for server <\033[1m\033[92m>{}<\033[0m>..".format(serverData['name']))
     SERVER_IP = serverData['ip']
+
+    if SERVER_IP == "singleplayer":
+        SINGLEPLAYER = True
 
     if os.path.exists(MODLIST_PATH):
         try:
@@ -402,7 +422,7 @@ def downloadList(modlist):
         sleep(5)
     print("")
 
-def downloadMod(modId):
+def downloadMod(modId, retrying=False):
     args = [os.path.abspath(os.path.join(STEAMCMD_PATH, 'steamcmd.exe'))]
     args.append('+force_install_dir "{}"'.format(STEAM_LIBRARY_PATH))
     args.append("+login anonymous")
@@ -429,9 +449,9 @@ def downloadMod(modId):
                 if not fileCreated:
                     fileCreated = os.path.exists(os.path.join(STEAM_LIBRARY_PATH, "steamapps/workshop/downloads/440900", modId))
 
-                if secondsPassed > 10 and not fileCreated:
+                if secondsPassed > 10 and not fileCreated and not retrying:
                     if VERBOSE:
-                        fprint("\n<❌\033[91m> SteamCMD failed to download the mod!<\033[0m>", False)
+                        fprint("<🔃> Failed to verify download, retrying ", VERBOSE)
 
                     while proc.poll() is None:
                         proc.kill()
@@ -485,18 +505,23 @@ def checkUpdates(modlistIds, modlistNames):
                         sys.exit(1)
 
                 verified = False
+                retrying = False
 
                 while not verified:
-                    downloadMod(modId)
+                    downloadMod(modId, retrying)
                     if os.path.isdir(modPath) and len(os.listdir(modPath)) > 0:
                         createdNew = datetime.fromtimestamp(os.path.getmtime(modPath))
                         if createdNew > createdOld:
                             verified = True
                             fprint("<✅> Download complete and verified!")
                         else:
-                            fprint("<🔃> Failed to verify download, retrying ", VERBOSE)
+                            if VERBOSE or retrying:
+                                fprint("<🔃> Failed to verify download, retrying ", VERBOSE)
+                            retrying = True
                     else:
-                        fprint("<🔃> Failed to verify download, retrying ", VERBOSE)
+                        if VERBOSE or retrying:
+                            fprint("<🔃> Failed to verify download, retrying ", VERBOSE)
+                        retrying = True
 
             else:
                 fprint("<⌛> Downloading mod #{} ({})..".format(modId, modTitle))

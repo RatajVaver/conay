@@ -1,7 +1,7 @@
 !define APP_NAME "Conay"
 !define COMP_NAME "RatajVaver"
 !define WEB_SITE "https://github.com/RatajVaver/conay"
-!define VERSION "0.0.5.0"
+!define VERSION "0.0.6.0"
 !define COPYRIGHT "RatajVaver"
 !define DESCRIPTION "Conan Exiles Mod Launcher"
 !define INSTALLER_NAME "dist\Conay Installer.exe"
@@ -87,4 +87,12 @@ Section /o "Halcyon D&D"
   File "servers\halcyon.ico"
   SetOutPath "$INSTDIR\Conay"
   CreateShortcut "$DESKTOP\Halcyon.lnk" "$INSTDIR\Conay\Conay.exe" "--server halcyon --launch" "$INSTDIR\Conay\servers\halcyon.ico" 0
+SectionEnd
+
+Section /o "Crossroads"
+  SectionIn 1
+  SetOutPath "$INSTDIR\Conay\servers"
+  File "servers\crossroads.ico"
+  SetOutPath "$INSTDIR\Conay"
+  CreateShortcut "$DESKTOP\Crossroads.lnk" "$INSTDIR\Conay\Conay.exe" "--server crossroads --launch" "$INSTDIR\Conay\servers\crossroads.ico" 0
 SectionEnd
