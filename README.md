@@ -1,7 +1,7 @@
 # Conay
 
 [![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://github.com/RatajVaver/conay/blob/main/LICENSE)
-[![MIT License](https://img.shields.io/badge/Discord-Rataj's_Workshop-blue.svg)](https://discord.gg/3WJNxCTn8m)
+[![Discord](https://img.shields.io/badge/Discord-Rataj's_Workshop-blue.svg)](https://discord.gg/3WJNxCTn8m)
 
 ![Conay in action](assets/preview.gif)
 
@@ -62,11 +62,6 @@ Conay.exe --nomods --launch
 Restore previously saved mods (after disabling them):
 ```sh
 Conay.exe --restore
-```
-
-Display only plain text (hide emojis and colors on older CMD):
-```sh
-Conay.exe --plain
 ```
 
 Show the whole SteamCMD output instead of default progress bars:
