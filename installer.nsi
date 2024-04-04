@@ -4,7 +4,7 @@
 !define VERSION "0.0.6.0"
 !define COPYRIGHT "RatajVaver"
 !define DESCRIPTION "Conan Exiles Mod Launcher"
-!define INSTALLER_NAME "dist\Conay Installer.exe"
+!define INSTALLER_NAME "dist\ConayInstaller.exe"
 !define MAIN_APP_EXE "Conay\Conay.exe"
 !define INSTALL_TYPE "SetShellVarContext current"
 !define MUI_ICON "assets\icon.ico"
