@@ -10,3 +10,4 @@ mods/
 version.txt
 *.exe
 *.lnk
+/config.json

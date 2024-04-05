@@ -9,6 +9,14 @@ Conay is a launcher and a mod updater for Conan Exiles. Main problem this app so
 
 Conay is also useful for people who want to play on multiple servers with mods or in singleplayer with a different set of mods. Conay can easily disable all your mods and restore them with your next session (follow instructions in the Usage section). You can also save modlists even for unsupported servers on your own and load them later.
 
+## Now with GUI!
+
+![Conay in action](assets/conaygui.gif)
+
+Server selector GUI was added as part of the 0.0.7 release. This is a first step to turn Conay into a proper GUI launcher in the future with many new features to come.
+
+To update, simply download the new release and install it into your ConanSandbox folder.
+
 ## Installation
 
 Download the latest release from the [Releases](https://github.com/RatajVaver/conay/releases) tab.

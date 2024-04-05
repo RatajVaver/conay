@@ -21,8 +21,9 @@ KEEP_OPEN = False
 PLAIN = False
 SERVER_IP = ""
 SINGLEPLAYER = False
+MENU = False
 
-VERSION = "0.0.6"
+VERSION = "0.0.7-pre"
 GITHUB_REPOSITORY = "RatajVaver/conay"
 
 STEAMCMD_PATH = "./steamcmd"
@@ -57,14 +58,14 @@ def main():
 
     if SERVER_IP == "":
         if LAUNCH:
-            fprint("<🎲> Launching the game..".format(SERVER_IP))
+            fprint("<🎲> Launching the game..")
             webbrowser.open("steam://run/440900/")
             if not KEEP_OPEN:
                 sleep(10)
     else:
         continueSession = False
         if LAUNCH:
-            if not SINGLEPLAYER:
+            if not SINGLEPLAYER and not MENU:
                 fprint("<🎲> Launching the game and connecting to the selected server ({})..".format(SERVER_IP))
 
             if os.path.exists(GAMEINI_PATH) and os.path.exists(EXE_PATH):
@@ -101,6 +102,11 @@ def main():
                     fprint("<🗿> This window will close in 20 seconds, or you can close it manually. Conan Exiles might take a moment to launch.")
                     sleep(10)
                 sleep(10)
+        elif MENU:
+            fprint("<🎲> Launching the game..")
+            fprint("<🔔> TIP: Server IP was saved to your clipboard. You can use Ctrl+V later on in Direct Connect.")
+            if not KEEP_OPEN:
+                sleep(10)
         elif LAUNCH:
             fprint("<🔔> TIP: Server IP was saved to your clipboard. If the launcher doesn't connect you directly to the server, you can use Ctrl+V in Direct Connect.")
             if not KEEP_OPEN:
@@ -118,7 +124,7 @@ def main():
         sleep(3)
 
 def parseArguments():
-    global STEAMCMD_PATH, STEAM_LIBRARY_PATH, MODLIST_PATH, UPDATE_ALL, LAUNCH, VERIFY, VERBOSE, KEEP_OPEN, PLAIN, SINGLEPLAYER
+    global STEAMCMD_PATH, STEAM_LIBRARY_PATH, MODLIST_PATH, UPDATE_ALL, LAUNCH, VERIFY, VERBOSE, KEEP_OPEN, PLAIN, SINGLEPLAYER, MENU
 
     parser = argparse.ArgumentParser(description="Conan Exiles Mod Launcher")
     parser.add_argument('-d','--dev', help="Debugging outside of Conan Exiles folder", action='store_true')
@@ -134,6 +140,7 @@ def parseArguments():
     parser.add_argument('-p','--plain', help="Display only plain text, no emojis or colors", action='store_true')
     parser.add_argument('-e','--emoji', help="Display emojis and colors (default on W11)", action='store_true')
     parser.add_argument('-g','--single', help="Runs the selected modlist and starts a singleplayer session", action='store_true')
+    parser.add_argument('-m','--menu', help="Hang in menu, don't connect directly to the server", action='store_true')
     args = vars(parser.parse_args())
 
     if args['dev']:
@@ -166,6 +173,9 @@ def parseArguments():
     if args['single']:
         LAUNCH = True
         SINGLEPLAYER = True
+
+    if args['menu']:
+        MENU = True
 
     if args['server']:
         pathCheck()
@@ -266,14 +276,19 @@ def loadServerData(server):
             sleep(5)
             sys.exit(1)
     else:
-        response = SESSION.get("https://raw.githubusercontent.com/{}/main/servers/{}.json".format(GITHUB_REPOSITORY, server))
-        if response.status_code == 404:
-            fprint("<❌\033[91m> Unsupported server! Cannot fetch data.<\033[0m>")
+        try:
+            response = SESSION.get("https://raw.githubusercontent.com/{}/main/servers/{}.json".format(GITHUB_REPOSITORY, server))
+            if response.status_code == 404:
+                fprint("<❌\033[91m> Unsupported server! Cannot fetch data.<\033[0m>")
+                sleep(5)
+                sys.exit(1)
+
+            response = response.content.decode("utf-8")
+            serverData = json.loads(response)
+        except:
+            fprint("<❌\033[91m> Failed to load server data! Make sure you're connected to the internet and try again.<\033[0m>")
             sleep(5)
             sys.exit(1)
-
-        response = response.content.decode("utf-8")
-        serverData = json.loads(response)
 
     fprint("<🔮> Processing modlist for server <\033[1m\033[92m>{}<\033[0m>..".format(serverData['name']))
     SERVER_IP = serverData['ip']
@@ -326,7 +341,7 @@ def versionCheck():
                         else:
                             fprint("<🔶> Your version ({}) doesn't match the latest release ({})".format(VERSION, releaseData['tag_name']))
     except:
-        fprint("<❌\033[91m> Checking Conay updates failed.<\033[0m>")
+        fprint("<❌\033[91m> Checking Conay updates failed. Check your internet connection.<\033[0m>")
 
 def pathCheck():
     if not os.path.exists(MODLIST_PATH.replace("modlist.txt","")) or not os.path.exists(os.path.join(STEAM_LIBRARY_PATH, "steamapps")):
@@ -379,7 +394,7 @@ def installSteamCmd():
                 if response.status_code == 200:
                     with open(downloadPath, 'wb') as f:
                         f.write(response.content)
-                    fprint("<✅> Downloaded from {}".format(downloadPath))
+                    fprint("<✅> Downloaded from {}".format(url.split('/')[2]))
                     downloaded = True
                     break
                 else:
@@ -466,16 +481,20 @@ def downloadMod(modId, retrying=False):
 
 def needsUpdate(modId, path):
     if os.path.isdir(path) and len(os.listdir(path)) > 0:
-        response = SESSION.get("{}/{}".format(WORKSHOP_CHANGELOG_URL, modId), headers=HEADERS)
-        response = response.content.decode("utf-8")
-        matchUpdate = UPDATE_PATTERN.search(response)
-        matchTitle = TITLE_PATTERN.search(response)
+        try:
+            response = SESSION.get("{}/{}".format(WORKSHOP_CHANGELOG_URL, modId), headers=HEADERS)
+            response = response.content.decode("utf-8")
+            matchUpdate = UPDATE_PATTERN.search(response)
+            matchTitle = TITLE_PATTERN.search(response)
 
-        if matchUpdate and matchTitle:
-            updated = datetime.fromtimestamp(int(matchUpdate.group(1)))
-            created = datetime.fromtimestamp(os.path.getmtime(path))
+            if matchUpdate and matchTitle:
+                updated = datetime.fromtimestamp(int(matchUpdate.group(1)))
+                created = datetime.fromtimestamp(os.path.getmtime(path))
 
-            return updated >= created, matchTitle.group(1).replace("&amp;", "&")
+                return updated >= created, matchTitle.group(1).replace("&amp;", "&")
+        except:
+            fprint("<❌\033[91m> Failed to check update! Check your internet connection.<\033[0m>")
+            return False, ""
 
     return True, ""
 

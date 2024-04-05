@@ -1,11 +1,11 @@
 !define APP_NAME "Conay"
 !define COMP_NAME "RatajVaver"
 !define WEB_SITE "https://github.com/RatajVaver/conay"
-!define VERSION "0.0.6.0"
+!define VERSION "0.0.7.0"
 !define COPYRIGHT "RatajVaver"
 !define DESCRIPTION "Conan Exiles Mod Launcher"
 !define INSTALLER_NAME "dist\ConayInstaller.exe"
-!define MAIN_APP_EXE "Conay\Conay.exe"
+!define MAIN_APP_EXE "Conay\ConayGUI.exe"
 !define INSTALL_TYPE "SetShellVarContext current"
 !define MUI_ICON "assets\icon.ico"
 !define MUI_WELCOMEFINISHPAGE_BITMAP "assets\header.bmp"
@@ -46,10 +46,10 @@ InstallDir "$PROGRAMFILES\Steam\steamapps\common\Conan Exiles\ConanSandbox"
 !define MUI_PAGE_CUSTOMFUNCTION_LEAVE post_install
 !insertmacro MUI_PAGE_INSTFILES
 
-!define MUI_FINISHPAGE_RUN_NOTCHECKED
+!define MUI_FINISHPAGE_RUN_CHECKED
 !define MUI_FINISHPAGE_RUN "$INSTDIR\${MAIN_APP_EXE}"
 !define MUI_FINISHPAGE_RUN_PARAMETERS ""
-!define MUI_FINISHPAGE_RUN_TEXT "Run Conay and update current mods"
+!define MUI_FINISHPAGE_RUN_TEXT "Run Conay"
 !define MUI_FINISHPAGE_LINK "Join my Discord"
 !define MUI_FINISHPAGE_LINK_LOCATION "https://discord.gg/3WJNxCTn8m"
 !insertmacro MUI_PAGE_FINISH
@@ -61,7 +61,14 @@ ${INSTALL_TYPE}
 SetOverwrite ifnewer
 SetOutPath "$INSTDIR\Conay"
 File "dist\Conay.exe"
+File "dist\ConayGUI.exe"
 File /oname=README.txt "assets\instructions.txt"
+SetOutPath "$INSTDIR\Conay\assets"
+File "assets\icon.ico"
+File "assets\default.ico"
+SetOutPath "$INSTDIR\Conay\assets\servers"
+File "assets\servers\"
+SetOutPath "$INSTDIR\Conay"
 SectionEnd
 
 Function dir_leave
@@ -75,24 +82,24 @@ Function post_install
   SetOutPath "$INSTDIR\Conay"
 Functionend
 
-Section "Default desktop shortcut (current modlist)"
+Section "Default desktop shortcut (GUI) - recommended"
   SectionIn 1
   SetOutPath "$INSTDIR\Conay"
-  CreateShortcut "$DESKTOP\Conay.lnk" "$INSTDIR\Conay\Conay.exe" "--launch"
+  CreateShortcut "$DESKTOP\Conay.lnk" "$INSTDIR\Conay\ConayGUI.exe"
 SectionEnd
 
 Section /o "Halcyon D&D"
   SectionIn 1
-  SetOutPath "$INSTDIR\Conay\servers"
-  File "servers\halcyon.ico"
+  #SetOutPath "$INSTDIR\Conay\assets\servers"
+  #File "assets\servers\halcyon.ico"
   SetOutPath "$INSTDIR\Conay"
-  CreateShortcut "$DESKTOP\Halcyon.lnk" "$INSTDIR\Conay\Conay.exe" "--server halcyon --launch" "$INSTDIR\Conay\servers\halcyon.ico" 0
+  CreateShortcut "$DESKTOP\Halcyon.lnk" "$INSTDIR\Conay\Conay.exe" "--server halcyon --launch" "$INSTDIR\Conay\assets\servers\halcyon.ico" 0
 SectionEnd
 
 Section /o "Crossroads"
   SectionIn 1
-  SetOutPath "$INSTDIR\Conay\servers"
-  File "servers\crossroads.ico"
+  #SetOutPath "$INSTDIR\Conay\assets\servers"
+  #File "assets\servers\crossroads.ico"
   SetOutPath "$INSTDIR\Conay"
-  CreateShortcut "$DESKTOP\Crossroads.lnk" "$INSTDIR\Conay\Conay.exe" "--server crossroads --launch" "$INSTDIR\Conay\servers\crossroads.ico" 0
+  CreateShortcut "$DESKTOP\Crossroads.lnk" "$INSTDIR\Conay\Conay.exe" "--server crossroads --launch" "$INSTDIR\Conay\assets\servers\crossroads.ico" 0
 SectionEnd

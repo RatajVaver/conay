@@ -1,0 +1,38 @@
+[
+    {
+        "file": "crossroads",
+        "name": "Crossroads"
+    },
+    {
+        "file": "halcyon",
+        "name": "Halcyon D&D"
+    },
+    {
+        "file": "chainsel",
+        "name": "Chains of Hyboria - Exiled Lands"
+    },
+    {
+        "file": "chainssw",
+        "name": "Chains of Hyboria - Savage Wilds"
+    },
+    {
+        "file": "oldguard",
+        "name": "Old Guard D&D"
+    },
+    {
+        "file": "scarlet",
+        "name": "The Scarlet Cage"
+    },
+    {
+        "file": "tamriel",
+        "name": "Tales of Tamriel"
+    },
+    {
+        "file": "tyranny",
+        "name": "Lands of Tyranny"
+    },
+    {
+        "file": "wod",
+        "name": "World of Darkness: City of Spires"
+    }
+]
