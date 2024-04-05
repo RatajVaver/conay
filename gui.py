@@ -62,25 +62,25 @@ class App(customtkinter.CTk):
         self.serverList.bind('<<ListboxSelect>>', self.selectServer)
 
         start = customtkinter.CTkButton(self, text="Run updater", command=self.startUpdater)
-        start.pack(side="bottom", padx=20, pady=20)
+        start.pack(side=BOTTOM, padx=20, pady=20)
 
-        launchCheckBox = customtkinter.CTkCheckBox(self, text='Launch the game', variable=self.launchToggle, onvalue=1, offvalue=0, command=self.checkBoxChange)
-        launchCheckBox.pack(side="bottom", padx=20)
+        launchCheckBox = customtkinter.CTkCheckBox(self, text="Launch the game", variable=self.launchToggle, onvalue=1, offvalue=0, command=self.checkBoxChange)
+        launchCheckBox.pack(side=BOTTOM, padx=20)
 
         settings = customtkinter.CTkButton(self, text="Settings", fg_color="#191919", hover_color="#0c0c0c", command=self.openSettings)
-        settings.pack(side="top", padx=20, pady=10)
+        settings.pack(side=TOP, padx=20, pady=10)
 
-        loadedImage = Image.open('assets/default.ico')
+        loadedImage = Image.open("assets/default.ico")
         self.defaultIcon = customtkinter.CTkImage(light_image=loadedImage, dark_image=loadedImage, size=(128,128))
 
         self.serverIcon = customtkinter.CTkLabel(self, text="", image=self.defaultIcon)
-        self.serverIcon.pack(side="top", padx=10)
+        self.serverIcon.pack(side=TOP, padx=10)
 
         self.updateServerSelection()
 
-        self.attributes('-topmost', True)
+        self.attributes("-topmost", True)
         self.update()
-        self.attributes('-topmost', False)
+        self.attributes("-topmost", False)
 
         self.protocol("WM_DELETE_WINDOW", self.saveAndExit)
 
@@ -169,10 +169,10 @@ class App(customtkinter.CTk):
                     for x in config:
                         self.launcherConfig[x] = config[x]
             except:
-                print("oops")
+                showwarning("Conay - Warning", "Failed to read config! This might cause some issues.")
 
-            if len(config) < len(self.launcherConfig):
-                self.saveConfig()
+            if len(config) != len(self.launcherConfig):
+                self.saveConfigOnExit = True
         else:
             self.saveConfig()
 
@@ -203,7 +203,7 @@ class App(customtkinter.CTk):
     def loadServers(self):
         modCount = 0
         if os.path.exists("../Mods/modlist.txt"):
-            with open("../Mods/modlist.txt", 'r') as modlistFile:
+            with open("../Mods/modlist.txt", "r") as modlistFile:
                 modCount = len(modlistFile.readlines())
 
         self.serverNames = ["Current modlist ({} mods)".format(modCount), "Vanilla game (no mods)"]
@@ -226,7 +226,7 @@ class App(customtkinter.CTk):
             try:
                 response = SESSION.get("https://raw.githubusercontent.com/RatajVaver/conay/main/servers.json")
                 if response.status_code != 200:
-                    showwarning("Conay - Error", "Failed to download the server list!\nMake sure you're connected to the internet and try again.\n\nYou can set offline to true in config.json to only load your own local modlists and to hide this message.")
+                    showwarning("Conay - Warning", "Failed to download the server list!\nMake sure you are connected to the internet and try again.\n\nYou can set offline to true in config.json to only load your own local modlists and to hide this message.")
                     return
 
                 response = response.content.decode("utf-8")
@@ -244,7 +244,7 @@ class App(customtkinter.CTk):
                             self.serverNames.append(x['name'])
                             self.serverFiles.append(x['file'])
             except:
-                showwarning("Conay - Error", "Failed to download the server list!\nMake sure you're connected to the internet and try again.\n\nYou can set offline to true in config.json to only load your own local modlists and to hide this message.")
+                showwarning("Conay - Warning", "Failed to download the server list!\nMake sure you are connected to the internet and try again.\n\nYou can set offline to true in config.json to only load your own local modlists and to hide this message.")
 
     def openDiscord(self):
         os.system("start \"\" https://discord.gg/3WJNxCTn8m")
@@ -303,28 +303,27 @@ class App(customtkinter.CTk):
         self.settingsWindow.after(210, lambda: self.settingsWindow.iconbitmap("assets/icon.ico"))
         self.eval(f"tk::PlaceWindow {str(self.settingsWindow)} center")
 
-        #customtkinter.CTkLabel(self.settingsWindow, text="").pack(fill="both", padx=10, pady=10)
-        customtkinter.CTkButton(self.settingsWindow, text="Discord for support and updates", command=self.openDiscord).pack(fill="both", padx=10, pady=10)
+        customtkinter.CTkButton(self.settingsWindow, text="Discord for support and updates", command=self.openDiscord).pack(fill=BOTH, padx=10, pady=10)
 
         directCheckBox = customtkinter.CTkCheckBox(self.settingsWindow, text="Direct connect to server after launch", variable=self.directToggle, onvalue=1, offvalue=0, command=self.checkBoxChange)
-        directCheckBox.pack(fill="both", padx=10, pady=5)
+        directCheckBox.pack(fill=BOTH, padx=10, pady=5)
 
         offlineCheckBox = customtkinter.CTkCheckBox(self.settingsWindow, text="Offline mode (don't fetch remote servers)", variable=self.offlineToggle, onvalue=1, offvalue=0, command=self.checkBoxChange)
-        offlineCheckBox.pack(fill="both", padx=10, pady=5)
+        offlineCheckBox.pack(fill=BOTH, padx=10, pady=5)
 
         fancyCheckBox = customtkinter.CTkCheckBox(self.settingsWindow, text="Display emojis and colors in the updater", variable=self.fancyToggle, onvalue=1, offvalue=0, command=self.checkBoxChange)
-        fancyCheckBox.pack(fill="both", padx=10, pady=5)
+        fancyCheckBox.pack(fill=BOTH, padx=10, pady=5)
 
         verboseCheckBox = customtkinter.CTkCheckBox(self.settingsWindow, text="Print detailed info in the updater", variable=self.verboseToggle, onvalue=1, offvalue=0, command=self.checkBoxChange)
-        verboseCheckBox.pack(fill="both", padx=10, pady=5)
+        verboseCheckBox.pack(fill=BOTH, padx=10, pady=5)
 
         cinematicCheckBox = customtkinter.CTkCheckBox(self.settingsWindow, text="Disable Conan's cinematic intro", variable=self.cinematicToggle, onvalue=1, offvalue=0, command=self.toggleCinematic)
-        cinematicCheckBox.pack(fill="both", padx=10, pady=5)
+        cinematicCheckBox.pack(fill=BOTH, padx=10, pady=5)
 
-        customtkinter.CTkLabel(self.settingsWindow, text="Favorite server (selected on startup):").pack(fill="both", padx=10, pady=10)
+        customtkinter.CTkLabel(self.settingsWindow, text="Favorite server (selected on startup):").pack(fill=BOTH, padx=10, pady=10)
 
         self.favoriteList = customtkinter.CTkComboBox(self.settingsWindow, values=self.serverFiles, command=self.saveFavorite)
-        self.favoriteList.set(self.serverFiles[self.selectedServer])
+        self.favoriteList.set(self.launcherConfig.get("favorite", ""))
         self.favoriteList.pack(fill=BOTH, padx=10, pady=0)
 
         self.settingsWindow.transient(self)

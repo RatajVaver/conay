@@ -23,7 +23,7 @@ SERVER_IP = ""
 SINGLEPLAYER = False
 MENU = False
 
-VERSION = "0.0.7-pre"
+VERSION = "0.0.7"
 GITHUB_REPOSITORY = "RatajVaver/conay"
 
 STEAMCMD_PATH = "./steamcmd"
@@ -59,16 +59,24 @@ def main():
     if SERVER_IP == "":
         if LAUNCH:
             fprint("<🎲> Launching the game..")
-            webbrowser.open("steam://run/440900/")
+
+            if os.path.exists(EXE_PATH):
+                subprocess.Popen(os.path.abspath(EXE_PATH))
+            else:
+                webbrowser.open("steam://run/440900/")
+
             if not KEEP_OPEN:
-                sleep(10)
+                sleep(15)
     else:
         continueSession = False
         if LAUNCH:
             if not SINGLEPLAYER and not MENU:
                 fprint("<🎲> Launching the game and connecting to the selected server ({})..".format(SERVER_IP))
 
-            if os.path.exists(GAMEINI_PATH) and os.path.exists(EXE_PATH):
+            if MENU and os.path.exists(EXE_PATH):
+                fprint("<🎲> Launching the game..")
+                subprocess.Popen(os.path.abspath(EXE_PATH))
+            elif os.path.exists(GAMEINI_PATH) and os.path.exists(EXE_PATH):
                 try:
                     content = ""
                     with open(GAMEINI_PATH, "r", encoding="utf16") as file:
@@ -103,10 +111,9 @@ def main():
                     sleep(10)
                 sleep(10)
         elif MENU:
-            fprint("<🎲> Launching the game..")
             fprint("<🔔> TIP: Server IP was saved to your clipboard. You can use Ctrl+V later on in Direct Connect.")
             if not KEEP_OPEN:
-                sleep(10)
+                sleep(15)
         elif LAUNCH:
             fprint("<🔔> TIP: Server IP was saved to your clipboard. If the launcher doesn't connect you directly to the server, you can use Ctrl+V in Direct Connect.")
             if not KEEP_OPEN:

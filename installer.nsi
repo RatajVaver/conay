@@ -9,7 +9,7 @@
 !define INSTALL_TYPE "SetShellVarContext current"
 !define MUI_ICON "assets\icon.ico"
 !define MUI_WELCOMEFINISHPAGE_BITMAP "assets\header.bmp"
-!define MUI_WELCOMEPAGE_TEXT "Please make sure to install this application into your ConanSandbox folder! Conay will not work if it's installed into a wrong path."
+!define MUI_WELCOMEPAGE_TEXT "Conay is an open-source project made for the lovely Conan Exiles community, this launcher will always be free. Enjoy!\n\nIf you need assistance, feel free to join my Discord at: discord.gg/3WJNxCTn8m\n\nPlease make sure to install this application into your ConanSandbox folder! Installer will verify this for you."
 !define MUI_COMPONENTSPAGE_NODESC
 !define MUI_COMPONENTSPAGE_TEXT_TOP "If you want shortcuts on your desktop for specific servers, please check those that you want to have. You can also create your own shortcuts or even add your own supported server, check Conay's GitHub page or Discord for more details."
 !define MUI_COMPONENTSPAGE_TEXT_COMPLIST "Select servers:"

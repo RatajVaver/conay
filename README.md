@@ -3,15 +3,13 @@
 [![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://github.com/RatajVaver/conay/blob/main/LICENSE)
 [![Discord](https://img.shields.io/badge/Discord-Rataj's_Workshop-blue.svg)](https://discord.gg/3WJNxCTn8m)
 
-![Conay in action](assets/preview.gif)
-
 Conay is a launcher and a mod updater for Conan Exiles. Main problem this app solves is the need to manually resubscribe Steam Workshop addons after every update unless you want to wait for Steam to pick it up by itself. This launcher can read your modlist as well as load modlists from supported servers to order them for you and check for updates and force their download, saving you a headache.
 
 Conay is also useful for people who want to play on multiple servers with mods or in singleplayer with a different set of mods. Conay can easily disable all your mods and restore them with your next session (follow instructions in the Usage section). You can also save modlists even for unsupported servers on your own and load them later.
 
 ## Now with GUI!
 
-![Conay in action](assets/conaygui.gif)
+![Conay in action](assets/preview.gif)
 
 Server selector GUI was added as part of the 0.0.7 release. This is a first step to turn Conay into a proper GUI launcher in the future with many new features to come.
 
