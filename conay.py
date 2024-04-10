@@ -23,7 +23,7 @@ SERVER_IP = ""
 SINGLEPLAYER = False
 MENU = False
 
-VERSION = "0.0.7"
+VERSION = "0.0.8-pre"
 GITHUB_REPOSITORY = "RatajVaver/conay"
 
 STEAMCMD_PATH = "./steamcmd"
@@ -44,7 +44,10 @@ WORKSHOP_CHANGELOG_URL = "https://steamcommunity.com/sharedfiles/filedetails/cha
 def main():
     parseArguments()
     pathCheck()
-    fprint("<📂> Steam Library Path: {}".format(STEAM_LIBRARY_PATH))
+
+    if VERBOSE:
+        fprint("<📂> Steam Library Path: {}".format(STEAM_LIBRARY_PATH))
+
     versionCheck()
     installSteamCmd()
     mods, modNames = parseModlist()
@@ -351,7 +354,11 @@ def versionCheck():
         fprint("<❌\033[91m> Checking Conay updates failed. Check your internet connection.<\033[0m>")
 
 def pathCheck():
-    if not os.path.exists(MODLIST_PATH.replace("modlist.txt","")) or not os.path.exists(os.path.join(STEAM_LIBRARY_PATH, "steamapps")):
+    if os.path.exists("../AssetRegistry.bin") and os.path.exists(os.path.join(STEAM_LIBRARY_PATH, "steamapps")):
+        if not os.path.exists(MODLIST_PATH.replace("modlist.txt","")):
+            fprint("<🔩> Mods folder not found! Creating..")
+            os.mkdir(MODLIST_PATH.replace("modlist.txt",""))
+    else:
         fprint("<❌\033[91m> Conay is not installed in the correct path! Please follow install instructions.<\033[0m>")
         sleep(5)
         sys.exit(1)

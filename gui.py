@@ -41,6 +41,7 @@ class App(customtkinter.CTk):
         self.launchToggle = IntVar( value = int(self.launcherConfig.get("launch", True) == True) )
         self.offlineToggle = IntVar( value = int(self.launcherConfig.get("offline", False) == True) )
         self.verboseToggle = IntVar( value = int(self.launcherConfig.get("verbose", False) == True) )
+        self.forceToggle = IntVar( value = int(self.launcherConfig.get("force", False) == True) )
         self.directToggle = IntVar( value = int(self.launcherConfig.get("direct", True) == True) )
         self.cinematicToggle = IntVar( value = int(self.launcherConfig.get("disableCinematic", False) == True) )
 
@@ -189,6 +190,7 @@ class App(customtkinter.CTk):
             [ self.offlineToggle,   "offline",      True ],
             [ self.fancyToggle,     "fancy",        False ],
             [ self.verboseToggle,   "verbose",      True ],
+            [ self.forceToggle,     "force",        True ],
             [ self.directToggle,    "direct",       True ],
         ]
 
@@ -317,14 +319,18 @@ class App(customtkinter.CTk):
         verboseCheckBox = customtkinter.CTkCheckBox(self.settingsWindow, text="Print detailed info in the updater", variable=self.verboseToggle, onvalue=1, offvalue=0, command=self.checkBoxChange)
         verboseCheckBox.pack(fill=BOTH, padx=10, pady=5)
 
+        forceCheckBox = customtkinter.CTkCheckBox(self.settingsWindow, text="Force updates (let SteamCMD decide)", variable=self.forceToggle, onvalue=1, offvalue=0, command=self.checkBoxChange)
+        forceCheckBox.pack(fill=BOTH, padx=10, pady=5)
+
         cinematicCheckBox = customtkinter.CTkCheckBox(self.settingsWindow, text="Disable Conan's cinematic intro", variable=self.cinematicToggle, onvalue=1, offvalue=0, command=self.toggleCinematic)
         cinematicCheckBox.pack(fill=BOTH, padx=10, pady=5)
 
-        customtkinter.CTkLabel(self.settingsWindow, text="Favorite server (selected on startup):").pack(fill=BOTH, padx=10, pady=10)
+        customtkinter.CTkLabel(self.settingsWindow, text="", height=0).pack(fill=BOTH, padx=10, pady=5)
+        customtkinter.CTkLabel(self.settingsWindow, text="Favorite server (selected on startup):").pack(fill=BOTH, padx=10, pady=0)
 
         self.favoriteList = customtkinter.CTkComboBox(self.settingsWindow, values=self.serverFiles, command=self.saveFavorite)
         self.favoriteList.set(self.launcherConfig.get("favorite", ""))
-        self.favoriteList.pack(fill=BOTH, padx=10, pady=0)
+        self.favoriteList.pack(fill=BOTH, padx=10, pady=10)
 
         self.settingsWindow.transient(self)
         self.settingsWindow.protocol("WM_DELETE_WINDOW", lambda : self.clearChildWindow("settingsWindow"))
