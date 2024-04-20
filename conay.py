@@ -435,6 +435,7 @@ def installSteamCmd():
         subprocess.call([os.path.abspath(os.path.join(STEAMCMD_PATH, 'steamcmd.exe')), "+quit"])
     else:
         subprocess.call([os.path.abspath(os.path.join(STEAMCMD_PATH, 'steamcmd.exe')), "+quit"], stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
+    webbrowser.open("steam://-/")
 
 def downloadList(modlist):
     args = [os.path.join(STEAMCMD_PATH, 'steamcmd.exe')]
