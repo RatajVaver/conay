@@ -37,9 +37,7 @@ STEAM_LIBRARY_PATH = os.path.abspath(STEAM_LIBRARY_PATH)
 HEADERS = {'Accept-Encoding': 'gzip'}
 SESSION = requests.Session()
 
-UPDATE_PATTERN = re.compile(r"workshopAnnouncement.*?<p id=\"(\d+)\">", re.DOTALL)
-TITLE_PATTERN = re.compile(r"(?<=<div class=\"workshopItemTitle\">)(.*?)(?=<\/div>)", re.DOTALL)
-WORKSHOP_CHANGELOG_URL = "https://steamcommunity.com/sharedfiles/filedetails/changelog"
+WORKSHOP_API_URL = "https://api.steampowered.com/ISteamRemoteStorage/GetPublishedFileDetails/v1/"
 
 def main():
     parseArguments()
@@ -208,9 +206,9 @@ def fprint(text, newLine=True):
         text = text.replace('<','').replace('>','')
 
     if newLine:
-        print(text)
+        print(text, flush=True)
     else:
-        print(text, end='')
+        print(text, end='', flush=True)
 
 def isWin11():
     return sys.getwindowsversion().build >= 22000
@@ -459,6 +457,8 @@ def downloadMod(modId, retrying=False):
     args.append("+workshop_download_item 440900 {} validate".format(int(modId)))
     args.append("+quit")
 
+    failedFirstTry = False
+
     try:
         if VERIFY:
             proc = None
@@ -477,12 +477,13 @@ def downloadMod(modId, retrying=False):
                 secondsPassed += 3
 
                 if not fileCreated:
-                    fileCreated = os.path.exists(os.path.join(STEAM_LIBRARY_PATH, "steamapps/workshop/downloads/440900", modId))
+                    fileCreated = os.path.exists(os.path.join(STEAM_LIBRARY_PATH, "steamapps/workshop/downloads/440900", str(modId)))
 
                 if secondsPassed > 10 and not fileCreated and not retrying:
                     if VERBOSE:
                         fprint("<🔃> Failed to verify download, retrying ", VERBOSE)
 
+                    failedFirstTry = True
                     while proc.poll() is None:
                         proc.kill()
                         sleep(1)
@@ -492,36 +493,46 @@ def downloadMod(modId, retrying=False):
     except Exception as ex:
         print(ex)
         sleep(5)
-    print("")
 
-def needsUpdate(modId, path):
-    if os.path.isdir(path) and len(os.listdir(path)) > 0:
-        try:
-            response = SESSION.get("{}/{}".format(WORKSHOP_CHANGELOG_URL, modId), headers=HEADERS)
-            response = response.content.decode("utf-8")
-            matchUpdate = UPDATE_PATTERN.search(response)
-            matchTitle = TITLE_PATTERN.search(response)
-
-            if matchUpdate and matchTitle:
-                updated = datetime.fromtimestamp(int(matchUpdate.group(1)))
-                created = datetime.fromtimestamp(os.path.getmtime(path))
-
-                return updated >= created, matchTitle.group(1).replace("&amp;", "&")
-        except:
-            fprint("<❌\033[91m> Failed to check update! Check your internet connection.<\033[0m>")
-            return False, ""
-
-    return True, ""
+    if not failedFirstTry or VERBOSE:
+        print("")
 
 def checkUpdates(modlistIds, modlistNames):
     fprint("<🔽> Checking mod updates..")
+
+    postData = {
+        "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
+        "itemcount": len(modlistIds),
+    }
+
+    modsInfo = {}
     for x, modId in enumerate(modlistIds):
-        modPath = os.path.join(STEAM_LIBRARY_PATH, "steamapps/workshop/content/440900", modId)
-        updateNeeded, modTitle = needsUpdate(modId, modPath)
-        if modTitle == "":
-            modTitle = modlistNames[x]
-        modTitle = modTitle.strip()
-        modTitle = modTitle.replace("&quot;", "\"")
+        postData[f"publishedfileids[{x}]"] = modlistIds[x]
+        modsInfo[int(modId)] = { "title": modlistNames[x] }
+
+    try:
+        apiRequest = SESSION.post(WORKSHOP_API_URL, headers=HEADERS, data=postData)
+        response = apiRequest.json()
+        for modData in response['response']['publishedfiledetails']:
+            modsInfo[int(modData['publishedfileid'])] = { "title": modData['title'], "updated": modData['time_updated'] }
+    except:
+        fprint("<❌\033[91m> Failed to check updates! Check your internet connection.<\033[0m>")
+        sleep(3)
+
+    for modId in modsInfo:
+        updateNeeded = False
+        modData = modsInfo[modId]
+        modTitle = modData['title']
+        modPath = os.path.join(STEAM_LIBRARY_PATH, "steamapps/workshop/content/440900", str(modId))
+        if os.path.isdir(modPath) and len(os.listdir(modPath)) > 0:
+            if 'updated' in modData:
+                updated = datetime.fromtimestamp(modData['updated'])
+                created = datetime.fromtimestamp(os.path.getmtime(modPath))
+                updateNeeded = updated >= created
+            else:
+                updateNeeded = False
+        else:
+            updateNeeded = True
 
         if updateNeeded:
             if VERIFY:
@@ -539,23 +550,55 @@ def checkUpdates(modlistIds, modlistNames):
                         sys.exit(1)
 
                 verified = False
-                retrying = False
+                retries = 0
 
                 while not verified:
-                    downloadMod(modId, retrying)
+                    downloadMod(modId, retries > 0)
                     if os.path.isdir(modPath) and len(os.listdir(modPath)) > 0:
                         createdNew = datetime.fromtimestamp(os.path.getmtime(modPath))
                         if createdNew > createdOld:
                             verified = True
                             fprint("<✅> Download complete and verified!")
+                        elif retries > 3:
+                            fprint("<🔃> Failed after 3 tries, trying to reinstall mod ", VERBOSE)
+                            shutil.rmtree(modPath)
+                            retries = 1
                         else:
-                            if VERBOSE or retrying:
+                            if VERBOSE or retries > 0:
                                 fprint("<🔃> Failed to verify download, retrying ", VERBOSE)
-                            retrying = True
+                            retries = retries + 1
+                    elif retries > 3:
+                        fprint("<❌\033[91m> Failed to update mod! Run Conay again or try resubscribing this mod manually on Steam.<\033[0m>")
+                        sleep(10)
+                        sys.exit(1)
+                    elif retries == 3:
+                        fprint("<🔃> Failed after 3 tries, trying again with clear cache ", VERBOSE)
+                        sleep(1)
+
+                        cachePaths = [
+                            modPath,
+                            os.path.join(STEAM_LIBRARY_PATH, "steamapps/workshop/appworkshop_440900.acf"),
+                            os.path.join(STEAM_LIBRARY_PATH, "steamapps/workshop/temp"),
+                            os.path.join(STEAM_LIBRARY_PATH, "steamapps/workshop/downloads/state_440900_440900_{}.patch".format(modId)),
+                            os.path.join(STEAM_LIBRARY_PATH, "steamapps/workshop/downloads/440900", str(modId)),
+                        ]
+
+                        try:
+                            for cachePath in cachePaths:
+                                if os.path.isdir(cachePath):
+                                    shutil.rmtree(cachePath)
+                                elif os.path.exists(cachePath):
+                                    os.remove(cachePath)
+                        except:
+                            if VERBOSE:
+                                fprint("<❌\033[91m> Failed to delete cache.<\033[0m>")
+
+                        retries = retries + 1
+                        sleep(1)
                     else:
-                        if VERBOSE or retrying:
+                        if VERBOSE or retries > 0:
                             fprint("<🔃> Failed to verify download, retrying ", VERBOSE)
-                        retrying = True
+                        retries = retries + 1
 
             else:
                 fprint("<⌛> Downloading mod #{} ({})..".format(modId, modTitle))
