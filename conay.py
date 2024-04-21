@@ -23,7 +23,7 @@ SERVER_IP = ""
 SINGLEPLAYER = False
 MENU = False
 
-VERSION = "0.0.8-pre"
+VERSION = "0.0.8"
 GITHUB_REPOSITORY = "RatajVaver/conay"
 
 STEAMCMD_PATH = "./steamcmd"
@@ -433,7 +433,9 @@ def installSteamCmd():
         subprocess.call([os.path.abspath(os.path.join(STEAMCMD_PATH, 'steamcmd.exe')), "+quit"])
     else:
         subprocess.call([os.path.abspath(os.path.join(STEAMCMD_PATH, 'steamcmd.exe')), "+quit"], stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
-    webbrowser.open("steam://-/")
+
+    if LAUNCH:
+        webbrowser.open("steam://-/")
 
 def downloadList(modlist):
     args = [os.path.join(STEAMCMD_PATH, 'steamcmd.exe')]
@@ -507,7 +509,7 @@ def checkUpdates(modlistIds, modlistNames):
 
     modsInfo = {}
     for x, modId in enumerate(modlistIds):
-        postData[f"publishedfileids[{x}]"] = modlistIds[x]
+        postData["publishedfileids[{}]".format(x)] = modlistIds[x]
         modsInfo[int(modId)] = { "title": modlistNames[x] }
 
     try:
