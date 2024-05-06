@@ -23,7 +23,7 @@ SERVER_IP = ""
 SINGLEPLAYER = False
 MENU = False
 
-VERSION = "0.0.8"
+VERSION = "0.0.9-pre"
 GITHUB_REPOSITORY = "RatajVaver/conay"
 
 STEAMCMD_PATH = "./steamcmd"
@@ -78,29 +78,17 @@ def main():
                 fprint("<🎲> Launching the game..")
                 subprocess.Popen(os.path.abspath(EXE_PATH))
             elif os.path.exists(GAMEINI_PATH) and os.path.exists(EXE_PATH):
-                try:
-                    content = ""
-                    with open(GAMEINI_PATH, "r", encoding="utf16") as file:
-                        for line in file:
-                            if line.startswith("LastConnected=") and SERVER_IP != "singleplayer":
-                                content = content + "LastConnected=" + SERVER_IP + "\n"
-                            elif line.startswith("StartedListenServerSession="):
-                                if SINGLEPLAYER:
-                                    content = content + "StartedListenServerSession=True\n"
-                                else:
-                                    content = content + "StartedListenServerSession=False\n"
-                            else:
-                                content = content + line
+                changed = updateIni("utf16")
+                if not changed:
+                    changed = updateIni("utf8")
 
-                    with open(GAMEINI_PATH, "w", encoding="utf16") as file:
-                        file.write(content)
-
+                if changed:
                     subprocess.Popen("\"{}\" -continuesession".format(os.path.abspath(EXE_PATH)))
                     continueSession = True
-                except:
-                    webbrowser.open("steam://run/440900//+connect {}/".format(SERVER_IP))
+                else:
+                    webbrowser.open("steam://run/440900/")
             else:
-                webbrowser.open("steam://run/440900//+connect {}/".format(SERVER_IP))
+                webbrowser.open("steam://run/440900/")
 
         subprocess.check_call("echo {}|clip".format(SERVER_IP), shell=True)
 
@@ -337,11 +325,11 @@ def versionCheck():
                         if remoteVersion[0] > localVersion[0]:
                             fprint("<🔶> There's a new major update available for Conay, consider updating the app! (<\033[91m>{}<\033[0m> → <\033[1m\033[92m>{}<\033[0m>)".format(VERSION, releaseData['tag_name']))
                             fprint("<👉> {}".format(releaseData['html_url']))
-                            sleep(7)
-                        elif remoteVersion[0] == localVersion[0] and remoteVersion[1] > localVersion[1]:
-                            fprint("<🔶> There's a new minor update available for Conay, consider updating the app! (<\033[91m>{}<\033[0m> → <\033[1m\033[92m>{}<\033[0m>)".format(VERSION, releaseData['tag_name']))
-                            fprint("<👉> {}".format(releaseData['html_url']))
                             sleep(5)
+                        elif remoteVersion[0] == localVersion[0] and remoteVersion[1] > localVersion[1]:
+                            fprint("<🔶> There's a new update available for Conay, consider updating the app! (<\033[91m>{}<\033[0m> → <\033[1m\033[92m>{}<\033[0m>)".format(VERSION, releaseData['tag_name']))
+                            fprint("<👉> {}".format(releaseData['html_url']))
+                            sleep(4)
                         elif remoteVersion[0] == localVersion[0] and remoteVersion[1] == localVersion[1] and remoteVersion[2] > localVersion[2]:
                             fprint("<🔶> There's a new patch available for Conay, consider updating the app! (<\033[91m>{}<\033[0m> → <\033[1m\033[92m>{}<\033[0m>)".format(VERSION, releaseData['tag_name']))
                             fprint("<👉> {}".format(releaseData['html_url']))
@@ -386,6 +374,30 @@ def parseModlist():
         fprint("<❎> Modlist file not found! Running without mods..")
 
     return modlistIds, modlistNames
+
+def updateIni(encoding):
+    try:
+        content = ""
+        with open(GAMEINI_PATH, "r", encoding=encoding) as file:
+            for line in file:
+                if line.startswith("LastConnected=") and SERVER_IP != "singleplayer":
+                    content = content + "LastConnected=" + SERVER_IP + "\n"
+                elif line.startswith("StartedListenServerSession="):
+                    if SINGLEPLAYER:
+                        content = content + "StartedListenServerSession=True\n"
+                    else:
+                        content = content + "StartedListenServerSession=False\n"
+                else:
+                    content = content + line
+
+        with open(GAMEINI_PATH, "w", encoding=encoding) as file:
+            file.write(content)
+
+        return True
+    except Exception as ex:
+        if VERBOSE:
+            print(ex)
+        return False
 
 def installSteamCmd():
     try:
@@ -512,14 +524,24 @@ def checkUpdates(modlistIds, modlistNames):
         postData["publishedfileids[{}]".format(x)] = modlistIds[x]
         modsInfo[int(modId)] = { "title": modlistNames[x] }
 
-    try:
-        apiRequest = SESSION.post(WORKSHOP_API_URL, headers=HEADERS, data=postData)
-        response = apiRequest.json()
-        for modData in response['response']['publishedfiledetails']:
-            modsInfo[int(modData['publishedfileid'])] = { "title": modData['title'], "updated": modData['time_updated'] }
-    except:
-        fprint("<❌\033[91m> Failed to check updates! Check your internet connection.<\033[0m>")
-        sleep(3)
+    if len(modlistIds) > 0:
+        success = False
+        attempt = 0
+        while not success and attempt < 3:
+            attempt = attempt + 1
+            try:
+                apiRequest = SESSION.post(WORKSHOP_API_URL, headers=HEADERS, data=postData)
+                response = apiRequest.json()
+                for modData in response['response']['publishedfiledetails']:
+                    modsInfo[int(modData['publishedfileid'])] = { "title": modData['title'], "updated": modData['time_updated'] }
+                success = True
+            except:
+                fprint("<🔃> Failed to check updates! Trying again..")
+                sleep(1)
+
+        if not success:
+            fprint("<❌\033[91m> Failed to check updates! Check your internet connection.<\033[0m>")
+            sleep(3)
 
     for modId in modsInfo:
         updateNeeded = False
