@@ -1,5 +1,6 @@
 from tkinter import *
 from tkinter.messagebox import *
+from tkinter.simpledialog import askstring
 from CTkListbox import *
 from PIL import Image
 import customtkinter
@@ -292,6 +293,20 @@ class App(customtkinter.CTk):
             self.cinematicToggle.set( 1 - self.cinematicToggle.get() )
             showerror("Conay - Error", "DefaultGame.ini could not be found!\nMake sure Conay is installed correctly.")
 
+    def createServer(self):
+        name = askstring("Conay - Add a server", "Please enter a name for this server, use only lowercase alphanumeric characters and no spaces. Example: myserver")
+        if name and len(name) > 0 and name.isalnum():
+            args = ["Conay.exe", "--copy", name]
+
+            try:
+                subprocess.Popen(args)
+            except Exception as ex:
+                print(args)
+                print(ex)
+                showerror("Conay - Error", "Cannot find Conay.exe, please reinstall the application.")
+        elif name:
+            showerror("Conay - Error", "The server name can only contain lowercase alphanumeric characters and no spaces.")
+
     def openSettings(self):
         if self.settingsWindow and self.settingsWindow.winfo_exists:
             self.settingsWindow.focus()
@@ -306,6 +321,8 @@ class App(customtkinter.CTk):
         self.eval(f"tk::PlaceWindow {str(self.settingsWindow)} center")
 
         customtkinter.CTkButton(self.settingsWindow, text="Discord for support and updates", command=self.openDiscord).pack(fill=BOTH, padx=10, pady=10)
+        customtkinter.CTkButton(self.settingsWindow, text="Add current modlist as a server", command=self.createServer).pack(fill=BOTH, padx=10, pady=0)
+        customtkinter.CTkLabel(self.settingsWindow, text="", height=0).pack(fill=BOTH, padx=10, pady=5)
 
         directCheckBox = customtkinter.CTkCheckBox(self.settingsWindow, text="Direct connect to server after launch", variable=self.directToggle, onvalue=1, offvalue=0, command=self.checkBoxChange)
         directCheckBox.pack(fill=BOTH, padx=10, pady=5)

@@ -235,7 +235,11 @@ def saveServerData(server):
         entry = "{}/{}.pak".format(modId, modNames[x])
         modlist.append(entry)
 
-    serverData = { "name": server, "ip": "", "mods": modlist }
+    lastIp = getLastIp("utf16")
+    if not lastIp:
+        lastIp = getLastIp("utf8")
+
+    serverData = { "name": server, "ip": lastIp or "", "mods": modlist }
     jsonData = json.dumps(serverData, indent=4)
 
     with open("./servers/{}.json".format(server), "w") as outfile:
@@ -374,6 +378,19 @@ def parseModlist():
         fprint("<❎> Modlist file not found! Running without mods..")
 
     return modlistIds, modlistNames
+
+def getLastIp(encoding):
+    lastIp = None
+    try:
+        with open(GAMEINI_PATH, "r", encoding=encoding) as file:
+            for line in file:
+                if line.startswith("LastConnected="):
+                    lastIp = line.replace("LastConnected=", "").replace("\n", "").strip()
+                    break
+    except Exception as ex:
+        if VERBOSE:
+            print(ex)
+    return lastIp
 
 def updateIni(encoding):
     try:
