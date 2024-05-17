@@ -23,7 +23,7 @@ SERVER_IP = ""
 SINGLEPLAYER = False
 MENU = False
 
-VERSION = "0.0.9-pre"
+VERSION = "0.0.9"
 GITHUB_REPOSITORY = "RatajVaver/conay"
 
 STEAMCMD_PATH = "./steamcmd"
@@ -236,7 +236,7 @@ def saveServerData(server):
         modlist.append(entry)
 
     lastIp = getLastIp("utf16")
-    if not lastIp:
+    if lastIp == False:
         lastIp = getLastIp("utf8")
 
     serverData = { "name": server, "ip": lastIp or "", "mods": modlist }
@@ -246,6 +246,8 @@ def saveServerData(server):
         outfile.write(jsonData)
 
     fprint("<✅> Modlist was saved to a local server file (servers/{}.json)".format(server))
+
+    os.startfile(os.path.abspath("./servers/{}.json".format(server)))
 
     if KEEP_OPEN:
         fprint("<🙏> Conay will remain open until you close it or press a key.")
@@ -381,15 +383,22 @@ def parseModlist():
 
 def getLastIp(encoding):
     lastIp = None
+    singleplayer = False
     try:
         with open(GAMEINI_PATH, "r", encoding=encoding) as file:
             for line in file:
                 if line.startswith("LastConnected="):
                     lastIp = line.replace("LastConnected=", "").replace("\n", "").strip()
-                    break
+                elif line.startswith("StartedListenServerSession=True"):
+                    singleplayer = True
     except Exception as ex:
         if VERBOSE:
             print(ex)
+        return False
+
+    if singleplayer:
+        lastIp = None
+
     return lastIp
 
 def updateIni(encoding):

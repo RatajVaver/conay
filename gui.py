@@ -304,6 +304,9 @@ class App(customtkinter.CTk):
                 print(args)
                 print(ex)
                 showerror("Conay - Error", "Cannot find Conay.exe, please reinstall the application.")
+
+            self.destroy()
+            sys.exit(0)
         elif name:
             showerror("Conay - Error", "The server name can only contain lowercase alphanumeric characters and no spaces.")
 
