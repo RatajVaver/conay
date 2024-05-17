@@ -20,6 +20,7 @@ VERBOSE = False
 KEEP_OPEN = False
 PLAIN = False
 SERVER_IP = ""
+SERVER_PASSWORD = ""
 SINGLEPLAYER = False
 MENU = False
 
@@ -258,7 +259,7 @@ def saveServerData(server):
     sys.exit(0)
 
 def loadServerData(server):
-    global SERVER_IP, SINGLEPLAYER
+    global SERVER_IP, SERVER_PASSWORD, SINGLEPLAYER
 
     fprint("<🔍> Searching for server '{}'..".format(server))
 
@@ -293,7 +294,8 @@ def loadServerData(server):
             sys.exit(1)
 
     fprint("<🔮> Processing modlist for server <\033[1m\033[92m>{}<\033[0m>..".format(serverData['name']))
-    SERVER_IP = serverData['ip']
+    SERVER_IP = serverData['ip'] or ""
+    SERVER_PASSWORD = serverData['password'] or ""
 
     if SERVER_IP == "singleplayer":
         SINGLEPLAYER = True
@@ -408,6 +410,8 @@ def updateIni(encoding):
             for line in file:
                 if line.startswith("LastConnected=") and SERVER_IP != "singleplayer":
                     content = content + "LastConnected=" + SERVER_IP + "\n"
+                elif line.startswith("LastPassword=") and SERVER_PASSWORD != "":
+                    content = content + "LastPassword=" + SERVER_PASSWORD + "\n"
                 elif line.startswith("StartedListenServerSession="):
                     if SINGLEPLAYER:
                         content = content + "StartedListenServerSession=True\n"
