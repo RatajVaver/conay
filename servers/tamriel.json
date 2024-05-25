@@ -1,6 +1,7 @@
 {
     "name": "Tales of Tamriel",
     "ip": "209.222.98.157:7777",
+    "password": "77TestingtheTales",
     "mods": [
         "2846119484/ThrallWarsUtilities.pak",
         "1823412793/ModControlPanel.pak",
@@ -27,6 +28,7 @@
         "1966733568/immersivearmor.pak",
         "2871328013/DungeonMasterTools.pak",
         "2010870025/HighHeels.pak",
+        "3248573436/Attic-Hair.pak",
         "1976970830/GrimProductions.pak",
         "1402835318/Warrior_mutator_mod.pak",
         "2830506231/Beyond_Forge.pak",
@@ -39,7 +41,6 @@
         "2961309071/LoD_Warpaints.pak",
         "3008860121/Cookie_Skinnery.pak",
         "1568430878/WonderBody.pak",
-        "3040346361/DarkDecentionBarber.pak",
         "2050780234/BarbarianBarber.pak",
         "2275573619/BarbarianSurgeon.pak",
         "2772364595/femaleNewFaces.pak",

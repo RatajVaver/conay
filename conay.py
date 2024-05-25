@@ -2,6 +2,7 @@ import os
 import re
 import sys
 import json
+import pyuac
 import shutil
 import argparse
 import requests
@@ -24,7 +25,7 @@ SERVER_PASSWORD = ""
 SINGLEPLAYER = False
 MENU = False
 
-VERSION = "0.0.9"
+VERSION = "0.1.0-pre"
 GITHUB_REPOSITORY = "RatajVaver/conay"
 
 STEAMCMD_PATH = "./steamcmd"
@@ -138,6 +139,7 @@ def parseArguments():
     parser.add_argument('-e','--emoji', help="Display emojis and colors (default on W11)", action='store_true')
     parser.add_argument('-g','--single', help="Runs the selected modlist and starts a singleplayer session", action='store_true')
     parser.add_argument('-m','--menu', help="Hang in menu, don't connect directly to the server", action='store_true')
+    parser.add_argument('-u','--update', help="Update Conay, download and install the newest version", action='store_true')
     args = vars(parser.parse_args())
 
     if args['dev']:
@@ -187,6 +189,23 @@ def parseArguments():
         pathCheck()
         MODLIST_PATH = "../servermodlist.txt"
         saveServerData(args['copy'])
+    elif args['update']:
+        if not pyuac.isUserAdmin():
+            fprint("<🔃> Relaunching Conay as administrator..")
+            try:
+                if sys.argv[0].endswith(".py"):
+                    pyuac.runAsAdmin([sys.executable] + sys.argv)
+                else:
+                    pyuac.runAsAdmin([sys.executable] + sys.argv[1:])
+            except Exception as ex:
+                if VERBOSE:
+                    print(ex)
+                fprint("<❌\033[91m> Conay needs administrator privileges to run a self-update!<\033[0m>")
+                sleep(5)
+                sys.exit(1)
+            sys.exit(0)
+        pathCheck()
+        selfUpdate()
 
 def fprint(text, newLine=True):
     if PLAIN:
@@ -294,8 +313,12 @@ def loadServerData(server):
             sys.exit(1)
 
     fprint("<🔮> Processing modlist for server <\033[1m\033[92m>{}<\033[0m>..".format(serverData['name']))
-    SERVER_IP = serverData['ip'] or ""
-    SERVER_PASSWORD = serverData['password'] or ""
+
+    if "ip" in serverData:
+        SERVER_IP = serverData['ip']
+
+    if "password" in serverData:
+        SERVER_PASSWORD = serverData['password']
 
     if SERVER_IP == "singleplayer":
         SINGLEPLAYER = True
@@ -563,15 +586,19 @@ def checkUpdates(modlistIds, modlistNames):
                 apiRequest = SESSION.post(WORKSHOP_API_URL, headers=HEADERS, data=postData)
                 response = apiRequest.json()
                 for modData in response['response']['publishedfiledetails']:
-                    modsInfo[int(modData['publishedfileid'])] = { "title": modData['title'], "updated": modData['time_updated'] }
+                    if "title" in modData and "time_updated" in modData:
+                        modsInfo[int(modData['publishedfileid'])] = { "title": modData['title'], "updated": modData['time_updated'] }
                 success = True
-            except:
+            except Exception as ex:
+                if VERBOSE:
+                    print(ex)
                 fprint("<🔃> Failed to check updates! Trying again..")
                 sleep(1)
 
         if not success:
             fprint("<❌\033[91m> Failed to check updates! Check your internet connection.<\033[0m>")
-            sleep(3)
+            fprint("<💔> Conay will now launch the game without updates, some mods may be outdated. Close this window if you don't want to run the game without updates.")
+            sleep(5)
 
     for modId in modsInfo:
         updateNeeded = False
@@ -659,6 +686,28 @@ def checkUpdates(modlistIds, modlistNames):
                 downloadMod(modId)
         else:
             fprint("<✅> No update required for #{} ({})".format(modId, modTitle))
+
+def selfUpdate():
+    downloadPath = "./ConayInstaller.exe"
+
+    if os.path.exists(downloadPath):
+        os.remove(downloadPath)
+
+    fprint("<⌛> Downloading Conay update..")
+    response = SESSION.get("https://github.com/{}/releases/latest/download/ConayInstaller.exe".format(GITHUB_REPOSITORY), allow_redirects=True)
+    if response.status_code == 200:
+        with open(downloadPath, 'wb') as f:
+            f.write(response.content)
+
+        try:
+            subprocess.Popen("ConayInstaller.exe /D=" + os.path.abspath("../"))
+        except Exception as ex:
+            print(ex)
+            sleep(3)
+
+        sys.exit(0)
+    else:
+        fprint("<❌\033[91m> Failed to download update, please try again later or download it manually.<\033[0m>")
 
 if __name__ == "__main__":
     main()

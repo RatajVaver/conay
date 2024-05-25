@@ -5,6 +5,7 @@ from CTkListbox import *
 from PIL import Image
 import customtkinter
 import os
+import re
 import sys
 import json
 import glob
@@ -12,6 +13,9 @@ import requests
 import subprocess
 
 os.chdir(os.path.dirname(os.path.abspath(sys.argv[0])))
+
+VERSION = "0.1.0-pre"
+GITHUB_REPOSITORY = "RatajVaver/conay"
 
 SESSION = requests.Session()
 
@@ -44,6 +48,7 @@ class App(customtkinter.CTk):
         self.verboseToggle = IntVar( value = int(self.launcherConfig.get("verbose", False) == True) )
         self.forceToggle = IntVar( value = int(self.launcherConfig.get("force", False) == True) )
         self.directToggle = IntVar( value = int(self.launcherConfig.get("direct", True) == True) )
+        self.updateToggle = IntVar( value = int(self.launcherConfig.get("checkUpdates", True) == True) )
         self.cinematicToggle = IntVar( value = int(self.launcherConfig.get("disableCinematic", False) == True) )
 
         self.fancyToggle = IntVar( value = int(self.launcherConfig.get("fancy", None) == True) )
@@ -85,6 +90,9 @@ class App(customtkinter.CTk):
         self.attributes("-topmost", False)
 
         self.protocol("WM_DELETE_WINDOW", self.saveAndExit)
+
+        if self.launcherConfig.get("checkUpdates", True):
+            self.checkUpdates()
 
     def saveAndExit(self):
         if self.saveConfigOnExit:
@@ -161,6 +169,7 @@ class App(customtkinter.CTk):
             "offline": False, # False = load remote server list / True = only read local json files
             "disableCinematic": False, # WhAt WiLl YoU dO, eXiLe?
             "favorite": "",
+            "checkUpdates": True # whether to check for Conay self updates on launch
         }
 
         if os.path.exists("config.json"):
@@ -193,6 +202,7 @@ class App(customtkinter.CTk):
             [ self.verboseToggle,   "verbose",      True ],
             [ self.forceToggle,     "force",        True ],
             [ self.directToggle,    "direct",       True ],
+            [ self.updateToggle,    "checkUpdates", True ],
         ]
 
         for x in checkBoxes:
@@ -227,7 +237,7 @@ class App(customtkinter.CTk):
         # Remote servers
         if not self.launcherConfig.get("offline", False):
             try:
-                response = SESSION.get("https://raw.githubusercontent.com/RatajVaver/conay/main/servers.json")
+                response = SESSION.get("https://raw.githubusercontent.com/{}/main/servers.json".format(GITHUB_REPOSITORY))
                 if response.status_code != 200:
                     showwarning("Conay - Warning", "Failed to download the server list!\nMake sure you are connected to the internet and try again.\n\nYou can set offline to true in config.json to only load your own local modlists and to hide this message.")
                     return
@@ -310,6 +320,51 @@ class App(customtkinter.CTk):
         elif name:
             showerror("Conay - Error", "The server name can only contain lowercase alphanumeric characters and no spaces.")
 
+    def checkUpdates(self):
+        try:
+            update = ""
+            latestRelease = "N/A"
+
+            if "-" in VERSION:
+                print("Unreleased version, won't check updates!")
+            else:
+                response = SESSION.get("https://api.github.com/repos/{}/releases/latest".format(GITHUB_REPOSITORY))
+                if response.status_code == 200:
+                    response = response.content.decode("utf-8")
+                    releaseData = json.loads(response)
+                    if releaseData['tag_name']:
+                        latestRelease = releaseData['tag_name']
+                        if latestRelease != VERSION:
+                            localVersion = re.sub(r'[^0-9.]', '', VERSION).split('.')
+                            remoteVersion = latestRelease.split('.')
+                            if remoteVersion[0] > localVersion[0]:
+                                update = "major update"
+                            elif remoteVersion[0] == localVersion[0] and remoteVersion[1] > localVersion[1]:
+                                update = "update"
+                            elif remoteVersion[0] == localVersion[0] and remoteVersion[1] == localVersion[1] and remoteVersion[2] > localVersion[2]:
+                                update = "patch"
+
+            if update != "":
+                confirm = askyesno("Conay - Update", "There's a new {} ({}) available for Conay!\nWould you like to download it now?".format(update, latestRelease))
+                if confirm:
+                    args = ["Conay.exe", "--update"]
+
+                    if self.launcherConfig.get("fancy", None) == True:
+                        args.append("--emoji")
+                    elif self.launcherConfig.get("fancy", None) == False:
+                        args.append("--plain")
+
+                    try:
+                        subprocess.Popen(args)
+                    except Exception as ex:
+                        print(ex)
+                        showerror("Conay - Error", "Cannot find Conay.exe, please reinstall the application.")
+
+                    self.destroy()
+                    sys.exit(0)
+        except:
+            print("Failed to check Conay updates!")
+
     def openSettings(self):
         if self.settingsWindow and self.settingsWindow.winfo_exists:
             self.settingsWindow.focus()
@@ -341,6 +396,9 @@ class App(customtkinter.CTk):
 
         forceCheckBox = customtkinter.CTkCheckBox(self.settingsWindow, text="Force updates (let SteamCMD decide)", variable=self.forceToggle, onvalue=1, offvalue=0, command=self.checkBoxChange)
         forceCheckBox.pack(fill=BOTH, padx=10, pady=5)
+
+        updateCheckBox = customtkinter.CTkCheckBox(self.settingsWindow, text="Check for Conay updates on launch", variable=self.updateToggle, onvalue=1, offvalue=0, command=self.checkBoxChange)
+        updateCheckBox.pack(fill=BOTH, padx=10, pady=5)
 
         cinematicCheckBox = customtkinter.CTkCheckBox(self.settingsWindow, text="Disable Conan's cinematic intro", variable=self.cinematicToggle, onvalue=1, offvalue=0, command=self.toggleCinematic)
         cinematicCheckBox.pack(fill=BOTH, padx=10, pady=5)
