@@ -3,7 +3,6 @@
     "ip": "88.198.68.44:7781",
     "mods": [
         "880454836/Pippi.pak",
-        "3036057084/ModAdmin.pak",
         "1823412793/ModControlPanel.pak",
         "2086135111/CAS.pak",
         "2050780234/BarbarianBarber.pak",
@@ -17,7 +16,6 @@
         "1976970830/GrimProductions.pak",
         "2982469779/JCF.pak",
         "3038891499/nordic_decorations.pak",
-        "2533720230/DLK-Decor.pak",
         "1928978003/NorthernTimber.pak",
         "2752945598/Beyond_Decor_II.pak",
         "2804440383/CreatureComforts.pak",
@@ -40,10 +38,12 @@
         "3036058836/RoleplayRedux.pak",
         "1369743238/No_Building_Placement_Restrictions.pak",
         "1396310739/StacksizePlus.pak",
+        "2533720230/DLK-Decor.pak",
         "2671265327/TotWalk.pak",
         "2677532697/TotImmersiveHud.pak",
         "2850232250/TotAdmin.pak",
         "2847709656/TotChat.pak",
-        "2886779102/TotCustom.pak"
+        "2886779102/TotCustom.pak",
+        "3036057084/ModAdmin.pak"
     ]
 }
