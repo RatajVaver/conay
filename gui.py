@@ -376,7 +376,7 @@ class App(customtkinter.CTk):
         self.settingsWindow.minsize(250, 320)
         self.settingsWindow.iconbitmap("assets/icon.ico")
         self.settingsWindow.after(210, lambda: self.settingsWindow.iconbitmap("assets/icon.ico"))
-        self.eval(f"tk::PlaceWindow {str(self.settingsWindow)} center")
+        self.eval("tk::PlaceWindow {} center".format(str(self.settingsWindow)))
 
         customtkinter.CTkButton(self.settingsWindow, text="Discord for support and updates", command=self.openDiscord).pack(fill=BOTH, padx=10, pady=10)
         customtkinter.CTkButton(self.settingsWindow, text="Add current modlist as a server", command=self.createServer).pack(fill=BOTH, padx=10, pady=0)
