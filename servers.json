@@ -1,23 +1,31 @@
 [
     {
-        "file": "crossroads",
-        "name": "Crossroads"
-    },
-    {
         "file": "halcyon",
         "name": "Halcyon D&D"
     },
     {
+        "file": "crossroads",
+        "name": "Crossroads"
+    },
+    {
+        "file": "chains",
+        "name": "Chains of Hyboria"
+    },
+    {
+        "file": "tamriel",
+        "name": "Tales of Tamriel"
+    },
+    {
+        "file": "wod",
+        "name": "World of Darkness: City of Spires"
+    },
+    {
+        "file": "syncity",
+        "name": "SyN City Alpha"
+    },
+    {
         "file": "aloria",
         "name": "Aloria Legends"
-    },
-    {
-        "file": "chainsgrims",
-        "name": "Chains of Hyboria - Grims"
-    },
-    {
-        "file": "chainssiptah",
-        "name": "Chains of Hyboria - Siptah"
     },
     {
         "file": "esc",
@@ -32,19 +40,7 @@
         "name": "The Scarlet Cage"
     },
     {
-        "file": "syncity",
-        "name": "SyN City Alpha"
-    },
-    {
-        "file": "tamriel",
-        "name": "Tales of Tamriel"
-    },
-    {
         "file": "tyranny",
         "name": "Lands of Tyranny"
-    },
-    {
-        "file": "wod",
-        "name": "World of Darkness: City of Spires"
     }
 ]
