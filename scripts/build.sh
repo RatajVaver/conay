@@ -15,7 +15,7 @@ cp -r ../assets/servers Conay/assets/servers
 cp ../assets/instructions.txt Conay/README.txt
 cp Conay.exe Conay/Conay.exe
 cp ConayGUI.exe Conay/ConayGUI.exe
-zip -r Conay.zip Conay
+zip -FSr Conay.zip Conay
 rm -r Conay
 
 cd ..
