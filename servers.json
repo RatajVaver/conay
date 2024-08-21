@@ -28,10 +28,6 @@
         "name": "Elder Scrolls: Chronicles"
     },
     {
-        "file": "lbl",
-        "name": "Legacy of Blood & Lust"
-    },
-    {
         "file": "oldguard",
         "name": "Old Guard D&D"
     },
@@ -42,5 +38,9 @@
     {
         "file": "tyranny",
         "name": "Lands of Tyranny"
+    },
+    {
+        "file": "veilofsouls",
+        "name": "Veil of Souls"
     }
 ]
