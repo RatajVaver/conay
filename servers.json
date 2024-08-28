@@ -12,10 +12,6 @@
         "name": "Chains of Hyboria"
     },
     {
-        "file": "tamriel",
-        "name": "Tales of Tamriel"
-    },
-    {
         "file": "wod",
         "name": "World of Darkness: City of Spires"
     },
@@ -26,6 +22,10 @@
     {
         "file": "esc",
         "name": "Elder Scrolls: Chronicles"
+    },
+    {
+        "file": "innistrad",
+        "name": "Innistrad RP"
     },
     {
         "file": "oldguard",
