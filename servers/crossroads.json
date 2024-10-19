@@ -1,6 +1,6 @@
 {
     "name": "Crossroads",
-    "ip": "45.143.197.83:8000",
+    "ip": "45.143.197.83:7777",
     "mods": [
         "1823412793/ModControlPanel.pak",
         "2846119484/ThrallWarsUtilities.pak",
@@ -55,8 +55,7 @@
         "2723987721/Pythagoras_Support_Beams.pak",
         "1396310739/StacksizePlus.pak",
         "877108545/UnlockableContainers.pak",
-        "2430217509/Underdark_of_Acheron.pak",
-        "2649777882/LushDesert.pak",
+        "3350081523/TestMod.pak",
         "3229058392/PerformanceEnhancer.pak",
         "3125384897/Disable_PvE_Siege.pak",
         "3149575424/crossroadsservermod.pak",
