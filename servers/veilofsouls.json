@@ -2,6 +2,7 @@
     "name": "Veil of Souls",
     "ip": "205.209.116.250:7777",
     "mods": [
+        "2377569193/Savage_Wilds.pak",
         "1823412793/ModControlPanel.pak",
         "2259976102/GetClose.pak",
         "1326031593/SlaveWarsServer.pak",
@@ -46,7 +47,6 @@
         "1402835318/Warrior_mutator_mod.pak",
         "2571367240/AGmods_Characters.pak",
         "2781693301/The_Isle_of_Tir-na-nOg.pak",
-        "2377569193/Savage_Wilds.pak",
         "2010870025/HighHeels.pak",
         "1629644846/KerozardsParagonLeveling.pak",
         "1734383367/Tutorial.pak",
