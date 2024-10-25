@@ -1,6 +1,6 @@
 {
     "name": "Crossroads",
-    "ip": "45.143.197.83:7777",
+    "ip": "45.143.197.83:5500",
     "mods": [
         "1823412793/ModControlPanel.pak",
         "2846119484/ThrallWarsUtilities.pak",
