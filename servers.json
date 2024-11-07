@@ -12,8 +12,16 @@
         "name": "Chains of Hyboria"
     },
     {
+        "file": "esc",
+        "name": "Elder Scrolls: Chronicles"
+    },
+    {
         "file": "wod",
         "name": "World of Darkness: City of Spires"
+    },
+    {
+        "file": "tyranny",
+        "name": "Lands of Tyranny"
     },
     {
         "file": "aloria",
@@ -26,10 +34,6 @@
     {
         "file": "ashbornsiptah",
         "name": "Ashborn Legacy - Siptah"
-    },
-    {
-        "file": "esc",
-        "name": "Elder Scrolls: Chronicles"
     },
     {
         "file": "mortalmemories",
@@ -48,15 +52,11 @@
         "name": "OutlandsRP"
     },
     {
-        "file": "scarlet",
-        "name": "The Scarlet Cage"
-    },
-    {
-        "file": "tyranny",
-        "name": "Lands of Tyranny"
-    },
-    {
         "file": "veilofsouls",
         "name": "Veil of Souls"
+    },
+    {
+        "file": "wildheart",
+        "name": "The Wildheart"
     }
 ]
