@@ -1,6 +1,6 @@
 {
     "name": "Elder Scrolls: Chronicles",
-    "ip": "46.4.34.239:7777",
+    "ip": "148.251.88.146",
     "mods": [
         "2384014945/Grim_Wonderbody_reupload.pak",
         "1823412793/ModControlPanel.pak",
@@ -27,6 +27,7 @@
         "2977286345/ipcm.pak",
         "3210360389/RRA.pak",
         "2982469779/JCF.pak",
+        "3362177073/JCF2.pak",
         "3086070534/JCACC.pak",
         "2994634277/TeyahsBoutique.pak",
         "1815573406/Shanis-Stuff.pak",
@@ -38,7 +39,13 @@
         "3232350851/ESC_Placeables.pak",
         "2474566370/Beyond_Decor.pak",
         "2752945598/Beyond_Decor_II.pak",
+        "3261081547/Beyond_Cities.pak",
         "1928978003/NorthernTimber.pak",
+        "2686090605/GothicArchitecture1.pak",
+        "2686032948/GothicDecorations.pak",
+        "3299875004/NemedianBuildingSetExpansion.pak",
+        "2718413225/ExoticDecorations.pak",
+        "2994141510/Ancient_Architecture.pak",
         "2279131041/Asghaard_Ancient_Civilization.pak",
         "2804440383/CreatureComforts.pak",
         "2095912535/Asghaard_Desert_Town.pak",
@@ -47,6 +54,7 @@
         "1369743238/No_Building_Placement_Restrictions.pak",
         "1444947329/LBPR_Collision_Update_Add_On.pak",
         "2300463941/Devious_Desires.pak",
+        "3131504659/Chronicles_SM.pak",
         "3036057084/ModAdmin.pak",
         "2677532697/TotImmersiveHud.pak",
         "3036058836/RoleplayRedux.pak",
@@ -56,7 +64,6 @@
         "2847709656/TotChat.pak",
         "2886779102/TotCustom.pak",
         "3296083010/TotModuleDeath.pak",
-        "3310420936/InnistradRP.pak",
-        "3131504659/Chronicles_SM.pak"
+        "3310420936/InnistradRP.pak"
     ]
 }
