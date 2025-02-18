@@ -2,13 +2,14 @@ import os
 import re
 import sys
 import json
+import math
 import pyuac
 import shutil
 import argparse
 import requests
 import subprocess
 import webbrowser
-from time import sleep
+from time import sleep,time
 from zipfile import ZipFile
 from datetime import datetime
 
@@ -22,10 +23,11 @@ KEEP_OPEN = False
 PLAIN = False
 SERVER_IP = ""
 SERVER_PASSWORD = ""
+SERVER_ORIGIN = "github"
 SINGLEPLAYER = False
 MENU = False
 
-VERSION = "0.1.0-pre"
+VERSION = "0.1.0"
 GITHUB_REPOSITORY = "RatajVaver/conay"
 
 STEAMCMD_PATH = "./steamcmd"
@@ -38,8 +40,17 @@ STEAM_LIBRARY_PATH = os.path.abspath(STEAM_LIBRARY_PATH)
 
 HEADERS = {'Accept-Encoding': 'gzip'}
 SESSION = requests.Session()
+SESSION.headers.update({'User-Agent': "Conay v{}".format(VERSION)})
 
 WORKSHOP_API_URL = "https://api.steampowered.com/ISteamRemoteStorage/GetPublishedFileDetails/v1/"
+ORIGIN_URLS = {
+    "github": "https://raw.githubusercontent.com/{}/main/servers/{}.json".format(GITHUB_REPOSITORY, "{}"),
+    "ratajmods": "https://ratajmods.net/conay/servers/{}.json"
+}
+
+NON_WORKSHOP_MOD_SOURCES = [
+    [ "ratajmods", "https://ratajmods.net/conay/mods.json", "https://ratajmods.net/assets/mods/{}.pak" ]
+]
 
 def main():
     parseArguments()
@@ -52,10 +63,22 @@ def main():
     installSteamCmd()
     mods, modNames = parseModlist()
 
-    if UPDATE_ALL:
-        downloadList(mods)
-    else:
-        checkUpdates(mods, modNames)
+    steamMods, steamModNames, nonWorkshopMods = [], [], []
+    for x, modId in enumerate(mods):
+        if int(modId) < 0:
+            nonWorkshopMods.append([ abs(int(modId)) - 1, modNames[x] ])
+        else:
+            steamMods.append(modId)
+            steamModNames.append(modNames[x])
+
+    if len(steamMods) > 0:
+        if UPDATE_ALL:
+            downloadList(steamMods)
+        else:
+            checkUpdates(steamMods, steamModNames)
+
+    if len(nonWorkshopMods) > 0:
+        checkNonWorkshopUpdates(nonWorkshopMods)
 
     fprint("<🆗\033[96m> All done!<\033[0m>")
 
@@ -122,7 +145,7 @@ def main():
         sleep(3)
 
 def parseArguments():
-    global STEAMCMD_PATH, STEAM_LIBRARY_PATH, MODLIST_PATH, UPDATE_ALL, LAUNCH, VERIFY, VERBOSE, KEEP_OPEN, PLAIN, SINGLEPLAYER, MENU
+    global STEAMCMD_PATH, STEAM_LIBRARY_PATH, MODLIST_PATH, UPDATE_ALL, LAUNCH, VERIFY, VERBOSE, KEEP_OPEN, PLAIN, SINGLEPLAYER, MENU, SERVER_ORIGIN
 
     parser = argparse.ArgumentParser(description="Conan Exiles Mod Launcher")
     parser.add_argument('-d','--dev', help="Debugging outside of Conan Exiles folder", action='store_true')
@@ -140,6 +163,7 @@ def parseArguments():
     parser.add_argument('-g','--single', help="Runs the selected modlist and starts a singleplayer session", action='store_true')
     parser.add_argument('-m','--menu', help="Hang in menu, don't connect directly to the server", action='store_true')
     parser.add_argument('-u','--update', help="Update Conay, download and install the newest version", action='store_true')
+    parser.add_argument('-o','--origin', help="Choose the data source for the server file", choices=list(ORIGIN_URLS.keys()))
     args = vars(parser.parse_args())
 
     if args['dev']:
@@ -175,6 +199,10 @@ def parseArguments():
 
     if args['menu']:
         MENU = True
+
+    if args['origin']:
+        if args['origin'] in ORIGIN_URLS:
+            SERVER_ORIGIN = args['origin']
 
     if args['server']:
         pathCheck()
@@ -252,6 +280,8 @@ def saveServerData(server):
     mods, modNames = parseModlist()
 
     for x, modId in enumerate(mods):
+        if int(modId) < 0:
+            modId = "@{}".format(NON_WORKSHOP_MOD_SOURCES[abs(int(modId)) - 1])
         entry = "{}/{}.pak".format(modId, modNames[x])
         modlist.append(entry)
 
@@ -278,7 +308,7 @@ def saveServerData(server):
     sys.exit(0)
 
 def loadServerData(server):
-    global SERVER_IP, SERVER_PASSWORD, SINGLEPLAYER
+    global SERVER_IP, SERVER_PASSWORD, SERVER_ORIGIN, SINGLEPLAYER
 
     fprint("<🔍> Searching for server '{}'..".format(server))
 
@@ -299,7 +329,7 @@ def loadServerData(server):
             sys.exit(1)
     else:
         try:
-            response = SESSION.get("https://raw.githubusercontent.com/{}/main/servers/{}.json".format(GITHUB_REPOSITORY, server))
+            response = SESSION.get(ORIGIN_URLS[SERVER_ORIGIN].format(server))
             if response.status_code == 404:
                 fprint("<❌\033[91m> Unsupported server! Cannot fetch data.<\033[0m>")
                 sleep(5)
@@ -332,7 +362,10 @@ def loadServerData(server):
 
     f = open(MODLIST_PATH, 'w', encoding="utf-8")
     for modFile in serverData['mods']:
-        f.write(os.path.abspath(os.path.join(STEAM_LIBRARY_PATH, "steamapps/workshop/content/440900", modFile)) + '\n')
+        if modFile.startswith('@'):
+            f.write(os.path.abspath(os.path.join(MODLIST_PATH.replace("modlist.txt",""), modFile)) + '\n')
+        else:
+            f.write(os.path.abspath(os.path.join(STEAM_LIBRARY_PATH, "steamapps/workshop/content/440900", modFile)) + '\n')
     f.close()
 
     fprint("<✅> Modlist saved! Proceeding..")
@@ -395,10 +428,16 @@ def parseModlist():
             line = line.replace("\\", "/")
             match = re.search("440900\/([0-9]+)\/(.*)\.pak", line.strip())
             if match:
-                modId = match.group(1)
-                modName = match.group(2)
-                modlistIds.append(modId)
-                modlistNames.append(modName)
+                modlistIds.append(match.group(1))
+                modlistNames.append(match.group(2))
+            else:
+                match = re.search("\@([a-z]+)\/(.*)\.pak", line.strip())
+                if match:
+                    for x, source in enumerate(NON_WORKSHOP_MOD_SOURCES):
+                        if source[0] == match.group(1):
+                            modlistIds.append(-1-x)
+                            modlistNames.append(match.group(2))
+                            break
 
         fprint("<✅> <\033[1m\033[92m>{}<\033[0m> mods found!".format(count))
     else:
@@ -507,7 +546,8 @@ def downloadList(modlist):
     args.append('+force_install_dir "{}"'.format(STEAM_LIBRARY_PATH))
     args.append("+login anonymous")
     for modId in modlist:
-        args.append("+workshop_download_item 440900 {} validate".format(int(modId)))
+        if int(modId) > 0:
+            args.append("+workshop_download_item 440900 {} validate".format(int(modId)))
     args.append("+quit")
 
     try:
@@ -686,6 +726,93 @@ def checkUpdates(modlistIds, modlistNames):
                 downloadMod(modId)
         else:
             fprint("<✅> No update required for #{} ({})".format(modId, modTitle))
+
+def checkNonWorkshopUpdates(mods):
+    fprint("<🔽> Checking external mod updates..")
+
+    modsInfo = {}
+    for mod in mods:
+        modsInfo[mod[1]] = { "title": mod[1], "source": mod[0] }
+
+    for source in NON_WORKSHOP_MOD_SOURCES:
+        success = False
+        attempt = 0
+        while not success and attempt < 3:
+            attempt = attempt + 1
+            try:
+                apiRequest = SESSION.get(source[1], headers=HEADERS)
+                response = apiRequest.json()
+                for modData in response['mods']:
+                    if modData['file'] in modsInfo:
+                        if "file" in modData and "updated" in modData:
+                            modsInfo[modData['file']]['updated'] = modData['updated']
+                            if "title" in modData:
+                                modsInfo[modData['file']]['title'] = modData['title']
+                            if "size" in modData:
+                                modsInfo[modData['file']]['size'] = math.ceil(modData['size'] / 1024 / 1024)
+                success = True
+            except Exception as ex:
+                if VERBOSE:
+                    print(ex)
+                fprint("<🔃> Failed to check updates! Trying again..")
+                sleep(1)
+
+        if not success:
+            fprint("<❌\033[91m> Failed to check updates from source: {}! Some mods may be outdated.<\033[0m>".format(source[0]))
+            sleep(3)
+
+    for modFile in modsInfo:
+        updateNeeded = False
+        modData = modsInfo[modFile]
+        modTitle = modData['title']
+        modSource = NON_WORKSHOP_MOD_SOURCES[modData['source']][0]
+        modPath = os.path.join(MODLIST_PATH.replace("modlist.txt",""), "@{}/{}.pak".format(modSource, modFile))
+        if os.path.exists(modPath) and os.path.isfile(modPath):
+            if 'updated' in modData:
+                updated = datetime.fromtimestamp(modData['updated'])
+                created = datetime.fromtimestamp(os.path.getmtime(modPath))
+                updateNeeded = updated >= created
+            else:
+                updateNeeded = False
+        else:
+            updateNeeded = True
+
+        if updateNeeded:
+            if 'size' in modData:
+                fprint("<⌛> Downloading mod @{}/{} ({}) [{}MB] ..".format(modSource, modFile, modTitle, modData['size']), False)
+            else:
+                fprint("<⌛> Downloading mod @{}/{} ({}) ..".format(modSource, modFile, modTitle), False)
+            downloadExternalMod(modData['source'], modFile)
+        else:
+            fprint("<✅> No update required for @{}/{} ({})".format(modSource, modFile, modTitle))
+
+def downloadExternalMod(source, modFile):
+    url = NON_WORKSHOP_MOD_SOURCES[source][2].format(modFile)
+    dirPath = os.path.join(MODLIST_PATH.replace("modlist.txt",""), "@{}".format(NON_WORKSHOP_MOD_SOURCES[source][0]))
+    filePath = os.path.join(MODLIST_PATH.replace("modlist.txt",""), "@{}/{}.pak".format(NON_WORKSHOP_MOD_SOURCES[source][0], modFile))
+
+    if not os.path.exists(dirPath):
+        os.mkdir(dirPath)
+
+    try:
+        seconds = time()
+        with SESSION.get(url, stream=True) as r:
+            r.raise_for_status()
+            with open(filePath, 'wb') as f:
+                for chunk in r.iter_content(chunk_size=8192): 
+                    f.write(chunk)
+                    if time() - seconds > 1:
+                        seconds = time()
+                        print(".", end='', flush=True)
+
+        print("")
+        fprint("<✅> Download complete!")
+    except Exception as ex:
+        print("")
+        if VERBOSE:
+            print(ex)
+        fprint("<❌\033[91m> Failed to update mod! Try running Conay again.<\033[0m>")
+        sleep(1)
 
 def selfUpdate():
     downloadPath = "./ConayInstaller.exe"

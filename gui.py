@@ -14,10 +14,16 @@ import subprocess
 
 os.chdir(os.path.dirname(os.path.abspath(sys.argv[0])))
 
-VERSION = "0.1.0-pre"
+VERSION = "0.1.0"
 GITHUB_REPOSITORY = "RatajVaver/conay"
 
+ORIGIN_LISTS = { # Higher priority first
+    "ratajmods": "https://ratajmods.net/conay/servers.json",
+    "github": "https://raw.githubusercontent.com/{}/main/servers.json".format(GITHUB_REPOSITORY),
+}
+
 SESSION = requests.Session()
+SESSION.headers.update({'User-Agent': "Conay v{}".format(VERSION)})
 
 class App(customtkinter.CTk):
     def __init__(self):
@@ -39,7 +45,7 @@ class App(customtkinter.CTk):
         self.settingsWindow = None
 
         self.loadConfig()
-        self.loadServers()
+        self.servers = []
 
         # Vars
 
@@ -58,13 +64,6 @@ class App(customtkinter.CTk):
         # Components
 
         self.serverList = CTkListbox(self)
-
-        for i,x in enumerate(self.serverNames):
-            self.serverList.insert(i, x)
-            if self.serverFiles[i] == self.launcherConfig.get("favorite", ""):
-                self.selectedServer = i
-
-        self.serverList.select(self.selectedServer)
         self.serverList.pack(expand=True, fill=BOTH, side=LEFT, padx=10, pady=10)
         self.serverList.bind('<<ListboxSelect>>', self.selectServer)
 
@@ -83,8 +82,6 @@ class App(customtkinter.CTk):
         self.serverIcon = customtkinter.CTkLabel(self, text="", image=self.defaultIcon)
         self.serverIcon.pack(side=TOP, padx=10)
 
-        self.updateServerSelection()
-
         self.attributes("-topmost", True)
         self.update()
         self.attributes("-topmost", False)
@@ -94,6 +91,19 @@ class App(customtkinter.CTk):
         if self.launcherConfig.get("checkUpdates", True):
             self.checkUpdates()
 
+        self.fillServerSelection()
+
+    def fillServerSelection(self):
+        self.loadServers()
+
+        for i,x in enumerate(self.servers):
+            self.serverList.insert(i, x['name'])
+            if x['file'] == self.launcherConfig.get("favorite", ""):
+                self.selectedServer = i
+
+        self.serverList.select(self.selectedServer)
+        self.updateServerSelection()
+
     def saveAndExit(self):
         if self.saveConfigOnExit:
             self.saveConfig()
@@ -101,13 +111,17 @@ class App(customtkinter.CTk):
 
     def startUpdater(self):
         args = ["Conay.exe"]
-        server = self.serverFiles[self.selectedServer]
+        server = self.servers[self.selectedServer]
 
-        if server == "_vanilla":
+        if server['file'] == "_vanilla":
             args.append("--nomods")
-        elif server != "":
+        elif server['file'] != "":
             args.append("--server")
-            args.append(server)
+            args.append(server['file'])
+            if "origin" in server:
+                args.append("--origin")
+                args.append(server['origin'])
+
 
         if self.launchToggle.get() == 1:
             args.append("--launch")
@@ -148,7 +162,7 @@ class App(customtkinter.CTk):
         self.updateServerSelection()
 
     def updateServerSelection(self):
-        iconPath = "assets/servers/{}.ico".format(self.serverFiles[self.selectedServer])
+        iconPath = "assets/servers/{}.ico".format(self.servers[self.selectedServer]['file'])
         if os.path.exists(iconPath):
             loadedImage = Image.open(iconPath)
             self.currentIcon = customtkinter.CTkImage(light_image=loadedImage, dark_image=loadedImage, size=(128,128))
@@ -219,8 +233,12 @@ class App(customtkinter.CTk):
             with open("../Mods/modlist.txt", "r") as modlistFile:
                 modCount = len(modlistFile.readlines())
 
-        self.serverNames = ["Current modlist ({} mods)".format(modCount), "Vanilla game (no mods)"]
-        self.serverFiles = ["","_vanilla"]
+        self.servers = [
+            { "file": "", "name": "Current modlist ({} mods)".format(modCount) },
+            { "file": "_vanilla", "name": "Vanilla game (no mods)" },
+        ]
+
+        serverFiles = ["","_vanilla"]
 
         # Local servers
         for filename in glob.glob("servers/*.json"):
@@ -228,36 +246,45 @@ class App(customtkinter.CTk):
                 serverData = json.load(content)
                 serverFile = os.path.basename(filename).replace(".json", "")
                 if self.launcherConfig.get("favorite", "") == serverFile:
-                    self.serverNames.insert(2, serverData['name'])
-                    self.serverFiles.insert(2, serverFile)
+                    self.servers.insert(2, { "file": serverFile, "name": serverData['name'] })
+                    serverFiles.insert(2, serverFile)
                 else:
-                    self.serverNames.append(serverData['name'])
-                    self.serverFiles.append(serverFile)
+                    self.servers.append({ "file": serverFile, "name": serverData['name'] })
+                    serverFiles.append(serverFile)
 
         # Remote servers
         if not self.launcherConfig.get("offline", False):
-            try:
-                response = SESSION.get("https://raw.githubusercontent.com/{}/main/servers.json".format(GITHUB_REPOSITORY))
-                if response.status_code != 200:
-                    showwarning("Conay - Warning", "Failed to download the server list!\nMake sure you are connected to the internet and try again.\n\nYou can set offline to true in config.json to only load your own local modlists and to hide this message.")
-                    return
+            failedOrigins = 0
+            for origin in ORIGIN_LISTS:
+                try:
+                    response = SESSION.get(ORIGIN_LISTS[origin])
+                    if response.status_code != 200:
+                        failedOrigins += 1
+                        continue
 
-                response = response.content.decode("utf-8")
-                servers = json.loads(response)
+                    response = response.content.decode("utf-8")
+                    servers = json.loads(response)
 
-                for x in servers:
-                    if x['file'] in self.serverFiles: # Local files have priority, but let's inform the user they're overwriting
-                        serverIndex = self.serverFiles.index(x['file'])
-                        self.serverNames[serverIndex] = "⚠ {}".format(self.serverNames[serverIndex])
-                    else:
-                        if self.launcherConfig.get("favorite", "") == x['file']:
-                            self.serverNames.insert(2, x['name'])
-                            self.serverFiles.insert(2, x['file'])
+                    for x in servers:
+                        if x['file'] in serverFiles: # Already exists = local file / remote file with higher priority
+                            serverIndex = serverFiles.index(x['file'])
+                            if "origin" not in self.servers[serverIndex]: # Local files have priority, but let's inform the user they're overwriting
+                                self.servers[serverIndex]['name'] = "⚠ {}".format(self.servers[serverIndex]['name'])
                         else:
-                            self.serverNames.append(x['name'])
-                            self.serverFiles.append(x['file'])
-            except:
-                showwarning("Conay - Warning", "Failed to download the server list!\nMake sure you are connected to the internet and try again.\n\nYou can set offline to true in config.json to only load your own local modlists and to hide this message.")
+                            if self.launcherConfig.get("favorite", "") == x['file']:
+                                self.servers.insert(2, { "file": x['file'], "name": x['name'], "origin": origin })
+                                serverFiles.insert(2, x['file'])
+                            else:
+                                self.servers.append({ "file": x['file'], "name": x['name'], "origin": origin })
+                                serverFiles.append(x['file'])
+                except Exception as ex:
+                    print(ex)
+                    failedOrigins += 1
+
+            if failedOrigins >= len(ORIGIN_LISTS):
+                showwarning("Conay - Warning", "Failed to download the server list!\nMake sure you are connected to the internet and that your firewall is not blocking this application.\n\nYou can set offline to true in config.json to only load your own local modlists and to hide this message.")
+            elif failedOrigins > 0:
+                showwarning("Conay - Warning", "Failed to download part of the server list!\nSome servers may not appear.")
 
     def openDiscord(self):
         os.system("start \"\" https://discord.gg/3WJNxCTn8m")
@@ -406,7 +433,11 @@ class App(customtkinter.CTk):
         customtkinter.CTkLabel(self.settingsWindow, text="", height=0).pack(fill=BOTH, padx=10, pady=5)
         customtkinter.CTkLabel(self.settingsWindow, text="Favorite server (selected on startup):").pack(fill=BOTH, padx=10, pady=0)
 
-        self.favoriteList = customtkinter.CTkComboBox(self.settingsWindow, values=self.serverFiles, command=self.saveFavorite)
+        serverFiles = []
+        for x in self.servers:
+            serverFiles.append(x['file'])
+
+        self.favoriteList = customtkinter.CTkComboBox(self.settingsWindow, values=serverFiles, command=self.saveFavorite)
         self.favoriteList.set(self.launcherConfig.get("favorite", ""))
         self.favoriteList.pack(fill=BOTH, padx=10, pady=10)
 

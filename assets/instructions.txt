@@ -37,6 +37,7 @@ Add any (or combination) of these parameters to the Target in your desktop short
 -g, --single                 Runs the selected modlist and starts a singleplayer session
 -m, --menu                   Hang in menu, don't connect directly to the server
 -u, --update                 Update Conay, download and install the newest version
+-o, --origin                 Choose the data source for the server file (github/ratajmods)
 
 ########################################################################################
 
