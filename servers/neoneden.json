@@ -1,6 +1,7 @@
 {
     "name": "Neon Eden",
     "ip": "15.204.102.57:7777",
+    "password": "NeedEden123!",
     "mods": [
         "3390610150/Astrids_Cyberpunk_Mod.pak",
         "3405757447/NE_Utilities.pak",
