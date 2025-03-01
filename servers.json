@@ -12,10 +12,6 @@
         "name": "Chains of Hyboria"
     },
     {
-        "file": "esc",
-        "name": "Elder Scrolls: Chronicles"
-    },
-    {
         "file": "wod",
         "name": "World of Darkness: City of Spires"
     },
@@ -38,10 +34,6 @@
     {
         "file": "isleofarcanum",
         "name": "Isle of Arcanum"
-    },
-    {
-        "file": "mainspring",
-        "name": "Mainspring"
     },
     {
         "file": "mortalmemories",
