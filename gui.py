@@ -93,12 +93,10 @@ class App(customtkinter.CTk):
 
         self.protocol("WM_DELETE_WINDOW", self.saveAndExit)
 
-        updating = False
-        if self.launcherConfig.get("checkUpdates", True):
-            updating = self.checkUpdates()
+        self.fillServerSelection()
 
-        if not updating:
-            self.fillServerSelection()
+        if self.launcherConfig.get("checkUpdates", True):
+            self.checkUpdates()
 
     def fillServerSelection(self):
         self.loadServers()
