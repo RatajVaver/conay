@@ -298,13 +298,17 @@ class App(customtkinter.CTk):
                             if "origin" not in self.servers[serverIndex]: # Local files have priority, but let's inform the user they're overwriting
                                 self.servers[serverIndex]['name'] = "⚠ {}".format(self.servers[serverIndex]['name'])
                         else:
-                            self.servers.append({
+                            serverData = {
                                 "file": x['file'],
                                 "name": x['name'],
-                                "icon": x['icon'],
                                 "origin": origin,
                                 "rank": 90 - len(history) - len(self.servers)
-                            })
+                            }
+
+                            if 'icon' in x:
+                                serverData['icon'] = x['icon']
+
+                            self.servers.append(serverData)
                             serverFiles.append(x['file'])
                 except Exception as ex:
                     print(ex)
