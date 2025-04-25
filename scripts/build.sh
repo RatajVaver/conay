@@ -11,7 +11,6 @@ cd dist
 mkdir -p Conay/assets
 cp ../assets/icon.ico Conay/assets/icon.ico
 cp ../assets/default.ico Conay/assets/default.ico
-cp -r ../assets/servers Conay/assets/servers
 cp ../assets/instructions.txt Conay/README.txt
 cp Conay.exe Conay/Conay.exe
 cp ConayGUI.exe Conay/ConayGUI.exe
