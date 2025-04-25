@@ -93,10 +93,12 @@ class App(customtkinter.CTk):
 
         self.protocol("WM_DELETE_WINDOW", self.saveAndExit)
 
+        updating = False
         if self.launcherConfig.get("checkUpdates", True):
-            self.checkUpdates()
+            updating = self.checkUpdates()
 
-        self.fillServerSelection()
+        if not updating:
+            self.fillServerSelection()
 
     def fillServerSelection(self):
         self.loadServers()
@@ -442,8 +444,11 @@ class App(customtkinter.CTk):
 
                     self.destroy()
                     sys.exit(0)
+                    return True
         except:
             print("Failed to check Conay updates!")
+
+        return False
 
     def openSettings(self):
         if self.settingsWindow and self.settingsWindow.winfo_exists:
