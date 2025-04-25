@@ -14,7 +14,7 @@ import subprocess
 
 os.chdir(os.path.dirname(os.path.abspath(sys.argv[0])))
 
-VERSION = "0.1.0"
+VERSION = "0.1.1"
 GITHUB_REPOSITORY = "RatajVaver/conay"
 
 ORIGIN_LISTS = { # Higher priority first
@@ -43,9 +43,11 @@ class App(customtkinter.CTk):
         self.saveConfigOnExit = False
         self.selectedServer = 0
         self.settingsWindow = None
+        self.serverListWindow = None
 
         self.loadConfig()
         self.servers = []
+        self.iconCache = {}
 
         # Vars
 
@@ -76,11 +78,14 @@ class App(customtkinter.CTk):
         settings = customtkinter.CTkButton(self, text="Settings", fg_color="#191919", hover_color="#0c0c0c", command=self.openSettings)
         settings.pack(side=TOP, padx=20, pady=10)
 
+        #serversButton = customtkinter.CTkButton(self, text="Servers", fg_color="#191919", hover_color="#0c0c0c", command=self.openServerList)
+        #serversButton.pack(side=TOP, padx=20, pady=0)
+
         loadedImage = Image.open("assets/default.ico")
         self.defaultIcon = customtkinter.CTkImage(light_image=loadedImage, dark_image=loadedImage, size=(128,128))
 
         self.serverIcon = customtkinter.CTkLabel(self, text="", image=self.defaultIcon)
-        self.serverIcon.pack(side=TOP, padx=10)
+        self.serverIcon.pack(side=TOP, padx=10, pady=10)
 
         self.attributes("-topmost", True)
         self.update()
@@ -150,6 +155,15 @@ class App(customtkinter.CTk):
                 showerror("Conay - Error", "Cannot find Conay.exe, please reinstall the application.")
                 return
 
+        history = self.launcherConfig.get("history", [])
+        if len(history) == 0 or history[0] is not server['file']:
+            if server['file'] in history:
+                history.remove(server['file'])
+            history.insert(0, server['file'])
+            self.saveConfigOnExit = True
+
+        self.launcherConfig["history"] = history
+
         if self.saveConfigOnExit:
             self.saveConfig()
 
@@ -162,10 +176,10 @@ class App(customtkinter.CTk):
         self.updateServerSelection()
 
     def updateServerSelection(self):
-        iconPath = "assets/servers/{}.ico".format(self.servers[self.selectedServer]['file'])
-        if os.path.exists(iconPath):
-            loadedImage = Image.open(iconPath)
-            self.currentIcon = customtkinter.CTkImage(light_image=loadedImage, dark_image=loadedImage, size=(128,128))
+        selected = self.servers[self.selectedServer]
+        iconImage = self.getServerIcon(selected['file'], 'icon' in selected and selected['icon'] or None)
+        if iconImage:
+            self.currentIcon = customtkinter.CTkImage(light_image=iconImage, dark_image=iconImage, size=(128,128))
             self.serverIcon.configure(image = self.currentIcon)
             self.serverIcon.image = self.currentIcon
         else:
@@ -183,7 +197,9 @@ class App(customtkinter.CTk):
             "offline": False, # False = load remote server list / True = only read local json files
             "disableCinematic": False, # WhAt WiLl YoU dO, eXiLe?
             "favorite": "",
-            "checkUpdates": True # whether to check for Conay self updates on launch
+            "checkUpdates": True, # whether to check for Conay self updates on launch
+            #"servers": {},
+            "history": []
         }
 
         if os.path.exists("config.json"):
@@ -233,9 +249,20 @@ class App(customtkinter.CTk):
             with open("../Mods/modlist.txt", "r") as modlistFile:
                 modCount = len(modlistFile.readlines())
 
+        favorite = self.launcherConfig.get("favorite", "")
+        history = self.launcherConfig.get("history", [])
+
         self.servers = [
-            { "file": "", "name": "Current modlist ({} mods)".format(modCount) },
-            { "file": "_vanilla", "name": "Vanilla game (no mods)" },
+            {
+                "file": "",
+                "name": "Current modlist ({} mods)".format(modCount),
+                "rank": 99
+            },
+            {
+                "file": "_vanilla",
+                "name": "Vanilla game (no mods)",
+                "rank": 98
+            },
         ]
 
         serverFiles = ["","_vanilla"]
@@ -245,12 +272,12 @@ class App(customtkinter.CTk):
             with open(filename, "r") as content:
                 serverData = json.load(content)
                 serverFile = os.path.basename(filename).replace(".json", "")
-                if self.launcherConfig.get("favorite", "") == serverFile:
-                    self.servers.insert(2, { "file": serverFile, "name": serverData['name'] })
-                    serverFiles.insert(2, serverFile)
-                else:
-                    self.servers.append({ "file": serverFile, "name": serverData['name'] })
-                    serverFiles.append(serverFile)
+                self.servers.append({
+                    "file": serverFile,
+                    "name": serverData['name'],
+                    "rank": 90 - len(history) - len(self.servers)
+                })
+                serverFiles.append(serverFile)
 
         # Remote servers
         if not self.launcherConfig.get("offline", False):
@@ -271,12 +298,14 @@ class App(customtkinter.CTk):
                             if "origin" not in self.servers[serverIndex]: # Local files have priority, but let's inform the user they're overwriting
                                 self.servers[serverIndex]['name'] = "⚠ {}".format(self.servers[serverIndex]['name'])
                         else:
-                            if self.launcherConfig.get("favorite", "") == x['file']:
-                                self.servers.insert(2, { "file": x['file'], "name": x['name'], "origin": origin })
-                                serverFiles.insert(2, x['file'])
-                            else:
-                                self.servers.append({ "file": x['file'], "name": x['name'], "origin": origin })
-                                serverFiles.append(x['file'])
+                            self.servers.append({
+                                "file": x['file'],
+                                "name": x['name'],
+                                "icon": x['icon'],
+                                "origin": origin,
+                                "rank": 90 - len(history) - len(self.servers)
+                            })
+                            serverFiles.append(x['file'])
                 except Exception as ex:
                     print(ex)
                     failedOrigins += 1
@@ -285,6 +314,26 @@ class App(customtkinter.CTk):
                 showwarning("Conay - Warning", "Failed to download the server list!\nMake sure you are connected to the internet and that your firewall is not blocking this application.\n\nYou can set offline to true in config.json to only load your own local modlists and to hide this message.")
             elif failedOrigins > 0:
                 showwarning("Conay - Warning", "Failed to download part of the server list!\nSome servers may not appear.")
+
+        for x in self.servers:
+            if x['file'] == favorite:
+                x['rank'] = 97
+            elif x['file'] in history:
+                x['rank'] = 90 - history.index(x['file'])
+
+        self.servers.sort(key=lambda x: x['rank'], reverse=True)
+
+    def getServerIcon(self, server, url = None):
+        if server not in self.iconCache:
+            self.iconCache[server] = None
+
+            iconPath = "assets/servers/{}.ico".format(server)
+            if os.path.exists(iconPath):
+                self.iconCache[server] = Image.open(iconPath)
+            elif url is not None:
+                self.iconCache[server] = Image.open(SESSION.get(url, stream=True).raw)
+
+        return self.iconCache[server]
 
     def openDiscord(self):
         os.system("start \"\" https://discord.gg/3WJNxCTn8m")
@@ -443,6 +492,42 @@ class App(customtkinter.CTk):
 
         self.settingsWindow.transient(self)
         self.settingsWindow.protocol("WM_DELETE_WINDOW", lambda : self.clearChildWindow("settingsWindow"))
+
+    def openServerList(self):
+        if self.serverListWindow and self.serverListWindow.winfo_exists:
+            self.serverListWindow.focus()
+            return
+
+        self.serverListWindow = customtkinter.CTkToplevel(self)
+        self.serverListWindow.title("Conay - Servers")
+        self.serverListWindow.resizable(False, False)
+        self.serverListWindow.minsize(580, 380)
+        self.serverListWindow.iconbitmap("assets/icon.ico")
+        self.serverListWindow.grid_columnconfigure((0, 1), weight=1)
+        self.serverListWindow.grid_rowconfigure((0), weight=1)
+        self.serverListWindow.after(210, lambda: self.serverListWindow.iconbitmap("assets/icon.ico"))
+        self.eval("tk::PlaceWindow {} center".format(str(self.serverListWindow)))
+
+        serverListAll = CTkListbox(self.serverListWindow)
+        serverListAll.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
+
+        serverListSelected = CTkListbox(self.serverListWindow)
+        serverListSelected.grid(row=0, column=1, padx=10, pady=10, sticky="nsew")
+
+        customtkinter.CTkButton(self.serverListWindow, text="Add", command=self.openDiscord).grid(row=1, column=0, padx=10, pady=10, sticky="ew")
+        customtkinter.CTkButton(self.serverListWindow, text="Remove", command=self.createServer).grid(row=1, column=1, padx=10, pady=10, sticky="ew")
+
+        self.serverListWindow.transient(self)
+        self.serverListWindow.protocol("WM_DELETE_WINDOW", lambda : self.clearChildWindow("serverListWindow"))
+
+        selectedServers = self.launcherConfig.get("servers", {})
+
+        for i,x in enumerate(self.servers):
+            if x['name'] not in selectedServers:
+                serverListAll.insert(i, x['name'])
+
+        for x in selectedServers:
+            serverListSelected.insert(i, x)
 
     def clearChildWindow(self, window):
         getattr(self, window).destroy()

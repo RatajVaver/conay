@@ -27,7 +27,7 @@ SERVER_ORIGIN = "github"
 SINGLEPLAYER = False
 MENU = False
 
-VERSION = "0.1.0"
+VERSION = "0.1.1"
 GITHUB_REPOSITORY = "RatajVaver/conay"
 
 STEAMCMD_PATH = "./steamcmd"

@@ -1,7 +1,7 @@
 !define APP_NAME "Conay"
 !define COMP_NAME "RatajVaver"
 !define WEB_SITE "https://github.com/RatajVaver/conay"
-!define VERSION "0.1.0.0"
+!define VERSION "0.1.1.0"
 !define COPYRIGHT "RatajVaver"
 !define DESCRIPTION "Conan Exiles Mod Launcher"
 !define INSTALLER_NAME "dist\ConayInstaller.exe"
@@ -60,8 +60,6 @@ Section -MainProgram
   SetOutPath "$INSTDIR\Conay\assets"
   File "assets\icon.ico"
   File "assets\default.ico"
-  SetOutPath "$INSTDIR\Conay\assets\servers"
-  File "assets\servers\"
   SetOutPath "$INSTDIR\Conay"
   CreateShortcut "$DESKTOP\Conay.lnk" "$INSTDIR\Conay\ConayGUI.exe"
 SectionEnd
