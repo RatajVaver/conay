@@ -1,0 +1,46 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vmp="clr-namespace:Conay.ViewModels.Parts"
+             xmlns:asyncImageLoader="clr-namespace:AsyncImageLoader;assembly=AsyncImageLoader.Avalonia"
+             x:DataType="vmp:ServerPresetViewModel"
+             x:Class="Conay.Views.Parts.ServerPresetView">
+    <Border BorderThickness="1" BorderBrush="#222" Padding="10 5 10 5" Margin="0 0 0 10">
+        <Grid ColumnDefinitions="Auto, *, Auto">
+            <Border Grid.Column="0">
+                <Image Width="48" Height="48" Margin="0 0 10 0" IsVisible="{Binding ShowIcon}"
+                       asyncImageLoader:ImageLoader.Source="{Binding Icon}" />
+            </Border>
+            <StackPanel Grid.Column="1" Orientation="Vertical">
+                <StackPanel Orientation="Horizontal">
+                    <Label Content="{Binding Name}" FontSize="22"></Label>
+                    <Button Classes="favorite" IsVisible="{Binding !IsFavorite}" ToolTip.Tip="Add to Favorites"
+                            Command="{Binding FavoriteServerCommand}">
+                        <Label Content="&#xe2aa;"></Label>
+                    </Button>
+                    <Button Classes="unfavorite" IsVisible="{Binding IsFavorite}" ToolTip.Tip="Remove from Favorites"
+                            Command="{Binding UnfavoriteServerCommand}">
+                        <Label Content="&#xe2aa;"></Label>
+                    </Button>
+                    <Button Classes="discord" IsVisible="{Binding ShowDiscord}" ToolTip.Tip="{Binding Discord}"
+                            Command="{Binding OpenDiscordLinkCommand}">
+                        <Label Content="&#xe61a;"></Label>
+                    </Button>
+                    <Button Classes="link" IsVisible="{Binding ShowWebsite}" ToolTip.Tip="{Binding Website}"
+                            Command="{Binding OpenWebsiteCommand}">
+                        <Label Content="&#xe2e2;"></Label>
+                    </Button>
+                </StackPanel>
+                <Label Content="{Binding IpAddress}"></Label>
+            </StackPanel>
+            <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                <StackPanel Orientation="Vertical" Margin="20 0">
+                    <Label Content="{Binding Players}" FontSize="22" HorizontalAlignment="Right"></Label>
+                    <Label Content="{Binding Map}" HorizontalAlignment="Right"></Label>
+                </StackPanel>
+                <Button Cursor="Hand" Classes="play" Command="{Binding LaunchServerPresetCommand}">
+                    <Label Content="&#xe3d0;"></Label>
+                </Button>
+            </StackPanel>
+        </Grid>
+    </Border>
+</UserControl>

@@ -1,0 +1,90 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="550" d:DesignHeight="550"
+             x:Class="Conay.Views.SettingsView"
+             xmlns:vm="clr-namespace:Conay.ViewModels"
+             x:DataType="vm:SettingsViewModel">
+    <StackPanel Orientation="Vertical">
+        <Grid ColumnDefinitions="Auto, Auto" Margin="0 0 0 50">
+            <StackPanel Grid.Column="0" Margin="0 0 40 0">
+                <Label Content="Launcher Settings"></Label>
+                <CheckBox IsChecked="{Binding LaunchGame, Mode=TwoWay}"
+                          Content="Launch game after updating mods"
+                          ToolTip.Tip="Uncheck this if you only want to use Conay for updates without launching the game.">
+                </CheckBox>
+                <CheckBox IsChecked="{Binding DirectConnect, Mode=TwoWay}"
+                          Content="Direct connect to server after launch"
+                          ToolTip.Tip="Uncheck this if your game hangs on trying to connect to the server.">
+                </CheckBox>
+                <CheckBox IsChecked="{Binding OfflineMode, Mode=TwoWay}"
+                          Content="Offline mode (no internet access)"
+                          ToolTip.Tip="Check this and restart the app if you only want to swap modlists while being offline.">
+                </CheckBox>
+                <CheckBox IsChecked="{Binding CheckUpdates, Mode=TwoWay}"
+                          Content="Check for Conay updates"
+                          ToolTip.Tip="It is highly recommended to leave this checked. New updates come with new features and bugfixes.">
+                </CheckBox>
+                <CheckBox IsChecked="{Binding Clipboard, Mode=TwoWay}"
+                          Content="Copy IP to clipboard on launch"
+                          ToolTip.Tip="IP address of the selected server will be copied into your clipboard so that you can easily Ctrl+V it into the Direct Connect window later.">
+                </CheckBox>
+                <CheckBox IsChecked="{Binding DisplayIcons, Mode=TwoWay}"
+                          Content="Display icons for mods and servers"
+                          ToolTip.Tip="Uncheck this if you don't want to see icons or if the app runs slow or takes long to load.">
+                </CheckBox>
+                <Label Content="Game Settings" Margin="0 20 0 0"></Label>
+                <CheckBox IsChecked="{Binding DisableCinematic, Mode=TwoWay}"
+                          Content="Disable Conan's cinematic intro"
+                          ToolTip.Tip="Replace the infamous &quot;What will you do, exile?&quot; intro with a silent black screen as the game loads.">
+                </CheckBox>
+            </StackPanel>
+            <StackPanel Grid.Column="1">
+                <Label Content="Server List Settings"></Label>
+                <CheckBox IsChecked="{Binding KeepHistory, Mode=TwoWay}"
+                          Content="Order servers by my history"
+                          ToolTip.Tip="When checked, servers you recently played on show on top, otherwise they're ordered by popularity.">
+                </CheckBox>
+                <CheckBox IsChecked="{Binding QueryServers, Mode=TwoWay}"
+                          Content="Show online player count"
+                          ToolTip.Tip="Use Steam Query for supported servers to display number of online players and a map name in the list.">
+                </CheckBox>
+                <Label Content="Server List Sources" Margin="0 20 0 0"></Label>
+                <CheckBox IsChecked="True" IsEnabled="False" Content="GitHub Repository"></CheckBox>
+                <CheckBox IsChecked="True" IsEnabled="False" Content="ratajmods.net"></CheckBox>
+            </StackPanel>
+        </Grid>
+        <TextBlock Foreground="#999" FontSize="13" LineHeight="18" TextWrapping="Wrap">
+            Conay is free and open source software maintained by a solo developer.
+            Monthly donations help me cover costs associated with running ratajmods.net and adjacent projects.
+            If you'd like to support my work, even a small one-time donation means a lot!
+        </TextBlock>
+        <StackPanel Orientation="Horizontal" Spacing="15" Margin="0 20">
+            <Button HorizontalAlignment="Stretch" Command="{Binding OpenRepositoryCommand}">
+                <StackPanel Orientation="Horizontal">
+                    <Label Classes="icon" Content="&#xe576;"></Label>
+                    <Label Classes="text" Content="GitHub"></Label>
+                </StackPanel>
+            </Button>
+            <Button HorizontalAlignment="Stretch" Command="{Binding OpenDiscordCommand}">
+                <StackPanel Orientation="Horizontal">
+                    <Label Classes="icon" Content="&#xe61a;"></Label>
+                    <Label Classes="text" Content="Discord"></Label>
+                </StackPanel>
+            </Button>
+            <Button HorizontalAlignment="Stretch" Command="{Binding OpenDonateCommand}">
+                <StackPanel Orientation="Horizontal">
+                    <Label Classes="icon" Content="&#xe810;"></Label>
+                    <Label Classes="text" Content="Donate"></Label>
+                </StackPanel>
+            </Button>
+            <Button HorizontalAlignment="Stretch" Command="{Binding OpenWebsiteCommand}">
+                <StackPanel Orientation="Horizontal">
+                    <Label Classes="icon" Content="&#xe0f4;"></Label>
+                    <Label Classes="text" Content="ratajmods.net"></Label>
+                </StackPanel>
+            </Button>
+        </StackPanel>
+    </StackPanel>
+</UserControl>

@@ -1,0 +1,30 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:Conay"
+             xmlns:p="clr-namespace:Conay.Views.Parts"
+             xmlns:vmc="clr-namespace:Conay.ViewModels.Parts"
+             x:Class="Conay.App"
+             RequestedThemeVariant="Dark">
+
+    <Application.DataTemplates>
+        <local:ViewLocator></local:ViewLocator>
+
+        <DataTemplate DataType="{x:Type vmc:ServerPresetViewModel}">
+            <p:ServerPresetView />
+        </DataTemplate>
+    </Application.DataTemplates>
+
+    <Application.Styles>
+        <FluentTheme />
+        <StyleInclude Source="Styles/AppDefaultStyles.axaml"></StyleInclude>
+    </Application.Styles>
+
+    <Application.Resources>
+        <SolidColorBrush x:Key="TitleBarBackground" Color="#000" Opacity="0.85"></SolidColorBrush>
+        <SolidColorBrush x:Key="PrimaryBackground" Color="#111" Opacity="0.85"></SolidColorBrush>
+        <SolidColorBrush x:Key="ActiveBackground" Color="#0e2133"></SolidColorBrush>
+
+        <FontFamily x:Key="Phosphor">Assets/Fonts/Phosphor.ttf#Phosphor</FontFamily>
+        <FontFamily x:Key="PhosphorFill">Assets/Fonts/PhosphorFill.ttf#Phosphor</FontFamily>
+    </Application.Resources>
+</Application>

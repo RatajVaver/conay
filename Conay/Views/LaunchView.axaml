@@ -1,0 +1,31 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="550" d:DesignHeight="550"
+             x:Class="Conay.Views.LaunchView"
+             xmlns:vm="clr-namespace:Conay.ViewModels"
+             x:DataType="vm:LaunchViewModel">
+    <Grid RowDefinitions="Auto, *">
+        <Grid Grid.Row="0" ColumnDefinitions="*, Auto">
+            <StackPanel Grid.Column="0" Orientation="Vertical">
+                <Label Content="{Binding Title}"></Label>
+                <Label Content="{Binding Subtitle}"></Label>
+            </StackPanel>
+            <Button Grid.Column="1" Cursor="Hand" Classes="play" Command="{Binding LaunchCommand}"
+                    IsEnabled="{Binding !Launching}">
+                <Label Content="&#xe3d0;"></Label>
+            </Button>
+        </Grid>
+        <StackPanel Grid.Row="1" Orientation="Vertical">
+            <Label Content="{Binding ModsLoaded}" Foreground="#777" Margin="0 30 0 10"></Label>
+            <ItemsControl ItemsSource="{Binding Mods}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <VirtualizingStackPanel Orientation="Vertical" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+            </ItemsControl>
+        </StackPanel>
+    </Grid>
+</UserControl>

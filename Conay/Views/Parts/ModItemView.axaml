@@ -1,0 +1,40 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vmp="clr-namespace:Conay.ViewModels.Parts"
+             xmlns:asyncImageLoader="clr-namespace:AsyncImageLoader;assembly=AsyncImageLoader.Avalonia"
+             mc:Ignorable="d" d:DesignWidth="550" d:DesignHeight="450"
+             x:Class="Conay.Views.Parts.ModItemView"
+             x:DataType="vmp:ModItemViewModel">
+    <Border BorderThickness="1" BorderBrush="#444" Padding="10 5 15 5" Margin="0 0 0 10">
+        <Grid ColumnDefinitions="Auto, *, Auto">
+            <Border Grid.Column="0">
+                <Image Width="38" Height="38" Margin="0 0 10 0" IsVisible="{Binding ShowIcon}"
+                       asyncImageLoader:ImageLoader.Source="{Binding Icon}" />
+            </Border>
+            <StackPanel Grid.Column="1" Orientation="Vertical">
+                <Label Content="{Binding Title}"></Label>
+                <StackPanel Orientation="Horizontal">
+                    <Label Foreground="#999" FontSize="12" Content="{Binding Size}"></Label>
+                    <Border Background="#999" Width="2" Height="2" Margin="5 0"></Border>
+                    <Label Foreground="#999" FontSize="12" Content="{Binding Updated}"></Label>
+                </StackPanel>
+            </StackPanel>
+            <StackPanel Grid.Column="2" VerticalAlignment="Center">
+                <Button Cursor="Hand" Classes="small" Command="{Binding OpenWorkshopPageCommand}"
+                        IsVisible="{Binding IsWorkshopMod}" ToolTip.Tip="Visit Steam Workshop page">
+                    <StackPanel Orientation="Horizontal">
+                        <Label Classes="icon" Content="&#xe2e2;"></Label>
+                    </StackPanel>
+                </Button>
+                <Button Cursor="Hand" Classes="small" Command="{Binding OpenLocalFolderCommand}"
+                        IsVisible="{Binding !IsWorkshopMod}" ToolTip.Tip="Open folder">
+                    <StackPanel Orientation="Horizontal">
+                        <Label Classes="icon" Content="&#xe256;"></Label>
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+        </Grid>
+    </Border>
+</UserControl>

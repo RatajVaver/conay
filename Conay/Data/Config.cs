@@ -1,0 +1,43 @@
+﻿using System.Collections.Generic;
+using System.Text.Json.Serialization;
+
+namespace Conay.Data;
+
+public class Config
+{
+    [JsonPropertyName("checkUpdates")]
+    public bool CheckUpdates { get; set; } = true;
+
+    [JsonPropertyName("launch")]
+    public bool LaunchGame { get; set; } = true;
+
+    [JsonPropertyName("direct")]
+    public bool DirectConnect { get; set; }
+
+    [JsonPropertyName("disableCinematic")]
+    public bool DisableCinematic { get; set; }
+
+    [JsonPropertyName("offline")]
+    public bool OfflineMode { get; set; }
+
+    [JsonPropertyName("clipboard")]
+    public bool Clipboard { get; set; } = true;
+
+    [JsonPropertyName("menuCollapsed")]
+    public bool MenuCollapsed { get; set; }
+
+    [JsonPropertyName("displayIcons")]
+    public bool DisplayIcons { get; set; } = true;
+
+    [JsonPropertyName("queryServers")]
+    public bool QueryServers { get; set; } = true;
+
+    [JsonPropertyName("keepHistory")]
+    public bool KeepHistory { get; set; } = true;
+
+    [JsonPropertyName("history")]
+    public List<string> History { get; set; } = [];
+
+    [JsonPropertyName("favorites")]
+    public List<string> Favorites { get; set; } = [];
+}

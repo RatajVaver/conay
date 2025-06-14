@@ -1,0 +1,158 @@
+﻿<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Design.PreviewWith>
+        <Border Padding="10">
+            <StackPanel Orientation="Vertical">
+                <Button Margin="10" HorizontalAlignment="Stretch">
+                    <StackPanel Orientation="Horizontal">
+                        <Label Classes="icon" Content="&#xe2aa;"></Label>
+                        <Label Classes="text" Content="Favorite"></Label>
+                    </StackPanel>
+                </Button>
+                <StackPanel Orientation="Horizontal">
+                    <Button Margin="10" Classes="play">
+                        <Label Content="&#xe3d0;"></Label>
+                    </Button>
+                    <Button Margin="10" Classes="play" IsEnabled="False">
+                        <Label Content="&#xe3d0;"></Label>
+                    </Button>
+                </StackPanel>
+                <Button Margin="10" Classes="small">
+                    <StackPanel Orientation="Horizontal">
+                        <Label Classes="icon" Content="&#xe2aa;"></Label>
+                    </StackPanel>
+                </Button>
+                <CheckBox IsChecked="True"></CheckBox>
+                <StackPanel Orientation="Horizontal">
+                    <Button Classes="favorite">
+                        <Label Content="&#xe2aa;"></Label>
+                    </Button>
+                    <Button Classes="unfavorite">
+                        <Label Content="&#xe2aa;"></Label>
+                    </Button>
+                    <Button Classes="discord">
+                        <Label Content="&#xe61a;"></Label>
+                    </Button>
+                    <Button Classes="link">
+                        <Label Content="&#xe2e2;"></Label>
+                    </Button>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+    </Design.PreviewWith>
+
+    <Style Selector="Button">
+        <Setter Property="Padding" Value="12 8"></Setter>
+        <Setter Property="BorderThickness" Value="0"></Setter>
+        <Setter Property="CornerRadius" Value="0"></Setter>
+        <Setter Property="FontSize" Value="16"></Setter>
+        <Setter Property="Foreground" Value="#fcfcfc"></Setter>
+        <Setter Property="Background" Value="#111"></Setter>
+    </Style>
+
+    <Style Selector="Button:pointerover /template/ ContentPresenter">
+        <Setter Property="Foreground" Value="#fff"></Setter>
+        <Setter Property="Background" Value="#1f1f1f"></Setter>
+    </Style>
+
+    <Style Selector="Button.active /template/ ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource ActiveBackground}"></Setter>
+    </Style>
+
+    <Style Selector="Button Label.text">
+        <Setter Property="VerticalAlignment" Value="Center"></Setter>
+        <Setter Property="Margin" Value="8 0 0 0"></Setter>
+    </Style>
+
+    <Style Selector="Button Label.icon">
+        <Setter Property="VerticalAlignment" Value="Center"></Setter>
+        <Setter Property="FontSize" Value="24"></Setter>
+        <Setter Property="FontFamily" Value="{DynamicResource Phosphor}"></Setter>
+        <Setter Property="Margin" Value="0 0 0 2"></Setter>
+    </Style>
+
+    <Style Selector="Button.small">
+        <Setter Property="Padding" Value="0"></Setter>
+        <Setter Property="Background" Value="Transparent"></Setter>
+    </Style>
+
+    <Style Selector="Button.small:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="Transparent"></Setter>
+    </Style>
+
+    <Style Selector="Button.play">
+        <Setter Property="Background" Value="Transparent"></Setter>
+        <Setter Property="Foreground" Value="#205e22"></Setter>
+        <Setter Property="Margin" Value="0"></Setter>
+        <Setter Property="Padding" Value="0"></Setter>
+    </Style>
+
+    <Style Selector="Button.play:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="Transparent"></Setter>
+        <Setter Property="Foreground" Value="#179125"></Setter>
+    </Style>
+
+    <Style Selector="Button.play:disabled /template/ ContentPresenter">
+        <Setter Property="Background" Value="Transparent"></Setter>
+        <Setter Property="Foreground" Value="#555"></Setter>
+    </Style>
+
+    <Style Selector="Button.play Label">
+        <Setter Property="FontSize" Value="36"></Setter>
+        <Setter Property="FontFamily" Value="{DynamicResource PhosphorFill}"></Setter>
+    </Style>
+
+    <Style Selector="Button.favorite, Button.unfavorite, Button.discord, Button.link">
+        <Setter Property="Background" Value="Transparent"></Setter>
+        <Setter Property="Margin" Value="0"></Setter>
+        <Setter Property="Padding" Value="0"></Setter>
+    </Style>
+    
+    <Style Selector="Button.unfavorite">
+        <Setter Property="Foreground" Value="#f0294d"></Setter>
+    </Style>
+
+    <Style Selector="Button.favorite:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="Transparent"></Setter>
+        <Setter Property="Foreground" Value="#f0294d"></Setter>
+    </Style>
+
+    <Style Selector="Button.unfavorite:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="Transparent"></Setter>
+        <Setter Property="Foreground" Value="#9e1c34"></Setter>
+    </Style>
+
+    <Style Selector="Button.discord:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="Transparent"></Setter>
+        <Setter Property="Foreground" Value="#5865f2"></Setter>
+    </Style>
+    
+    <Style Selector="Button.link:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="Transparent"></Setter>
+        <Setter Property="Foreground" Value="#d9cb9a"></Setter>
+    </Style>
+
+    <Style Selector="Button.favorite Label, Button.link Label">
+        <Setter Property="FontSize" Value="22"></Setter>
+        <Setter Property="FontFamily" Value="{DynamicResource Phosphor}"></Setter>
+    </Style>
+
+    <Style Selector="Button.unfavorite Label, Button.discord Label">
+        <Setter Property="FontSize" Value="22"></Setter>
+        <Setter Property="FontFamily" Value="{DynamicResource PhosphorFill}"></Setter>
+    </Style>
+
+    <!--
+    <Style Selector="Button#PART_MinimizeButton:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="#000" />
+    </Style>
+
+    <Style Selector="Button#PART_RestoreButton:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="#000" />
+    </Style>
+    -->
+
+    <Style Selector="Button#PART_CloseButton:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="#7a1717"></Setter>
+    </Style>
+</Styles>

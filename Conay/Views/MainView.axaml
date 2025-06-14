@@ -1,0 +1,90 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="550" d:DesignHeight="550"
+        Width="1024" Height="600"
+        MinWidth="550" MinHeight="450"
+        x:Class="Conay.Views.MainView"
+        xmlns:vm="clr-namespace:Conay.ViewModels"
+        x:DataType="vm:MainViewModel"
+        Title="Conay"
+        TransparencyLevelHint="AcrylicBlur"
+        Background="Transparent"
+        ExtendClientAreaToDecorationsHint="True">
+
+    <Design.DataContext>
+        <vm:MainViewModel></vm:MainViewModel>
+    </Design.DataContext>
+
+    <Grid RowDefinitions="Auto, *, Auto">
+        <Border Grid.Row="0" Background="{DynamicResource TitleBarBackground}" IsHitTestVisible="False">
+            <DockPanel Height="30">
+                <Border Padding="5" DockPanel.Dock="Left">
+                    <Image Source="/Assets/Images/icon.png" Width="20" Height="20" />
+                </Border>
+                <TextBlock Text="Conay" VerticalAlignment="Center" HorizontalAlignment="Left" />
+            </DockPanel>
+        </Border>
+        <Grid Grid.Row="1" Background="{DynamicResource PrimaryBackground}" VerticalAlignment="Stretch"
+              ColumnDefinitions="Auto, *">
+            <ScrollViewer Grid.Column="1" x:Name="Scroller" HorizontalScrollBarVisibility="Disabled">
+                <Border Padding="20 20 35 20">
+                    <ContentControl Content="{Binding CurrentPage}"></ContentControl>
+                </Border>
+            </ScrollViewer>
+            <Border Grid.Column="0" Padding="10 10 10 0">
+                <Grid RowDefinitions="*, Auto">
+                    <StackPanel Grid.Row="0" Spacing="5">
+                        <Button HorizontalAlignment="Stretch" Classes.active="{Binding IsLaunchPageActive}"
+                                Command="{Binding ShowLaunchCommand}">
+                            <StackPanel Orientation="Horizontal">
+                                <Label Classes="icon" Content="&#xe3fe;"></Label>
+                                <Label Classes="text" Content="Launch" IsVisible="{Binding !IsMenuCollapsed}"></Label>
+                            </StackPanel>
+                        </Button>
+                        <Button HorizontalAlignment="Stretch" Classes.active="{Binding IsFavoritePageActive}"
+                                Command="{Binding ShowFavoriteCommand}">
+                            <StackPanel Orientation="Horizontal">
+                                <Label Classes="icon" Content="&#xe2aa;"></Label>
+                                <Label Classes="text" Content="Favorite" IsVisible="{Binding !IsMenuCollapsed}"></Label>
+                            </StackPanel>
+                        </Button>
+                        <Button HorizontalAlignment="Stretch" Classes.active="{Binding IsServersPageActive}"
+                                Command="{Binding ShowServersCommand}">
+                            <StackPanel Orientation="Horizontal">
+                                <Label Classes="icon" Content="&#xe26e;"></Label>
+                                <Label Classes="text" Content="Servers" IsVisible="{Binding !IsMenuCollapsed}"></Label>
+                            </StackPanel>
+                        </Button>
+                        <Button HorizontalAlignment="Stretch" Classes.active="{Binding IsPresetsPageActive}"
+                                Command="{Binding ShowPresetsCommand}">
+                            <StackPanel Orientation="Horizontal">
+                                <Label Classes="icon" Content="&#xe596;"></Label>
+                                <Label Classes="text" Content="Presets" IsVisible="{Binding !IsMenuCollapsed}"></Label>
+                            </StackPanel>
+                        </Button>
+                        <Button HorizontalAlignment="Stretch" Classes.active="{Binding IsSettingsPageActive}"
+                                Command="{Binding ShowSettingsCommand}">
+                            <StackPanel Orientation="Horizontal">
+                                <Label Classes="icon" Content="&#xe272;"></Label>
+                                <Label Classes="text" Content="Settings" IsVisible="{Binding !IsMenuCollapsed}"></Label>
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                    <StackPanel Grid.Row="1" Spacing="5">
+                        <Button Click="ToggleMenuCollapse">
+                            <StackPanel Orientation="Horizontal">
+                                <Label Classes="icon" Content="&#xe2f0;"></Label>
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </Grid>
+        <StackPanel Grid.Row="2" Background="{DynamicResource PrimaryBackground}">
+            <Label Content="{Binding StatusText}" Foreground="#888" Padding="10 8"></Label>
+            <ProgressBar CornerRadius="0" Foreground="#509cfd" Value="{Binding ProgressBarValue}"></ProgressBar>
+        </StackPanel>
+    </Grid>
+</Window>

@@ -1,0 +1,16 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Conay", "Conay.csproj", "{4387C7D3-A51B-4F43-B256-D1B15C2D3A3C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4387C7D3-A51B-4F43-B256-D1B15C2D3A3C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4387C7D3-A51B-4F43-B256-D1B15C2D3A3C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4387C7D3-A51B-4F43-B256-D1B15C2D3A3C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4387C7D3-A51B-4F43-B256-D1B15C2D3A3C}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
