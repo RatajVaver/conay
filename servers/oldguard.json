@@ -1,6 +1,7 @@
 {
     "name": "Old Guard D&D",
     "ip": "135.148.150.183:7777",
+    "query": 27015,
     "mods": [
         "1823412793/ModControlPanel.pak",
         "2846119484/ThrallWarsUtilities.pak",

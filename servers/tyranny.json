@@ -1,6 +1,7 @@
 {
     "name": "Lands of Tyranny",
     "ip": "167.235.95.230:7777",
+    "query": 27015,
     "mods": [
         "880454836/Pippi.pak",
         "1823412793/ModControlPanel.pak",

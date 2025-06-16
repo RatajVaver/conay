@@ -1,6 +1,7 @@
 {
     "name": "New Horizons",
     "ip": "176.9.4.203:7779",
+    "query": 27016,
     "mods": [
         "1823412793/ModControlPanel.pak",
         "2384014945/Grim_Wonderbody_reupload.pak",

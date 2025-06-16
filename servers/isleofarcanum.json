@@ -1,6 +1,7 @@
 {
     "name": "Isle of Arcanum",
-    "ip": "216.245.177.94:7777",
+    "ip": "216.245.177.94:7779",
+    "query": 27017,
     "mods": [
         "1823412793/ModControlPanel.pak",
         "2097790925/TestingRaceMod.pak",

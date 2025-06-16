@@ -1,6 +1,7 @@
 {
     "name": "Mortal Memories",
     "ip": "174.138.178.146:7777",
+    "query": 27015,
     "mods": [
         "1823412793/ModControlPanel.pak",
         "2875171748/ArmorStats_in_Bench.pak",

@@ -1,6 +1,7 @@
 {
     "name": "Aloria Legends",
     "ip": "65.26.212.242:7779",
+    "query": 27010,
     "mods": [
         "880454836/Pippi.pak",
         "1823412793/ModControlPanel.pak",

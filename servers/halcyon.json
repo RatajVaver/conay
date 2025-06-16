@@ -1,6 +1,7 @@
 {
     "name": "Halcyon D&D",
     "ip": "135.148.150.182:7777",
+    "query": 27015,
     "mods": [
         "1823412793/ModControlPanel.pak",
         "2384014945/Grim_Wonderbody_reupload.pak",
