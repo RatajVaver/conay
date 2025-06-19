@@ -7,7 +7,8 @@ public static class Meta
 {
     public static string GetVersion()
     {
-        string version = FileVersionInfo.GetVersionInfo(Assembly.GetEntryAssembly()!.Location).ProductVersion!;
+        string filePath = Process.GetCurrentProcess().MainModule?.FileName!;
+        string version = FileVersionInfo.GetVersionInfo(filePath).ProductVersion!;
         return version;
     }
 
