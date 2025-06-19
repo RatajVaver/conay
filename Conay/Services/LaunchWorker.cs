@@ -7,10 +7,12 @@ using System.Threading.Tasks;
 using Conay.Data;
 using Conay.Factories;
 using Conay.Utils;
+using Microsoft.Extensions.Logging;
 
 namespace Conay.Services;
 
 public class LaunchWorker(
+    ILogger<LaunchWorker> logger,
     LaunchState state,
     ModList modList,
     Steam steam,
@@ -29,7 +31,7 @@ public class LaunchWorker(
 
         string presetName = string.IsNullOrEmpty(state.Name) ? "last played modlist" : state.Name;
 
-        Console.WriteLine($"Launching '{presetName}'..");
+        logger.LogDebug("Launching '{Preset}'..", presetName);
         StatusChanged?.Invoke(this, $"Launching {presetName}..");
 
         _ = LaunchSequence();
@@ -147,7 +149,7 @@ public class LaunchWorker(
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex);
+                logger.LogError(ex, "Failed to launch the game directly (falling back to Steam protocol)!");
                 Protocol.Open("steam://run/440900/");
             }
         }

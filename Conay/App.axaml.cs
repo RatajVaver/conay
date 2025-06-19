@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Data.Core.Plugins;
@@ -6,9 +7,11 @@ using Avalonia.Markup.Xaml;
 using Conay.Data;
 using Conay.Factories;
 using Conay.Services;
+using Conay.Services.Logger;
 using Conay.ViewModels;
 using Conay.Views;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Conay;
 
@@ -26,7 +29,22 @@ public class App : Application
 
         BindingPlugins.DataValidators.RemoveAt(0);
 
+        if (!Directory.Exists("logs"))
+            Directory.CreateDirectory("logs");
+
         ServiceCollection collection = new();
+
+        collection.AddLogging(logging =>
+        {
+            logging.ClearProviders();
+            logging.AddConsole();
+            logging.AddFile("logs/conay.log");
+#if DEBUG
+            logging.SetMinimumLevel(LogLevel.Debug);
+#else
+            logging.SetMinimumLevel(LogLevel.Information);
+#endif
+        });
 
         collection.AddSingleton<Steam>();
         collection.AddSingleton<ModList>();

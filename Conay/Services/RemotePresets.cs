@@ -4,10 +4,16 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Conay.Data;
 using Conay.Utils;
+using Microsoft.Extensions.Logging;
 
 namespace Conay.Services;
 
-public class RemotePresets(ModList modList, string name, string indexUrl, string serversDirectory) : IPresetService
+public class RemotePresets(
+    ILogger<RemotePresets> logger,
+    ModList modList,
+    string name,
+    string indexUrl,
+    string serversDirectory) : IPresetService
 {
     private readonly ModList _modList = modList;
     private readonly List<ServerData> _presetsCache = [];
@@ -25,7 +31,7 @@ public class RemotePresets(ModList modList, string name, string indexUrl, string
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Failed to parse server list from {indexUrl}: {ex.Message}");
+            logger.LogError(ex, "Failed to parse server list from {URL}!", indexUrl);
         }
 
         foreach (ServerInfo server in servers)
@@ -50,7 +56,7 @@ public class RemotePresets(ModList modList, string name, string indexUrl, string
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Failed to parse {fileName}: {ex.Message}");
+            logger.LogError(ex, "Failed to parse {File}!", fileName);
         }
 
         if (preset == null) return null;

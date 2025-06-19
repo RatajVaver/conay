@@ -20,7 +20,7 @@ public partial class SettingsViewModel : PageViewModel
     private bool _launchGame = true;
 
     [ObservableProperty]
-    private bool _directConnect;
+    private bool _directConnect = true;
 
     [ObservableProperty]
     private bool _disableCinematic;

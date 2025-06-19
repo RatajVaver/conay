@@ -12,7 +12,7 @@ public class Config
     public bool LaunchGame { get; set; } = true;
 
     [JsonPropertyName("direct")]
-    public bool DirectConnect { get; set; }
+    public bool DirectConnect { get; set; } = true;
 
     [JsonPropertyName("disableCinematic")]
     public bool DisableCinematic { get; set; }

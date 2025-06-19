@@ -6,10 +6,11 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Conay.Data;
 using Conay.Utils;
+using Microsoft.Extensions.Logging;
 
 namespace Conay.Services;
 
-public class SelfUpdater
+public class SelfUpdater(ILogger<SelfUpdater> logger)
 {
     private const string LatestReleaseUrl =
         "https://api.github.com/repos/RatajVaver/conay/releases/latest";
@@ -88,7 +89,7 @@ public class SelfUpdater
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex);
+                logger.LogError(ex, "Failed to run the update installer!");
                 StatusChanged?.Invoke(this, "Failed to run the update installer!");
                 return;
             }
@@ -101,6 +102,7 @@ public class SelfUpdater
         }
         else
         {
+            logger.LogError("Failed to download Conay update!");
             StatusChanged?.Invoke(this, "Failed to update Conay!");
         }
     }

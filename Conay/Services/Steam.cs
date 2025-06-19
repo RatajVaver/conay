@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Avalonia.Threading;
 using Conay.Data;
 using Conay.Utils;
+using Microsoft.Extensions.Logging;
 using Steamworks;
 using Steamworks.Ugc;
 
@@ -16,6 +17,8 @@ namespace Conay.Services;
 public class Steam : IModSource
 {
     private const uint AppId = 440900;
+
+    private readonly ILogger<Steam> _logger;
 
     private bool _isInitialized;
     private bool _isLoggedIn;
@@ -32,8 +35,10 @@ public class Steam : IModSource
     public event EventHandler<string>? StatusChanged;
     public event EventHandler<double>? DownloadProgressChanged;
 
-    public Steam()
+    public Steam(ILogger<Steam> logger)
     {
+        _logger = logger;
+
         SteamUGC.OnDownloadItemResult += OnModDownloadResult;
 
         Initialize();
@@ -89,8 +94,8 @@ public class Steam : IModSource
 
             LoadBaseData();
 
-            Console.WriteLine($"Steam OK: {_steamAccountName}");
-            Console.WriteLine($"Conan Installed: {_isConanInstalled}");
+            _logger.LogDebug("Steam OK: {AccountName}", _steamAccountName);
+            _logger.LogDebug("Conan Installed: {IsInstalled}", _isConanInstalled);
 
             StatusChanged?.Invoke(this, "Connected!");
         }
@@ -133,7 +138,7 @@ public class Steam : IModSource
 
                 if (!entry.NeedsUpdate && entry.Updated < localLastUpdated) continue;
 
-                Console.WriteLine($"Needs update: {entry.Title}");
+                _logger.LogDebug("Needs update: {Mod}", entry.Title);
                 QueueModUpdate(entry);
             }
 
@@ -172,7 +177,7 @@ public class Steam : IModSource
         }
         catch (Exception ex)
         {
-            Console.WriteLine(ex);
+            _logger.LogError(ex, "Failed to parse mods to update using API (slower fallback will be used)");
         }
 
         if (mods == null)
@@ -183,7 +188,7 @@ public class Steam : IModSource
         foreach (PublishedFileDetails mod in mods)
         {
             ulong modId = ulong.Parse(mod.Id);
-            DateTime remoteLastUpdated = Epoch.ToDateTime(mod.LastUpdate);
+            DateTime remoteLastUpdated = Epoch.ToDateTime(mod.LastUpdate ?? 0);
             DateTime localLastUpdated = ModList.GetModFileLastUpdate(_workshopPath, modId);
             if (remoteLastUpdated > localLastUpdated)
             {
@@ -213,7 +218,7 @@ public class Steam : IModSource
 
                 if (!mod.Value.NeedsUpdate && mod.Value.Updated < localLastUpdated) continue;
 
-                Console.WriteLine($"Needs update: {mod.Value.Title}");
+                _logger.LogDebug("Needs update: {Mod}", mod.Value.Title);
                 QueueModUpdate(mod.Value);
             }
         }
@@ -224,7 +229,7 @@ public class Steam : IModSource
                 Item? mod = await Item.GetAsync(modId, 180);
                 if (mod == null) continue;
 
-                Console.WriteLine($"Needs update: {mod.Value.Title}");
+                _logger.LogDebug("Needs update: {Mod}", mod.Value.Title);
                 QueueModUpdate(mod.Value);
             }
         }
@@ -267,7 +272,7 @@ public class Steam : IModSource
             bool started = mod.Download();
             if (!started)
             {
-                Console.WriteLine("Not started!");
+                _logger.LogWarning("Could not start mod download ({Mod})!", mod.Title);
             }
 
             await MonitorDownloadProgress(mod);
@@ -292,10 +297,10 @@ public class Steam : IModSource
     {
         if (result != Result.OK)
         {
-            Console.WriteLine(result);
+            _logger.LogDebug("Result: {Result}", result);
         }
 
-        Console.WriteLine("Download complete");
+        _logger.LogDebug("Download complete");
     }
 
     public async Task<ModInfo?> GetModData(ulong modId)
@@ -341,6 +346,9 @@ public class Steam : IModSource
 
     public static async Task<ServerQueryResult> QueryServer(string ipAddress, int queryPort)
     {
+        if (string.IsNullOrEmpty(ipAddress) || queryPort <= 0 || queryPort > 65535)
+            return new ServerQueryResult();
+
         while (_isQueryBusy)
         {
             await Task.Delay(50);
@@ -368,9 +376,8 @@ public class Steam : IModSource
                     MaxPlayers = server.MaxPlayers
                 };
             }
-            catch (Exception ex)
+            catch
             {
-                Console.WriteLine(ex);
                 _isQueryBusy = false;
                 return new ServerQueryResult();
             }

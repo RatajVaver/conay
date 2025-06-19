@@ -4,21 +4,24 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Conay.Utils;
+using Microsoft.Extensions.Logging;
 
 namespace Conay.Services;
 
 public class ModList
 {
     private readonly Steam _steam;
+    private readonly ILogger<ModList> _logger;
     private string? _modListPath;
     private string? _workshopPath;
     public string? LocalModsPath;
     private readonly List<string> _currentMods = [];
     private bool _modlistParsed;
 
-    public ModList(Steam steam)
+    public ModList(Steam steam, ILogger<ModList> logger)
     {
         _steam = steam;
+        _logger = logger;
 
         RefreshPaths();
         ParseModList();
@@ -54,7 +57,7 @@ public class ModList
 
         _modlistParsed = true;
 
-        Console.WriteLine($"Currently loaded: {_currentMods.Count} mods");
+        _logger.LogDebug("Currently loaded: {Mods} mods", _currentMods.Count);
     }
 
     public List<string> GetCurrentModList()
@@ -98,17 +101,26 @@ public class ModList
     public void SaveModList(string[] mods)
     {
         RefreshPaths();
-        if (_workshopPath == null || _modListPath == null) return;
+        if (_workshopPath == null || _modListPath == null || LocalModsPath == null) return;
 
         _currentMods.Clear();
 
         for (int i = 0; i < mods.Length; i++)
         {
             _currentMods.Add(mods[i]);
-            mods[i] = Path.GetFullPath(Path.Combine(_workshopPath, mods[i]));
+
+            string modIdOrFolder = mods[i].Split('/')[0];
+            if (ulong.TryParse(modIdOrFolder, out _))
+            {
+                mods[i] = Path.GetFullPath(Path.Combine(_workshopPath, mods[i]));
+            }
+            else
+            {
+                mods[i] = Path.GetFullPath(Path.Combine(LocalModsPath, mods[i]));
+            }
         }
 
         File.WriteAllLines(_modListPath, mods, Encoding.UTF8);
-        Console.WriteLine("Modlist saved");
+        _logger.LogDebug("Modlist saved");
     }
 }

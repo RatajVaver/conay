@@ -5,11 +5,13 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Conay.Data;
 using Conay.Utils;
+using Microsoft.Extensions.Logging;
 
 namespace Conay.Services;
 
 public class WebSync : IModSource
 {
+    private readonly ILogger<WebSync> _logger;
     private readonly ModList _modList;
     private readonly string _sourceName;
     private readonly string _indexUrl;
@@ -22,8 +24,9 @@ public class WebSync : IModSource
     private List<ExternalModInfo> _mods = [];
     private bool _loaded;
 
-    public WebSync(ModList modList, string sourceName, string indexUrl, string modsUrl)
+    public WebSync(ILogger<WebSync> logger, ModList modList, string sourceName, string indexUrl, string modsUrl)
     {
+        _logger = logger;
         _modList = modList;
         _sourceName = sourceName;
         _indexUrl = indexUrl;
@@ -46,7 +49,7 @@ public class WebSync : IModSource
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Failed to parse external mod index: {ex.Message}");
+            _logger.LogError(ex, "Failed to parse external mod index!");
         }
     }
 
@@ -71,7 +74,7 @@ public class WebSync : IModSource
 
             if (Epoch.ToDateTime(mod.LastUpdate) < localLastUpdated) continue;
 
-            Console.WriteLine($"Needs update: {mod.Title ?? pakName}");
+            _logger.LogDebug("Needs update: {Mod}", mod.Title ?? pakName);
             _updateQueue.Add(mod);
         }
 
@@ -94,8 +97,10 @@ public class WebSync : IModSource
             StatusChanged?.Invoke(this,
                 $"Updating {_updateQueue.Count} {(_updateQueue.Count == 1 ? "mod" : "mods")} ({mod.Title ?? mod.FileName})..");
 
-            await Web.Download($"{_modsUrl}/{mod.FileName}.pak",
+            bool success = await Web.Download($"{_modsUrl}/{mod.FileName}.pak",
                 $"{_modList.LocalModsPath}/@{_sourceName}/{mod.FileName}.pak", new Progress<float>(ReportProgress));
+            if (!success)
+                _logger.LogError("Failed to update mod ({Mod})!", mod.Title ?? mod.FileName);
 
             _updateQueue.RemoveAt(0);
         }

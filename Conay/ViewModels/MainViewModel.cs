@@ -31,6 +31,12 @@ public partial class MainViewModel : ViewModelBase
     [ObservableProperty]
     private string _statusText = "Loading..";
 
+#if DEBUG
+    public static bool ShowTestingWarning => true;
+#else
+    public static bool ShowTestingWarning => false;
+#endif
+
     [ObservableProperty]
     private double _progressBarValue;
 

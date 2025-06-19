@@ -13,12 +13,16 @@ public class ServersViewModel : PageViewModel
     private readonly ServerPresetFactory _presetFactory;
     private readonly ServerList _serverList;
 
+    public bool ListIsEmpty => Presets.Count == 0;
+
     public ObservableCollection<ServerPresetViewModel> Presets { get; } = [];
 
     public ServersViewModel(ServerPresetFactory presetFactory, ServerList serverList)
     {
         _presetFactory = presetFactory;
         _serverList = serverList;
+
+        Presets.CollectionChanged += (_, _) => OnPropertyChanged(nameof(ListIsEmpty));
 
         _ = LoadRemoteServers();
     }

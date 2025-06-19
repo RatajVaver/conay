@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Conay.Services;
+using Microsoft.Extensions.Logging;
 
 namespace Conay.Factories;
 
@@ -11,9 +12,9 @@ public class ModSourceFactory
 
     private readonly Dictionary<string, IModSource> _sources;
 
-    public ModSourceFactory(Steam steam, ModList modList)
+    public ModSourceFactory(ILogger<WebSync> logger, Steam steam, ModList modList)
     {
-        WebSync ratajmods = new(modList, "ratajmods",
+        WebSync ratajmods = new(logger, modList, "ratajmods",
             "https://ratajmods.net/conay/mods.json",
             "https://ratajmods.net/assets/mods");
 

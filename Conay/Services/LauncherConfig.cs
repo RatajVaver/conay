@@ -4,19 +4,22 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Conay.Data;
+using Microsoft.Extensions.Logging;
 
 namespace Conay.Services;
 
 public class LauncherConfig
 {
+    private readonly ILogger<LauncherConfig> _logger;
     public readonly Config Data;
     private readonly string _configPath;
     private readonly JsonSerializerOptions _options = new() { WriteIndented = true };
 
     private CancellationTokenSource? _saveToken;
 
-    public LauncherConfig()
+    public LauncherConfig(ILogger<LauncherConfig> logger)
     {
+        _logger = logger;
         Data = new Config();
 
         string appDirectory = AppContext.BaseDirectory;
@@ -33,7 +36,7 @@ public class LauncherConfig
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Failed to read config: {ex.Message}");
+            _logger.LogError(ex, "Failed to read config!");
         }
     }
 
@@ -84,7 +87,7 @@ public class LauncherConfig
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Failed to save config: {ex.Message}");
+            _logger.LogError(ex, "Failed to save config!");
         }
     }
 }

@@ -7,6 +7,7 @@
              xmlns:vm="clr-namespace:Conay.ViewModels"
              x:DataType="vm:PresetsViewModel">
     <Grid>
+        <Label IsVisible="{Binding ListIsEmpty}">You don't have any local presets!</Label>
         <ItemsControl ItemsSource="{Binding Presets}">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>

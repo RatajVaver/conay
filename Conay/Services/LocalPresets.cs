@@ -5,20 +5,23 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Conay.Data;
+using Microsoft.Extensions.Logging;
 
 namespace Conay.Services;
 
 public class LocalPresets : IPresetService
 {
     private readonly ModList _modList;
+    private readonly ILogger<LocalPresets> _logger;
     private List<ServerData>? _presetsCache;
     private readonly string _presetsPath;
 
     public string GetProviderName() => "local";
 
-    public LocalPresets(ModList modList)
+    public LocalPresets(ModList modList, ILogger<LocalPresets> logger)
     {
         _modList = modList;
+        _logger = logger;
 
         string appDirectory = AppContext.BaseDirectory;
         _presetsPath = Path.GetFullPath(Path.Combine(appDirectory, "servers"));
@@ -46,11 +49,11 @@ public class LocalPresets : IPresetService
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Failed to load {filePath}: {ex.Message}");
+                _logger.LogError(ex, "Failed to load local preset ({Path})!", filePath);
             }
         }
 
-        Console.WriteLine($"Loaded {_presetsCache.Count} local presets");
+        _logger.LogDebug("Loaded {Count} local presets", _presetsCache.Count);
 
         return _presetsCache;
     }
