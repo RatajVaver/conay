@@ -7,35 +7,60 @@
     <Border BorderThickness="1" BorderBrush="#222" Padding="10 5 10 5" Margin="0 0 0 10">
         <Grid ColumnDefinitions="Auto, *, Auto">
             <Border Grid.Column="0">
-                <Image Width="48" Height="48" Margin="0 0 10 0" IsVisible="{Binding ShowIcon}"
-                       asyncImageLoader:ImageLoader.Source="{Binding Icon}" />
+                <Image Width="48" Height="48" Margin="0 0 10 0" IsVisible="{Binding ShowIcon, Mode=OneWay}"
+                       asyncImageLoader:ImageLoader.Source="{Binding Icon, Mode=OneWay}" />
             </Border>
             <StackPanel Grid.Column="1" Orientation="Vertical">
                 <StackPanel Orientation="Horizontal">
-                    <Label Content="{Binding Name}" FontSize="22"></Label>
-                    <Button Classes="favorite" IsVisible="{Binding !IsFavorite}" ToolTip.Tip="Add to Favorites"
+                    <Label Content="{Binding Name, Mode=OneWay}" FontSize="22"></Label>
+                    <Button Classes="favorite" IsVisible="{Binding !IsFavorite, Mode=OneWay}"
+                            ToolTip.Tip="Add to Favorites"
                             Command="{Binding FavoriteServerCommand}">
                         <Label Content="&#xe2aa;"></Label>
                     </Button>
-                    <Button Classes="unfavorite" IsVisible="{Binding IsFavorite}" ToolTip.Tip="Remove from Favorites"
+                    <Button Classes="unfavorite" IsVisible="{Binding IsFavorite, Mode=OneWay}"
+                            ToolTip.Tip="Remove from Favorites"
                             Command="{Binding UnfavoriteServerCommand}">
                         <Label Content="&#xe2aa;"></Label>
                     </Button>
-                    <Button Classes="discord" IsVisible="{Binding ShowDiscord}" ToolTip.Tip="{Binding Discord}"
+                    <Button Classes="discord" IsVisible="{Binding ShowDiscord, Mode=OneWay}"
+                            ToolTip.Tip="{Binding Discord, Mode=OneWay}"
                             Command="{Binding OpenDiscordLinkCommand}">
                         <Label Content="&#xe61a;"></Label>
                     </Button>
-                    <Button Classes="link" IsVisible="{Binding ShowWebsite}" ToolTip.Tip="{Binding Website}"
+                    <Button Classes="link" IsVisible="{Binding ShowWebsite, Mode=OneWay}"
+                            ToolTip.Tip="{Binding Website, Mode=OneWay}"
                             Command="{Binding OpenWebsiteCommand}">
                         <Label Content="&#xe2e2;"></Label>
                     </Button>
                 </StackPanel>
-                <Label Content="{Binding IpAddress}"></Label>
+                <StackPanel Orientation="Horizontal">
+                    <Label Content="{Binding IpAddress, Mode=OneWay}"></Label>
+                    <Label Classes="badge" Content="&#xe390;"
+                           IsVisible="{Binding IsModded, Mode=OneWay}" ToolTip.Tip="{Binding ModdedTooltip}">
+                    </Label>
+                    <Label Classes="badge" Content="&#xe1b0;"
+                           IsVisible="{Binding HasConaySync, Mode=OneWay}"
+                           ToolTip.Tip="ConaySync (Modlist is always up to date)">
+                    </Label>
+                    <Label Classes="badge" Content="&#xe2da;"
+                           IsVisible="{Binding !IsModded, Mode=OneWay}" ToolTip.Tip="Vanilla (No mods)">
+                    </Label>
+                    <Label Classes="badge" Content="&#xe9f4;"
+                           IsVisible="{Binding IsRoleplay, Mode=OneWay}" ToolTip.Tip="Roleplay">
+                    </Label>
+                    <Label Classes="badge" Content="&#xe5ba;"
+                           IsVisible="{Binding IsMechPvP, Mode=OneWay}" ToolTip.Tip="Mech PvP">
+                    </Label>
+                    <Label Classes="badge" Content="&#xe1f6;"
+                           IsVisible="{Binding IsDicePvP, Mode=OneWay}" ToolTip.Tip="Dice PvP">
+                    </Label>
+                </StackPanel>
             </StackPanel>
             <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
                 <StackPanel Orientation="Vertical" Margin="20 0">
-                    <Label Content="{Binding Players}" FontSize="22" HorizontalAlignment="Right"></Label>
-                    <Label Content="{Binding Map}" HorizontalAlignment="Right"></Label>
+                    <Label Content="{Binding Players, Mode=OneWay}" FontSize="22" HorizontalAlignment="Right"></Label>
+                    <Label Content="{Binding Map, Mode=OneWay}" HorizontalAlignment="Right"></Label>
                 </StackPanel>
                 <Button Cursor="Hand" Classes="play" Command="{Binding LaunchServerPresetCommand}">
                     <Label Content="&#xe3d0;"></Label>

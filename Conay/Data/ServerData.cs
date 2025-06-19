@@ -23,6 +23,9 @@ public class ServerData
     [JsonPropertyName("website")]
     public string? Website { get; set; }
 
+    [JsonPropertyName("tags")]
+    public string[]? Tags { get; set; }
+
     [JsonPropertyName("mods")]
     public List<string> Mods { get; set; } = [];
 

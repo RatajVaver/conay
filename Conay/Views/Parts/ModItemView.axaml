@@ -10,26 +10,26 @@
     <Border BorderThickness="1" BorderBrush="#444" Padding="10 5 15 5" Margin="0 0 0 10">
         <Grid ColumnDefinitions="Auto, *, Auto">
             <Border Grid.Column="0">
-                <Image Width="38" Height="38" Margin="0 0 10 0" IsVisible="{Binding ShowIcon}"
-                       asyncImageLoader:ImageLoader.Source="{Binding Icon}" />
+                <Image Width="38" Height="38" Margin="0 0 10 0" IsVisible="{Binding ShowIcon, Mode=OneWay}"
+                       asyncImageLoader:ImageLoader.Source="{Binding Icon, Mode=OneWay}" />
             </Border>
             <StackPanel Grid.Column="1" Orientation="Vertical">
-                <Label Content="{Binding Title}"></Label>
+                <Label Content="{Binding Title, Mode=OneWay}"></Label>
                 <StackPanel Orientation="Horizontal">
-                    <Label Foreground="#999" FontSize="12" Content="{Binding Size}"></Label>
+                    <Label Foreground="#999" FontSize="12" Content="{Binding Size, Mode=OneWay}"></Label>
                     <Border Background="#999" Width="2" Height="2" Margin="5 0"></Border>
-                    <Label Foreground="#999" FontSize="12" Content="{Binding Updated}"></Label>
+                    <Label Foreground="#999" FontSize="12" Content="{Binding Updated, Mode=OneWay}"></Label>
                 </StackPanel>
             </StackPanel>
             <StackPanel Grid.Column="2" VerticalAlignment="Center">
                 <Button Cursor="Hand" Classes="small" Command="{Binding OpenWorkshopPageCommand}"
-                        IsVisible="{Binding IsWorkshopMod}" ToolTip.Tip="Visit Steam Workshop page">
+                        IsVisible="{Binding IsWorkshopMod, Mode=OneWay}" ToolTip.Tip="Visit Steam Workshop page">
                     <StackPanel Orientation="Horizontal">
                         <Label Classes="icon" Content="&#xe2e2;"></Label>
                     </StackPanel>
                 </Button>
                 <Button Cursor="Hand" Classes="small" Command="{Binding OpenLocalFolderCommand}"
-                        IsVisible="{Binding !IsWorkshopMod}" ToolTip.Tip="Open folder">
+                        IsVisible="{Binding !IsWorkshopMod, Mode=OneWay}" ToolTip.Tip="Open folder">
                     <StackPanel Orientation="Horizontal">
                         <Label Classes="icon" Content="&#xe256;"></Label>
                     </StackPanel>
