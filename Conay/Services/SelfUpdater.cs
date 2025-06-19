@@ -23,6 +23,10 @@ public class SelfUpdater(ILogger<SelfUpdater> logger)
 
     private static int[] ParseVersion(string version)
     {
+        int index = version.IndexOf('-');
+        if (index >= 0)
+            version = version[..index];
+
         return version.Split('.').Select(part => int.TryParse(part, out int num) ? num : 0).ToArray();
     }
 

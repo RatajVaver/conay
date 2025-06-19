@@ -15,6 +15,8 @@
         <RepositoryUrl>https://github.com/RatajVaver/conay</RepositoryUrl>
         <AssemblyVersion>0.2.0</AssemblyVersion>
         <FileVersion>0.2.0</FileVersion>
+        <Version>0.2.0-pre</Version>
+        <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
     </PropertyGroup>
 
     <ItemGroup>
@@ -54,12 +56,5 @@
         <AvaloniaResource Include="Assets\Fonts\Phosphor.ttf" />
         <None Remove="Assets\Fonts\PhosphorFill.ttf" />
         <AvaloniaResource Include="Assets\Fonts\PhosphorFill.ttf" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Compile Update="Views\Parts\ServerPresetView.axaml.cs">
-        <DependentUpon>ServerPreset.axaml</DependentUpon>
-        <SubType>Code</SubType>
-      </Compile>
     </ItemGroup>
 </Project>

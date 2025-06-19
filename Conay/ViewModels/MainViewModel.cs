@@ -5,6 +5,7 @@ using CommunityToolkit.Mvvm.Messaging;
 using Conay.Data;
 using Conay.Factories;
 using Conay.Services;
+using Conay.Utils;
 using Conay.ViewModels.Parts;
 using Conay.Views;
 using MsBox.Avalonia;
@@ -31,11 +32,7 @@ public partial class MainViewModel : ViewModelBase
     [ObservableProperty]
     private string _statusText = "Loading..";
 
-#if DEBUG
-    public static bool ShowTestingWarning => true;
-#else
-    public static bool ShowTestingWarning => false;
-#endif
+    public static bool ShowTestingWarning => Meta.GetVersion().Contains('-');
 
     [ObservableProperty]
     private double _progressBarValue;
@@ -80,7 +77,7 @@ public partial class MainViewModel : ViewModelBase
 
         IsMenuCollapsed = launcherConfig.Data.MenuCollapsed;
 
-        ShowLaunch();
+        ShowServers();
 
         if (_launcherConfig.Data.OfflineMode)
         {
