@@ -6,14 +6,21 @@
              x:Class="Conay.Views.PresetsView"
              xmlns:vm="clr-namespace:Conay.ViewModels"
              x:DataType="vm:PresetsViewModel">
-    <Grid>
-        <Label IsVisible="{Binding ListIsEmpty}">You don't have any local presets!</Label>
-        <ItemsControl ItemsSource="{Binding Presets}">
+    <Grid RowDefinitions="Auto, Auto, Auto">
+        <Label Grid.Row="0" IsVisible="{Binding ListIsEmpty}">You don't have any local presets!</Label>
+        <ItemsControl Grid.Row="1" ItemsSource="{Binding Presets}">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
                     <StackPanel Orientation="Vertical" />
                 </ItemsPanelTemplate>
             </ItemsControl.ItemsPanel>
         </ItemsControl>
+        <Button Grid.Row="2" HorizontalAlignment="Right" Command="{Binding AddPresetCommand}"
+                Margin="0 10 0 0">
+            <StackPanel Orientation="Horizontal">
+                <Label Classes="icon" Content="&#xe3d4;"></Label>
+                <Label Classes="text" Content="Add preset"></Label>
+            </StackPanel>
+        </Button>
     </Grid>
 </UserControl>

@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using Conay.Data;
 using Conay.Utils;
 using Microsoft.Extensions.Logging;
 
@@ -10,18 +13,21 @@ namespace Conay.Services;
 
 public class ModList
 {
-    private readonly Steam _steam;
     private readonly ILogger<ModList> _logger;
+    private readonly Steam _steam;
+    private readonly GameConfig _gameConfig;
+
     private string? _modListPath;
     private string? _workshopPath;
     public string? LocalModsPath;
     private readonly List<string> _currentMods = [];
     private bool _modlistParsed;
 
-    public ModList(Steam steam, ILogger<ModList> logger)
+    public ModList(ILogger<ModList> logger, Steam steam, GameConfig gameConfig)
     {
-        _steam = steam;
         _logger = logger;
+        _steam = steam;
+        _gameConfig = gameConfig;
 
         RefreshPaths();
         ParseModList();
@@ -122,5 +128,34 @@ public class ModList
 
         File.WriteAllLines(_modListPath, mods, Encoding.UTF8);
         _logger.LogDebug("Modlist saved");
+    }
+
+    public string CreatePresetFromCurrentModList()
+    {
+        string appDirectory = AppContext.BaseDirectory;
+        string presetsPath = Path.GetFullPath(Path.Combine(appDirectory, "servers"));
+        string fileName = $"preset{Epoch.Current.ToString()[6..]}.json";
+        string filePath = Path.Combine(presetsPath, fileName);
+
+        ServerData newPreset = new()
+        {
+            Name = "New preset",
+            Ip = _gameConfig.GetLastConnected(),
+            Mods = _currentMods
+        };
+
+        if (!Directory.Exists(presetsPath))
+            Directory.CreateDirectory(presetsPath);
+
+        JsonSerializerOptions options = new()
+        {
+            WriteIndented = true,
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+        };
+
+        string jsonString = JsonSerializer.Serialize(newPreset, options);
+        File.WriteAllText(filePath, jsonString);
+
+        return fileName;
     }
 }
