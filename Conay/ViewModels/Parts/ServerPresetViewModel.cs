@@ -67,6 +67,8 @@ public partial class ServerPresetViewModel : ViewModelBase
     public bool HasConaySync => Tags?.Contains("sync") ?? false;
     public string ModdedTooltip => $"Modded ({ModsCount} mods)";
 
+    public bool IsLoaded;
+
     public readonly string File;
     private int? _queryPort;
 
@@ -88,7 +90,23 @@ public partial class ServerPresetViewModel : ViewModelBase
         File = serverInfo.File;
         IsFavorite = launcherConfig.IsServerFavorite(File);
 
-        _ = UpdateServerData();
+        if (serverInfo.Map != null)
+        {
+            Map = serverInfo.Map;
+        }
+
+        if (serverInfo.Players != null)
+        {
+            Players = serverInfo.MaxPlayers != null
+                ? $"{serverInfo.Players} / {serverInfo.MaxPlayers}"
+                : $"~{serverInfo.Players}  ";
+        }
+    }
+
+    public async Task LoadDataAsync()
+    {
+        IsLoaded = true;
+        await UpdateServerData();
     }
 
     private async Task UpdateServerData()

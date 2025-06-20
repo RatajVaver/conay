@@ -78,7 +78,10 @@ public class LaunchWorker(
             }
         }
 
-        await steam.CheckModUpdates(steamMods.ToArray());
+        if (steamMods.Count > 0)
+        {
+            await steam.CheckModUpdates(steamMods.ToArray());
+        }
 
         if (externalMods.Count > 0)
         {

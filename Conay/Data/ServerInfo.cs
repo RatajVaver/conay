@@ -14,6 +14,15 @@ public class ServerInfo
     [JsonPropertyName("icon")]
     public string? Icon { get; set; }
 
+    [JsonPropertyName("players")]
+    public int? Players { get; set; }
+
+    [JsonPropertyName("maxplayers")]
+    public int? MaxPlayers { get; set; }
+
+    [JsonPropertyName("map")]
+    public string? Map { get; set; }
+
     [JsonIgnore]
     public IPresetService? Provider { get; set; }
 }

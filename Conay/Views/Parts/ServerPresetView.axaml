@@ -2,9 +2,11 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vmp="clr-namespace:Conay.ViewModels.Parts"
              xmlns:asyncImageLoader="clr-namespace:AsyncImageLoader;assembly=AsyncImageLoader.Avalonia"
+             xmlns:behaviors="clr-namespace:Conay.Behaviors"
              x:DataType="vmp:ServerPresetViewModel"
              x:Class="Conay.Views.Parts.ServerPresetView">
-    <Border BorderThickness="1" BorderBrush="#222" Padding="10 5 10 5" Margin="0 0 0 10">
+    <Border BorderThickness="1" BorderBrush="#222" Padding="10 5 10 5" Margin="0 0 0 10"
+            behaviors:VisibilityHandler.LazyLoad="True">
         <Grid ColumnDefinitions="Auto, *, Auto">
             <Border Grid.Column="0">
                 <Image Width="48" Height="48" Margin="0 0 10 0" IsVisible="{Binding ShowIcon, Mode=OneWay}"
@@ -44,7 +46,7 @@
                            ToolTip.Tip="ConaySync (Modlist is always up to date)">
                     </Label>
                     <Label Classes="badge" Content="&#xe2da;"
-                           IsVisible="{Binding !IsModded, Mode=OneWay}" ToolTip.Tip="Vanilla (No mods)">
+                           IsVisible="{Binding !IsModded, Mode=OneWay}" ToolTip.Tip="Vanilla (no mods)">
                     </Label>
                     <Label Classes="badge" Content="&#xe9f4;"
                            IsVisible="{Binding IsRoleplay, Mode=OneWay}" ToolTip.Tip="Roleplay">

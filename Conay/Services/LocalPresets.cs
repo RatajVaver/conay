@@ -32,7 +32,15 @@ public class LocalPresets : IPresetService
         if (_presetsCache != null)
             return _presetsCache;
 
-        _presetsCache = [];
+        _presetsCache = [
+            new ServerData
+            {
+                Name = "Vanilla (no mods)",
+                Ip = string.Empty,
+                FileName = "_vanilla",
+                Mods = []
+            }
+        ];
 
         if (!Directory.Exists(_presetsPath))
             return _presetsCache;
