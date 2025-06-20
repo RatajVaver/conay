@@ -1,0 +1,32 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="700" d:DesignHeight="300"
+        x:Class="Conay.Views.SplashScreenView"
+        Title="Conay"
+        xmlns:vm="clr-namespace:Conay.ViewModels"
+        x:DataType="vm:SplashScreenViewModel"
+        Width="700" Height="300"
+        Background="Transparent"
+        WindowStartupLocation="CenterScreen"
+        SystemDecorations="None"
+        Topmost="True">
+    <Border>
+        <Border.Background>
+            <ImageBrush Source="{Binding GetRandomImage}" Stretch="UniformToFill" />
+        </Border.Background>
+        <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <TextBlock Text="Launching Conay" FontSize="28" TextAlignment="Center" Margin="8">
+                <TextBlock.Effect>
+                    <DropShadowEffect Color="Black" Opacity="0.8" BlurRadius="4" OffsetX="1" OffsetY="1" />
+                </TextBlock.Effect>
+            </TextBlock>
+            <TextBlock Text="Conan Exiles Mod Launcher" FontSize="16" TextAlignment="Center" Margin="8">
+                <TextBlock.Effect>
+                    <DropShadowEffect Color="Black" Opacity="0.8" BlurRadius="3" OffsetX="1" OffsetY="1" />
+                </TextBlock.Effect>
+            </TextBlock>
+        </StackPanel>
+    </Border>
+</Window>

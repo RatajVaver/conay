@@ -15,7 +15,7 @@
         <RepositoryUrl>https://github.com/RatajVaver/conay</RepositoryUrl>
         <AssemblyVersion>0.2.0</AssemblyVersion>
         <FileVersion>0.2.0</FileVersion>
-        <Version>0.2.0-pre</Version>
+        <Version>0.2.0-rc1</Version>
         <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
     </PropertyGroup>
 
@@ -51,10 +51,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <AvaloniaResource Include="Assets\Images\icon.png" />
-        <None Remove="Assets\Fonts\Phosphor.ttf" />
-        <AvaloniaResource Include="Assets\Fonts\Phosphor.ttf" />
-        <None Remove="Assets\Fonts\PhosphorFill.ttf" />
-        <AvaloniaResource Include="Assets\Fonts\PhosphorFill.ttf" />
+        <AvaloniaResource Include="Assets\**" />
+        <None Remove="Assets\**" />
     </ItemGroup>
 </Project>
