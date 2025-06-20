@@ -3,15 +3,23 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vmp="clr-namespace:Conay.ViewModels.Parts"
+             xmlns:behaviors="clr-namespace:Conay.Behaviors"
              xmlns:asyncImageLoader="clr-namespace:AsyncImageLoader;assembly=AsyncImageLoader.Avalonia"
              mc:Ignorable="d" d:DesignWidth="550" d:DesignHeight="450"
              x:Class="Conay.Views.Parts.ModItemView"
              x:DataType="vmp:ModItemViewModel">
-    <Border BorderThickness="1" BorderBrush="#444" Padding="10 5 15 5" Margin="0 0 0 10">
+    <Border BorderThickness="1" BorderBrush="#444" Padding="10 5 15 5" Margin="0 0 0 10"
+            behaviors:VisibilityHandler.LazyLoad="True">
         <Grid ColumnDefinitions="Auto, *, Auto">
             <Border Grid.Column="0">
-                <Image Width="38" Height="38" Margin="0 0 10 0" IsVisible="{Binding ShowIcon, Mode=OneWay}"
-                       asyncImageLoader:ImageLoader.Source="{Binding Icon, Mode=OneWay}" />
+                <StackPanel Orientation="Horizontal">
+                    <Image Width="38" Height="38" Margin="0 0 10 0"
+                           IsVisible="{Binding ShowIcon, Mode=OneWay}"
+                           asyncImageLoader:ImageLoader.Source="{Binding Icon, Mode=OneWay}" />
+                    <Image Width="38" Height="38" Margin="0 0 10 0"
+                           IsVisible="{Binding ShowDefaultIcon, Mode=OneWay}"
+                           Source="/Assets/Images/default.jpg" Opacity="0.4" />
+                </StackPanel>
             </Border>
             <StackPanel Grid.Column="1" Orientation="Vertical">
                 <Label Content="{Binding Title, Mode=OneWay}"></Label>

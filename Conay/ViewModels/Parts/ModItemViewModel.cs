@@ -11,7 +11,7 @@ using Conay.Utils;
 
 namespace Conay.ViewModels.Parts;
 
-public partial class ModItemViewModel : ViewModelBase
+public partial class ModItemViewModel : ViewModelBase, ILazyLoad
 {
     private readonly Steam _steam;
     private readonly LauncherConfig _launcherConfig;
@@ -37,10 +37,15 @@ public partial class ModItemViewModel : ViewModelBase
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(ShowIcon))]
+    [NotifyPropertyChangedFor(nameof(ShowDefaultIcon))]
     private string? _icon;
 
     public bool ShowIcon => !string.IsNullOrEmpty(Icon)
                             && _launcherConfig.Data is { DisplayIcons: true, OfflineMode: false };
+
+    public bool ShowDefaultIcon => string.IsNullOrEmpty(Icon) && _launcherConfig.Data.DisplayIcons;
+
+    public bool IsLoaded { get; set; }
 
     public ModItemViewModel(Steam steam, LauncherConfig launcherConfig, ModSourceFactory modSourceFactory,
         string modPath)
@@ -70,7 +75,13 @@ public partial class ModItemViewModel : ViewModelBase
             }
         }
 
-        _ = UpdateModData();
+        //_ = UpdateModData();
+    }
+
+    public async Task LoadDataAsync()
+    {
+        IsLoaded = true;
+        await UpdateModData();
     }
 
     private async Task UpdateModData()

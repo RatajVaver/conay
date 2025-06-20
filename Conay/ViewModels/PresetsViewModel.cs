@@ -5,10 +5,12 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using Conay.Data;
 using Conay.Factories;
 using Conay.Services;
 using Conay.ViewModels.Parts;
+using Conay.Views;
 using MsBox.Avalonia;
 using MsBox.Avalonia.Base;
 using MsBox.Avalonia.Enums;
@@ -34,6 +36,8 @@ public partial class PresetsViewModel : PageViewModel
         Presets.CollectionChanged += (_, _) => OnPropertyChanged(nameof(ListIsEmpty));
 
         _ = LoadLocalServers();
+
+        WeakReferenceMessenger.Default.Send(new ScrollToTopMessage());
     }
 
     private async Task LoadLocalServers()

@@ -9,8 +9,14 @@
             behaviors:VisibilityHandler.LazyLoad="True">
         <Grid ColumnDefinitions="Auto, *, Auto">
             <Border Grid.Column="0">
-                <Image Width="48" Height="48" Margin="0 0 10 0" IsVisible="{Binding ShowIcon, Mode=OneWay}"
-                       asyncImageLoader:ImageLoader.Source="{Binding Icon, Mode=OneWay}" />
+                <StackPanel Orientation="Horizontal">
+                    <Image Width="48" Height="48" Margin="0 0 10 0"
+                           IsVisible="{Binding ShowIcon, Mode=OneWay}"
+                           asyncImageLoader:ImageLoader.Source="{Binding Icon, Mode=OneWay}" />
+                    <Image Width="48" Height="48" Margin="0 0 10 0"
+                           IsVisible="{Binding ShowDefaultIcon, Mode=OneWay}"
+                           Source="/Assets/Images/default.jpg" Opacity="0.4" />
+                </StackPanel>
             </Border>
             <StackPanel Grid.Column="1" Orientation="Vertical">
                 <StackPanel Orientation="Horizontal">

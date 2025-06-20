@@ -1,17 +1,15 @@
 ﻿using System.Collections.Generic;
 using Avalonia;
 using Avalonia.Controls;
+using Conay.ViewModels;
 using Conay.ViewModels.Parts;
 
 namespace Conay.Behaviors;
 
 public class VisibilityHandler
 {
-    public static readonly AttachedProperty<bool> LazyLoad =
-        AvaloniaProperty.RegisterAttached<Control, bool>(
-            "LazyLoad",
-            typeof(VisibilityHandler),
-            defaultValue: false);
+    private static readonly AttachedProperty<bool> LazyLoad =
+        AvaloniaProperty.RegisterAttached<Control, bool>("LazyLoad", typeof(VisibilityHandler), defaultValue: false);
 
     public static bool GetLazyLoad(Control control) =>
         control.GetValue(LazyLoad);
@@ -55,7 +53,7 @@ public class VisibilityHandler
 
     private static void CheckAndTriggerLoad(Control control)
     {
-        if (control.DataContext is ServerPresetViewModel { IsLoaded: false } vm)
+        if (control.DataContext is ILazyLoad { IsLoaded: false } vm)
         {
             _ = vm.LoadDataAsync();
         }

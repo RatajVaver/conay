@@ -11,7 +11,9 @@ public class SplashScreenViewModel : ViewModelBase
     [
         "amelot", "bard", "boar", "bossfight", "campfire",
         "circus", "ciri", "jousting", "kyorlin3", "kyorlin4",
-        "laeticia", "night", "ship", "tasha", "thorne"
+        "laeticia", "night", "ship", "tasha", "thorne",
+        "cat", "bae", "cave", "drow", "shivix1", "shivix2",
+        "bear"
     ];
 
     public Bitmap GetRandomImage =>

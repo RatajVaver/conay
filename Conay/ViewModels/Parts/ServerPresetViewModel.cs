@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -9,7 +8,7 @@ using Conay.Utils;
 
 namespace Conay.ViewModels.Parts;
 
-public partial class ServerPresetViewModel : ViewModelBase
+public partial class ServerPresetViewModel : ViewModelBase, ILazyLoad
 {
     private readonly Router _router;
     private readonly LauncherConfig _launcherConfig;
@@ -29,6 +28,7 @@ public partial class ServerPresetViewModel : ViewModelBase
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(ShowIcon))]
+    [NotifyPropertyChangedFor(nameof(ShowDefaultIcon))]
     private string? _icon;
 
     [ObservableProperty]
@@ -57,6 +57,8 @@ public partial class ServerPresetViewModel : ViewModelBase
     public bool ShowIcon => !string.IsNullOrEmpty(Icon)
                             && _launcherConfig.Data is { DisplayIcons: true, OfflineMode: false };
 
+    public bool ShowDefaultIcon => string.IsNullOrEmpty(Icon) && _launcherConfig.Data.DisplayIcons;
+
     public bool ShowDiscord => !string.IsNullOrEmpty(Discord);
     public bool ShowWebsite => !string.IsNullOrEmpty(Website);
 
@@ -67,7 +69,7 @@ public partial class ServerPresetViewModel : ViewModelBase
     public bool HasConaySync => Tags?.Contains("sync") ?? false;
     public string ModdedTooltip => $"Modded ({ModsCount} mods)";
 
-    public bool IsLoaded;
+    public bool IsLoaded { get; set; }
 
     public readonly string File;
     private int? _queryPort;
