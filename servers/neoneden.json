@@ -2,6 +2,7 @@
     "name": "Neon Eden",
     "ip": "15.204.102.57:7777",
     "password": "NeedEden123!",
+    "query": 27015,
     "mods": [
         "1823412793/ModControlPanel.pak",
         "3390610150/Astrids_Cyberpunk_Mod.pak",
