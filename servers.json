@@ -8,10 +8,6 @@
         "name": "Crossroads: Forgotten Realms RP"
     },
     {
-        "file": "wod",
-        "name": "World of Darkness: City of Spires"
-    },
-    {
         "file": "tyranny",
         "name": "Lands of Tyranny"
     },
@@ -58,5 +54,9 @@
     {
         "file": "wildheart",
         "name": "The Wildheart"
+    },
+    {
+        "file": "worldofdarkness",
+        "name": "World of Darkness: City of Spires"
     }
 ]
