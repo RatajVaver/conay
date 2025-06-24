@@ -2,6 +2,7 @@
 	"name": "Ashborn Legacy - Exiled Lands",
 	"ip": "172.93.101.220:28000",
 	"password": "Season14OpenNowKissMayday!!!",
+	"query": 27017,
 	"mods": [
 		"2875171748/ArmorStats_in_Bench.pak",
 		"1823412793/ModControlPanel.pak",
