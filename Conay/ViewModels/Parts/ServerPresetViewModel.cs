@@ -1,5 +1,7 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
+using Avalonia.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Conay.Data;
@@ -54,6 +56,15 @@ public partial class ServerPresetViewModel : ViewModelBase, ILazyLoad
     [NotifyPropertyChangedFor(nameof(ModdedTooltip))]
     private int _modsCount;
 
+    [ObservableProperty]
+    private string _playerCountColor = "#fff";
+
+    [ObservableProperty]
+    private string _pingColor = "#fff";
+
+    [ObservableProperty]
+    private string _ping = "Ping: N/A";
+
     public bool ShowIcon => !string.IsNullOrEmpty(Icon)
                             && _launcherConfig.Data is { DisplayIcons: true, OfflineMode: false };
 
@@ -73,6 +84,7 @@ public partial class ServerPresetViewModel : ViewModelBase, ILazyLoad
 
     public readonly string File;
     private int? _queryPort;
+    private int _failedQueries;
 
     [ObservableProperty]
     private int _mods;
@@ -92,17 +104,50 @@ public partial class ServerPresetViewModel : ViewModelBase, ILazyLoad
         File = serverInfo.File;
         IsFavorite = launcherConfig.IsServerFavorite(File);
 
-        if (serverInfo.Map != null)
+        LoadMapAndPlayersFromServerInfo();
+    }
+
+    private void LoadMapAndPlayersFromServerInfo()
+    {
+        if (_launcherConfig.Data is not { QueryServers: true, OfflineMode: false })
+            return;
+
+        if (_serverInfo.Map != null)
         {
-            Map = serverInfo.Map;
+            Map = _serverInfo.Map;
         }
 
-        if (serverInfo.Players != null)
+        if (_serverInfo.Players != null)
         {
-            Players = serverInfo.MaxPlayers != null
-                ? $"{serverInfo.Players} / {serverInfo.MaxPlayers}"
-                : $"~{serverInfo.Players}  ";
+            Players = _serverInfo.MaxPlayers != null
+                ? $"{_serverInfo.Players} / {_serverInfo.MaxPlayers}"
+                : $"~{_serverInfo.Players}  ";
+
+            UpdatePlayerCountColor(_serverInfo.Players, _serverInfo.MaxPlayers);
         }
+    }
+
+    private void UpdatePlayerCountColor(int? players, int? maxPlayers)
+    {
+        if (players == null || maxPlayers == null)
+        {
+            PlayerCountColor = "#888";
+            return;
+        }
+
+        if (players >= maxPlayers - 1)
+        {
+            PlayerCountColor = "#db8a76";
+            return;
+        }
+
+        PlayerCountColor = "#fff";
+    }
+
+    private void UpdatePing(int ping)
+    {
+        Ping = $"Ping: {ping} ms";
+        PingColor = new HslColor(1, Math.Max(0, 130 - ping / 2), 0.58, 0.66).ToRgb().ToString();
     }
 
     public async Task LoadDataAsync()
@@ -135,11 +180,25 @@ public partial class ServerPresetViewModel : ViewModelBase, ILazyLoad
     {
         if (_queryPort == null) return;
 
-        ServerQueryResult result = await Steam.QueryServer(IpAddress.Split(':')[0], (int)_queryPort);
-        if (result.MaxPlayers <= 0) return;
+        ServerQueryResult result =
+            await Steam.QueryServer(IpAddress.Split(':')[0], (int)_queryPort, _failedQueries > 0);
+        if (result.MaxPlayers <= 0)
+        {
+            _failedQueries++;
+            if (_failedQueries <= 1)
+            {
+                await Task.Delay(TimeSpan.FromSeconds(5));
+                _ = GetServerOnlineStatus();
+            }
+
+            return;
+        }
 
         Players = $"{result.Players} / {result.MaxPlayers}";
         Map = result.Map;
+
+        UpdatePing(result.Ping);
+        UpdatePlayerCountColor(result.Players, result.MaxPlayers);
     }
 
     [RelayCommand]

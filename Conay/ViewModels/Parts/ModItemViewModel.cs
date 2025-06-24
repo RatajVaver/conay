@@ -74,8 +74,6 @@ public partial class ModItemViewModel : ViewModelBase, ILazyLoad
                 _modProvider = modSourceFactory.Get(providerName);
             }
         }
-
-        //_ = UpdateModData();
     }
 
     public async Task LoadDataAsync()

@@ -26,6 +26,9 @@ public partial class SettingsViewModel : PageViewModel
     private bool _disableCinematic;
 
     [ObservableProperty]
+    private bool _immersiveMode;
+
+    [ObservableProperty]
     private bool _offlineMode;
 
     [ObservableProperty]
@@ -49,6 +52,7 @@ public partial class SettingsViewModel : PageViewModel
         LaunchGame = config.Data.LaunchGame;
         DirectConnect = config.Data.DirectConnect;
         DisableCinematic = config.Data.DisableCinematic;
+        ImmersiveMode = config.Data.ImmersiveMode;
         OfflineMode = config.Data.OfflineMode;
         KeepHistory = config.Data.KeepHistory;
         Clipboard = config.Data.Clipboard;
@@ -80,16 +84,53 @@ public partial class SettingsViewModel : PageViewModel
     partial void OnDisableCinematicChanged(bool value)
     {
         if (value == _config.Data.DisableCinematic) return;
-        _config.Data.DisableCinematic = value;
-        _gameConfig.ToggleCinematicIntro(value);
-        _ = _config.ScheduleConfigSave();
 
-        IMsBox<ButtonResult> box = MessageBoxManager
-            .GetMessageBoxStandard("Conay",
-                value
-                    ? "Cinematic intro has been disabled!\n\nYou will now see silent black screen when loading into the game."
-                    : "Cinematic intro has been enabled!\n\n\"What will you do, exile?\" is back.");
-        _ = box.ShowAsync();
+        bool success = _gameConfig.ToggleCinematicIntro(value);
+        if (success)
+        {
+            _config.Data.DisableCinematic = value;
+            _ = _config.ScheduleConfigSave();
+
+            IMsBox<ButtonResult> box = MessageBoxManager
+                .GetMessageBoxStandard("Conay",
+                    value
+                        ? "Cinematic intro has been disabled!\n\nYou will now see silent black screen when loading into the game."
+                        : "Cinematic intro has been enabled!\n\n\"What will you do, exile?\" is back.");
+            _ = box.ShowAsync();
+        }
+        else
+        {
+            IMsBox<ButtonResult> box = MessageBoxManager
+                .GetMessageBoxStandard("Conay",
+                    "Failed to save the config! Make sure you have write permissions to the game's folder.");
+            _ = box.ShowAsync();
+        }
+    }
+
+    partial void OnImmersiveModeChanged(bool value)
+    {
+        if (value == _config.Data.ImmersiveMode) return;
+
+        bool success = _gameConfig.ToggleImmersiveMode(value);
+        if (success)
+        {
+            _config.Data.ImmersiveMode = value;
+            _ = _config.ScheduleConfigSave();
+
+            IMsBox<ButtonResult> box = MessageBoxManager
+                .GetMessageBoxStandard("Conay",
+                    value
+                        ? "Immersive mode has been enabled!\n\nRecommended changes were saved into the game settings."
+                        : "Immersive mode has been disabled!\n\nAffected settings have been restored to default values.");
+            _ = box.ShowAsync();
+        }
+        else
+        {
+            IMsBox<ButtonResult> box = MessageBoxManager
+                .GetMessageBoxStandard("Conay",
+                    "Failed to save the config! Make sure you have write permissions to the game folder.");
+            _ = box.ShowAsync();
+        }
     }
 
     partial void OnOfflineModeChanged(bool value)

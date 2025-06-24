@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Threading;
 using Conay.Data;
@@ -27,7 +28,7 @@ public class Steam : IModSource
 
     private readonly List<Item> _updateQueue = [];
     private bool _updating;
-    private static bool _isQueryBusy;
+    private static readonly SemaphoreSlim Semaphore = new(1, 1);
 
     public string AppInstallDir { get; private set; } = string.Empty;
     private string _workshopPath = string.Empty;
@@ -344,41 +345,39 @@ public class Steam : IModSource
         Protocol.Open("steam://url/CommunityFilePage/" + modId);
     }
 
-    public static async Task<ServerQueryResult> QueryServer(string ipAddress, int queryPort)
+    public static async Task<ServerQueryResult> QueryServer(string ipAddress, int queryPort, bool retrying = false)
     {
         if (string.IsNullOrEmpty(ipAddress) || queryPort <= 0 || queryPort > 65535)
             return new ServerQueryResult();
 
-        while (_isQueryBusy)
-        {
-            await Task.Delay(50);
-        }
-
-        _isQueryBusy = true;
+        await Semaphore.WaitAsync();
 
         return await Task.Run(() =>
         {
+            int startTime = Environment.TickCount;
+
             try
             {
-                dynamic? server = A2S.Server.Query(ipAddress, queryPort, 5);
+                dynamic? server = A2S.Server.Query(ipAddress, queryPort, retrying ? 5 : 1);
                 if (server is Exception or null)
                 {
-                    _isQueryBusy = false;
+                    Semaphore.Release();
                     return new ServerQueryResult();
                 }
 
-                _isQueryBusy = false;
+                Semaphore.Release();
                 return new ServerQueryResult
                 {
                     ServerName = server.Name,
                     Map = server.Map,
                     Players = server.Players,
-                    MaxPlayers = server.MaxPlayers
+                    MaxPlayers = server.MaxPlayers,
+                    Ping = Environment.TickCount - startTime
                 };
             }
             catch
             {
-                _isQueryBusy = false;
+                Semaphore.Release();
                 return new ServerQueryResult();
             }
         });

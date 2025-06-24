@@ -34,11 +34,6 @@
                           Content="Display icons for mods and servers"
                           ToolTip.Tip="Uncheck this if you don't want to see icons or if the app runs slow or takes long to load.">
                 </CheckBox>
-                <Label Content="Game Settings" Margin="0 20 0 0"></Label>
-                <CheckBox IsChecked="{Binding DisableCinematic, Mode=TwoWay}"
-                          Content="Disable Conan's cinematic intro"
-                          ToolTip.Tip="Replace the infamous &quot;What will you do, exile?&quot; intro with a silent black screen as the game loads.">
-                </CheckBox>
             </StackPanel>
             <StackPanel Grid.Column="1">
                 <Label Content="Server List Settings"></Label>
@@ -50,9 +45,15 @@
                           Content="Show online player count"
                           ToolTip.Tip="Use Steam Query for supported servers to display number of online players and a map name in the list.">
                 </CheckBox>
-                <Label Content="Server List Sources" Margin="0 20 0 0"></Label>
-                <CheckBox IsChecked="True" IsEnabled="False" Content="GitHub Repository"></CheckBox>
-                <CheckBox IsChecked="True" IsEnabled="False" Content="ratajmods.net"></CheckBox>
+                <Label Content="Game Settings" Margin="0 20 0 0"></Label>
+                <CheckBox IsChecked="{Binding DisableCinematic, Mode=TwoWay}"
+                          Content="Disable Conan's cinematic intro"
+                          ToolTip.Tip="Replace the infamous &quot;What will you do, exile?&quot; intro with a silent black screen as the game loads.">
+                </CheckBox>
+                <CheckBox IsChecked="{Binding ImmersiveMode, Mode=TwoWay}"
+                          Content="Use recommended immersive settings"
+                          ToolTip.Tip="Enabling this will: Hide sheathed weapons, hide journey UI and contextual controls, enable audio at 25% volume even when the game is minimized.">
+                </CheckBox>
             </StackPanel>
         </Grid>
         <TextBlock Foreground="#999" FontSize="13" LineHeight="18" TextWrapping="Wrap">

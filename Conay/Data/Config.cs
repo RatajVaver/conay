@@ -17,6 +17,9 @@ public class Config
     [JsonPropertyName("disableCinematic")]
     public bool DisableCinematic { get; set; }
 
+    [JsonPropertyName("immersiveMode")]
+    public bool ImmersiveMode { get; set; }
+
     [JsonPropertyName("offline")]
     public bool OfflineMode { get; set; }
 

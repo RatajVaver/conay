@@ -79,4 +79,13 @@ public partial class PresetsViewModel : PageViewModel
 
         Process.Start("explorer.exe", $"/select,\"{filePath}\"");
     }
+
+    [RelayCommand]
+    private static void OpenPresetsFolder()
+    {
+        string appDirectory = AppContext.BaseDirectory;
+        string directoryPath = Path.GetFullPath(Path.Combine(appDirectory, "servers"));
+
+        Process.Start("explorer.exe", directoryPath);
+    }
 }
