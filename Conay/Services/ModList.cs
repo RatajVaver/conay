@@ -126,7 +126,36 @@ public class ModList
             }
         }
 
-        File.WriteAllLines(_modListPath, mods, Encoding.UTF8);
+        string? modsDirectory = Path.GetDirectoryName(_modListPath);
+        if (modsDirectory == null)
+        {
+            _logger.LogError("Can't resolve Mods directory!");
+            return;
+        }
+
+        if (!Directory.Exists(modsDirectory))
+        {
+            try
+            {
+                Directory.CreateDirectory(modsDirectory);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to create Mods directory!");
+                return;
+            }
+        }
+
+        try
+        {
+            File.WriteAllLines(_modListPath, mods, Encoding.UTF8);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to save modlist!");
+            return;
+        }
+
         _logger.LogDebug("Modlist saved");
     }
 

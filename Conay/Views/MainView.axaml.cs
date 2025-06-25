@@ -1,4 +1,3 @@
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using CommunityToolkit.Mvvm.Messaging;
@@ -14,10 +13,6 @@ public partial class MainView : Window
     public MainView()
     {
         InitializeComponent();
-#if DEBUG
-        this.AttachDevTools();
-#endif
-
         WeakReferenceMessenger.Default.Register<ScrollToTopMessage>(this, ScrollToTop);
     }
 
