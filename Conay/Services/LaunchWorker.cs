@@ -75,7 +75,7 @@ public class LaunchWorker(
         {
             StatusChanged?.Invoke(this, "All mods are updated.");
 
-            if (launcherConfig.Data.Clipboard)
+            if (launcherConfig.Data.Clipboard && state.Ip != string.Empty)
             {
                 _ = Clipboard.Get().SetTextAsync(state.Ip);
             }
@@ -88,7 +88,7 @@ public class LaunchWorker(
     {
         StatusChanged?.Invoke(this, "Launching the game..");
 
-        if (launcherConfig.Data.DirectConnect)
+        if (launcherConfig.Data.DirectConnect && state.Ip != string.Empty)
         {
             gameConfig.SetLastConnected(state.Ip, state.Password);
             LaunchConan("-continuesession");
@@ -98,7 +98,7 @@ public class LaunchWorker(
             LaunchConan();
         }
 
-        if (launcherConfig.Data.Clipboard)
+        if (launcherConfig.Data.Clipboard && state.Ip != string.Empty)
         {
             _ = Clipboard.Get().SetTextAsync(state.Ip);
         }

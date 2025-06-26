@@ -69,7 +69,8 @@ public partial class LaunchViewModel : PageViewModel
     private void LoadLaunchData()
     {
         Title = !string.IsNullOrEmpty(_launchState.Name) ? _launchState.Name : "Last played modlist";
-        Subtitle = !string.IsNullOrEmpty(_launchState.Ip) ? _launchState.Ip : _gameConfig.GetLastConnected();
+        //Subtitle = !string.IsNullOrEmpty(_launchState.Ip) ? _launchState.Ip : _gameConfig.GetLastConnected();
+        Subtitle = _launchState.Ip;
     }
 
     [RelayCommand]
