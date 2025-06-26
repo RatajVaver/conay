@@ -8,13 +8,13 @@
         xmlns:vm="clr-namespace:Conay.ViewModels"
         x:DataType="vm:SplashScreenViewModel"
         Width="700" Height="300"
-        Background="Transparent"
+        Background="Black"
         WindowStartupLocation="CenterScreen"
         SystemDecorations="None"
         Topmost="True">
     <Border>
         <Border.Background>
-            <ImageBrush Source="{Binding GetRandomImage}" Stretch="UniformToFill" />
+            <ImageBrush Source="{Binding GetRandomImage, Mode=OneTime}" Stretch="UniformToFill" />
         </Border.Background>
         <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
             <TextBlock Text="Launching Conay" FontSize="28" TextAlignment="Center" Margin="8">

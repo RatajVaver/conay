@@ -51,14 +51,23 @@ public class ModList
 
         _currentMods.Clear();
 
-        string[] lines = File.ReadAllLines(_modListPath);
-        for (int i = 0; i < lines.Length; i += 1)
+        try
         {
-            string line = lines[i].Replace('\\', '/');
-            string[] parts = line.Split('/');
-            string modId = parts[^2];
-            string pakName = parts[^1];
-            _currentMods.Add($"{modId}/{pakName}");
+            string[] lines = File.ReadAllLines(_modListPath);
+            for (int i = 0; i < lines.Length; i += 1)
+            {
+                string line = lines[i].Replace('\\', '/');
+                string[] parts = line.Split('/');
+                if (parts.Length < 2) continue;
+
+                string modId = parts[^2];
+                string pakName = parts[^1];
+                _currentMods.Add($"{modId}/{pakName}");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to parse current modlist!");
         }
 
         _modlistParsed = true;
@@ -182,8 +191,15 @@ public class ModList
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
         };
 
-        string jsonString = JsonSerializer.Serialize(newPreset, options);
-        File.WriteAllText(filePath, jsonString);
+        try
+        {
+            string jsonString = JsonSerializer.Serialize(newPreset, options);
+            File.WriteAllText(filePath, jsonString);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to create new preset!");
+        }
 
         return fileName;
     }

@@ -10,6 +10,8 @@ using Avalonia.Threading;
 using Conay.Data;
 using Conay.Utils;
 using Microsoft.Extensions.Logging;
+using SteamQuery;
+using SteamQuery.Enums;
 using Steamworks;
 using Steamworks.Ugc;
 
@@ -20,6 +22,7 @@ public class Steam : IModSource
     private const uint AppId = 440900;
 
     private readonly ILogger<Steam> _logger;
+    private readonly HttpService _http;
 
     private bool _isInitialized;
     private bool _isLoggedIn;
@@ -28,7 +31,7 @@ public class Steam : IModSource
 
     private readonly List<Item> _updateQueue = [];
     private bool _updating;
-    private static readonly SemaphoreSlim Semaphore = new(1, 1);
+    private static readonly SemaphoreSlim Semaphore = new(6, 6);
 
     public string AppInstallDir { get; private set; } = string.Empty;
     private string _workshopPath = string.Empty;
@@ -36,9 +39,10 @@ public class Steam : IModSource
     public event EventHandler<string>? StatusChanged;
     public event EventHandler<double>? DownloadProgressChanged;
 
-    public Steam(ILogger<Steam> logger)
+    public Steam(ILogger<Steam> logger, HttpService http)
     {
         _logger = logger;
+        _http = http;
 
         SteamUGC.OnDownloadItemResult += OnModDownloadResult;
 
@@ -164,7 +168,7 @@ public class Steam : IModSource
 
         FormUrlEncodedContent encoded = new(postData);
         string json =
-            await Web.Post("https://api.steampowered.com/ISteamRemoteStorage/GetPublishedFileDetails/v1/",
+            await _http.Post("https://api.steampowered.com/ISteamRemoteStorage/GetPublishedFileDetails/v1/",
                 encoded);
 
         JsonDocument? response = JsonSerializer.Deserialize<JsonDocument>(json);
@@ -352,33 +356,37 @@ public class Steam : IModSource
 
         await Semaphore.WaitAsync();
 
-        return await Task.Run(() =>
-        {
-            int startTime = Environment.TickCount;
+        int startTime = Environment.TickCount;
 
+        return await Task.Run(async () =>
+        {
             try
             {
-                dynamic? server = A2S.Server.Query(ipAddress, queryPort, retrying ? 5 : 1);
-                if (server is Exception or null)
-                {
-                    Semaphore.Release();
-                    return new ServerQueryResult();
-                }
+                GameServer server = new(ipAddress, queryPort);
+                server.SendTimeout = TimeSpan.FromSeconds(retrying ? 5 : 0.5);
+                server.ReceiveTimeout = TimeSpan.FromSeconds(retrying ? 5 : 0.5);
 
-                Semaphore.Release();
-                return new ServerQueryResult
+                await server.PerformQueryAsync(SteamQueryA2SQuery.Information);
+
+                ServerQueryResult result = new()
                 {
-                    ServerName = server.Name,
-                    Map = server.Map,
-                    Players = server.Players,
-                    MaxPlayers = server.MaxPlayers,
-                    Ping = Environment.TickCount - startTime
+                    ServerName = server.Information.ServerName,
+                    Map = server.Information.Map,
+                    Players = server.Information.OnlinePlayers,
+                    MaxPlayers = server.Information.MaxPlayers,
+                    Ping = Environment.TickCount - startTime,
                 };
+
+                server.Dispose();
+                return result;
             }
             catch
             {
-                Semaphore.Release();
                 return new ServerQueryResult();
+            }
+            finally
+            {
+                Semaphore.Release();
             }
         });
     }

@@ -1,8 +1,6 @@
-﻿using System.Collections.Generic;
-using Avalonia;
+﻿using Avalonia;
 using Avalonia.Controls;
 using Conay.ViewModels;
-using Conay.ViewModels.Parts;
 
 namespace Conay.Behaviors;
 

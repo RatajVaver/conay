@@ -3,26 +3,25 @@ using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Conay.Data;
-using Conay.Utils;
 using Microsoft.Extensions.Logging;
 
 namespace Conay.Services;
 
 public class RemotePresets(
     ILogger<RemotePresets> logger,
+    HttpService http,
     ModList modList,
     string name,
     string indexUrl,
     string serversDirectory) : IPresetService
 {
-    private readonly ModList _modList = modList;
     private readonly List<ServerData> _presetsCache = [];
 
     public string GetProviderName() => name;
 
     public async Task<List<ServerInfo>> GetServerList()
     {
-        string json = await Web.Get(indexUrl);
+        string json = await http.Get(indexUrl);
         List<ServerInfo> servers = [];
 
         try
@@ -48,7 +47,7 @@ public class RemotePresets(
         if (preset != null)
             return preset;
 
-        string json = await Web.Get($"{serversDirectory}/{fileName}.json");
+        string json = await http.Get($"{serversDirectory}/{fileName}.json");
 
         try
         {
@@ -73,6 +72,6 @@ public class RemotePresets(
         if (data == null)
             return;
 
-        _modList.SaveModList(data.Mods.ToArray());
+        modList.SaveModList(data.Mods.ToArray());
     }
 }

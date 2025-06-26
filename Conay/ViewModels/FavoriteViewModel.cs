@@ -37,7 +37,7 @@ public class FavoriteViewModel : PageViewModel
 
         while (!_serverList.LocalServersLoaded || !_serverList.RemoteServersLoaded)
         {
-            await Task.Delay(200);
+            await Task.Delay(50);
             RefreshServers();
         }
     }

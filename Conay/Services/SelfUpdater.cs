@@ -10,7 +10,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Conay.Services;
 
-public class SelfUpdater(ILogger<SelfUpdater> logger)
+public class SelfUpdater(ILogger<SelfUpdater> logger, HttpService http)
 {
     private const string LatestReleaseUrl =
         "https://api.github.com/repos/RatajVaver/conay/releases/latest";
@@ -53,10 +53,10 @@ public class SelfUpdater(ILogger<SelfUpdater> logger)
         return false;
     }
 
-    public static async Task<bool> CheckUpdate()
+    public async Task<bool> CheckUpdate()
     {
         string currentVersion = Meta.GetVersion();
-        string json = await Web.Get(LatestReleaseUrl);
+        string json = await http.Get(LatestReleaseUrl);
         AppReleaseData? releaseData = JsonSerializer.Deserialize<AppReleaseData>(json);
         if (releaseData == null)
             return false;
@@ -79,7 +79,7 @@ public class SelfUpdater(ILogger<SelfUpdater> logger)
         string installerPath = Path.GetFullPath(Path.Combine(appDirectory, "ConayInstaller.exe"));
 
         bool success =
-            await Web.Download(InstallerDownloadUrl, installerPath, new Progress<float>(ReportProgress));
+            await http.Download(InstallerDownloadUrl, installerPath, new Progress<float>(ReportProgress));
         if (success)
         {
             try

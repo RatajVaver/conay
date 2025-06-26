@@ -12,6 +12,7 @@ namespace Conay.Services;
 public class WebSync : IModSource
 {
     private readonly ILogger<WebSync> _logger;
+    private readonly HttpService _http;
     private readonly ModList _modList;
     private readonly string _sourceName;
     private readonly string _indexUrl;
@@ -24,9 +25,11 @@ public class WebSync : IModSource
     private List<ExternalModInfo> _mods = [];
     private bool _loaded;
 
-    public WebSync(ILogger<WebSync> logger, ModList modList, string sourceName, string indexUrl, string modsUrl)
+    public WebSync(ILogger<WebSync> logger, HttpService http, ModList modList, string sourceName, string indexUrl,
+        string modsUrl)
     {
         _logger = logger;
+        _http = http;
         _modList = modList;
         _sourceName = sourceName;
         _indexUrl = indexUrl;
@@ -36,7 +39,7 @@ public class WebSync : IModSource
 
     private async Task FetchModIndex()
     {
-        string json = await Web.Get(_indexUrl);
+        string json = await _http.Get(_indexUrl);
 
         try
         {
@@ -97,7 +100,7 @@ public class WebSync : IModSource
             StatusChanged?.Invoke(this,
                 $"Updating {_updateQueue.Count} {(_updateQueue.Count == 1 ? "mod" : "mods")} ({mod.Title ?? mod.FileName})..");
 
-            bool success = await Web.Download($"{_modsUrl}/{mod.FileName}.pak",
+            bool success = await _http.Download($"{_modsUrl}/{mod.FileName}.pak",
                 $"{_modList.LocalModsPath}/@{_sourceName}/{mod.FileName}.pak", new Progress<float>(ReportProgress));
             if (!success)
                 _logger.LogError("Failed to update mod ({Mod})!", mod.Title ?? mod.FileName);

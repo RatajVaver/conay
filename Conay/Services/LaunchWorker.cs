@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using Conay.Data;
 using Conay.Factories;
@@ -16,7 +15,6 @@ public class LaunchWorker(
     LaunchState state,
     ModList modList,
     Steam steam,
-    ServerList serverList,
     GameConfig gameConfig,
     LauncherConfig launcherConfig,
     ModSourceFactory modSourceFactory)
@@ -35,27 +33,6 @@ public class LaunchWorker(
         StatusChanged?.Invoke(this, $"Launching {presetName}..");
 
         _ = LaunchSequence();
-    }
-
-    public async Task PrepareDefault()
-    {
-        string lastServer = launcherConfig.Data.History.FirstOrDefault(string.Empty);
-        if (lastServer == string.Empty) return;
-
-        while (!serverList.LocalServersLoaded || !serverList.RemoteServersLoaded)
-        {
-            await Task.Delay(200);
-        }
-
-        ServerInfo? serverInfo = serverList.GetServerInfo(lastServer);
-        if (serverInfo == null) return;
-
-        ServerData? serverData = await serverList.GetServerData(lastServer);
-        if (serverData == null) return;
-
-        state.Name = serverData.Name;
-        state.Ip = serverData.Ip;
-        modList.SaveModList(serverData.Mods.ToArray());
     }
 
     private async Task LaunchSequence()

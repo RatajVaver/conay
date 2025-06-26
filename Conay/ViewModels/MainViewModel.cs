@@ -41,7 +41,6 @@ public partial class MainViewModel : ViewModelBase
     private readonly LaunchState? _launchState;
     private readonly LauncherConfig? _launcherConfig;
     private readonly SelfUpdater? _selfUpdater;
-    private ModList? _modList;
 
     public bool IsLaunchPageActive => CurrentPage is LaunchViewModel;
     public bool IsFavoritePageActive => CurrentPage is FavoriteViewModel;
@@ -55,14 +54,13 @@ public partial class MainViewModel : ViewModelBase
     }
 
     public MainViewModel(PageFactory pageFactory, LaunchState launchState, LaunchWorker launchWorker, LauncherConfig
-        launcherConfig, SelfUpdater selfUpdater, Steam steam, ModList modList, ModSourceFactory modSourceFactory)
+        launcherConfig, SelfUpdater selfUpdater, Steam steam, ModSourceFactory modSourceFactory)
     {
         _pageFactory = pageFactory;
         _launchState = launchState;
         _launcherConfig = launcherConfig;
         _selfUpdater = selfUpdater;
         _steam = steam;
-        _modList = modList;
 
         launchWorker.StatusChanged += OnStatusChanged;
 
@@ -119,7 +117,7 @@ public partial class MainViewModel : ViewModelBase
 
         StatusText = "Checking Conay update..";
 
-        bool foundUpdate = await SelfUpdater.CheckUpdate();
+        bool foundUpdate = await _selfUpdater.CheckUpdate();
         if (!foundUpdate)
             return;
 

@@ -46,7 +46,7 @@ public partial class PresetsViewModel : PageViewModel
 
         while (!_serverList.LocalServersLoaded)
         {
-            await Task.Delay(200);
+            await Task.Delay(50);
             RefreshServers();
         }
     }

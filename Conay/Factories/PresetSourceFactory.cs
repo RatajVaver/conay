@@ -5,15 +5,19 @@ using Microsoft.Extensions.Logging;
 
 namespace Conay.Factories;
 
-public class PresetSourceFactory(ILogger<RemotePresets> logger, ModList modList, LocalPresets localPresets)
+public class PresetSourceFactory(
+    ILogger<RemotePresets> logger,
+    HttpService http,
+    ModList modList,
+    LocalPresets localPresets)
 {
     private readonly Dictionary<string, IPresetService> _sources = new()
     {
         ["local"] = localPresets,
-        ["github"] = new RemotePresets(logger, modList, "github",
+        ["github"] = new RemotePresets(logger, http, modList, "github",
             "https://raw.githubusercontent.com/RatajVaver/conay/main/servers.json",
             "https://raw.githubusercontent.com/RatajVaver/conay/main/servers"),
-        ["ratajmods"] = new RemotePresets(logger, modList, "ratajmods",
+        ["ratajmods"] = new RemotePresets(logger, http, modList, "ratajmods",
             "https://ratajmods.net/conay/servers.json",
             "https://ratajmods.net/conay/servers")
     };

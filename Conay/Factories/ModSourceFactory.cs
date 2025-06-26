@@ -12,9 +12,9 @@ public class ModSourceFactory
 
     private readonly Dictionary<string, IModSource> _sources;
 
-    public ModSourceFactory(ILogger<WebSync> logger, Steam steam, ModList modList)
+    public ModSourceFactory(ILogger<WebSync> logger, Steam steam, ModList modList, HttpService http)
     {
-        WebSync ratajmods = new(logger, modList, "ratajmods",
+        WebSync ratajmods = new(logger, http, modList, "ratajmods",
             "https://ratajmods.net/conay/mods.json",
             "https://ratajmods.net/assets/mods");
 
