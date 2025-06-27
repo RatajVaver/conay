@@ -341,7 +341,7 @@ public class Steam : IModSource
     private void LaunchSteam()
     {
         StatusChanged?.Invoke(this, "Launching Steam..");
-        Protocol.Open("steam://-/");
+        Protocol.Open("steam://-/\" -silent");
     }
 
     public static void OpenWorkshopPage(ulong modId)

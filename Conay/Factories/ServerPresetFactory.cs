@@ -7,7 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Conay.Factories;
 
-public class ServerPresetFactory(IServiceProvider serviceProvider)
+public class ServerPresetFactory(IServiceProvider serviceProvider, Steam steam)
 {
     private readonly List<ServerPresetViewModel> _serverPresets = [];
 
@@ -19,7 +19,7 @@ public class ServerPresetFactory(IServiceProvider serviceProvider)
         Router router = serviceProvider.GetRequiredService<Router>();
         LauncherConfig launcherConfig = serviceProvider.GetRequiredService<LauncherConfig>();
 
-        preset = new ServerPresetViewModel(router, launcherConfig, serverInfo);
+        preset = new ServerPresetViewModel(router, steam, launcherConfig, serverInfo);
         _serverPresets.Add(preset);
 
         return preset;

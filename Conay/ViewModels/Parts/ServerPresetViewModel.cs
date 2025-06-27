@@ -13,6 +13,7 @@ namespace Conay.ViewModels.Parts;
 public partial class ServerPresetViewModel : ViewModelBase, ILazyLoad
 {
     private readonly Router _router;
+    private readonly Steam _steam;
     private readonly LauncherConfig _launcherConfig;
     private readonly IPresetService _provider;
 
@@ -92,10 +93,11 @@ public partial class ServerPresetViewModel : ViewModelBase, ILazyLoad
     private readonly ServerInfo _serverInfo;
     private ServerData? _preset;
 
-    public ServerPresetViewModel(Router router, LauncherConfig launcherConfig, ServerInfo serverInfo)
+    public ServerPresetViewModel(Router router, Steam steam, LauncherConfig launcherConfig, ServerInfo serverInfo)
     {
         _serverInfo = serverInfo;
         _router = router;
+        _steam = steam;
         _launcherConfig = launcherConfig;
         _provider = serverInfo.Provider!;
 
@@ -202,8 +204,10 @@ public partial class ServerPresetViewModel : ViewModelBase, ILazyLoad
     }
 
     [RelayCommand]
-    private void LaunchServerPreset()
+    private async Task LaunchServerPreset()
     {
+        _router.BeforeLaunch(Name);
+        await _steam.WaitForSteam();
         _provider.SaveModlistFromPreset(File);
         _router.ReadyForLaunch(_preset);
     }

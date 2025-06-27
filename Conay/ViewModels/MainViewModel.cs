@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
@@ -8,6 +9,7 @@ using Conay.Services;
 using Conay.Utils;
 using Conay.ViewModels.Parts;
 using Conay.Views;
+using Microsoft.Extensions.Logging;
 using MsBox.Avalonia;
 using MsBox.Avalonia.Base;
 using MsBox.Avalonia.Enums;
@@ -41,6 +43,8 @@ public partial class MainViewModel : ViewModelBase
     private readonly LaunchState? _launchState;
     private readonly LauncherConfig? _launcherConfig;
     private readonly SelfUpdater? _selfUpdater;
+    private readonly PresetSourceFactory? _presetSourceFactory;
+    private readonly ILogger<MainViewModel>? _logger;
 
     public bool IsLaunchPageActive => CurrentPage is LaunchViewModel;
     public bool IsFavoritePageActive => CurrentPage is FavoriteViewModel;
@@ -53,14 +57,17 @@ public partial class MainViewModel : ViewModelBase
         _currentPage = new PageViewModel(); // fallback for designer
     }
 
-    public MainViewModel(PageFactory pageFactory, LaunchState launchState, LaunchWorker launchWorker, LauncherConfig
-        launcherConfig, SelfUpdater selfUpdater, Steam steam, ModSourceFactory modSourceFactory)
+    public MainViewModel(PageFactory pageFactory, LaunchState launchState, LaunchWorker launchWorker,
+        LauncherConfig launcherConfig, SelfUpdater selfUpdater, Steam steam, ModSourceFactory modSourceFactory,
+        PresetSourceFactory presetSourceFactory, ILogger<MainViewModel> logger)
     {
         _pageFactory = pageFactory;
         _launchState = launchState;
         _launcherConfig = launcherConfig;
         _selfUpdater = selfUpdater;
         _steam = steam;
+        _logger = logger;
+        _presetSourceFactory = presetSourceFactory;
 
         launchWorker.StatusChanged += OnStatusChanged;
 
@@ -85,6 +92,8 @@ public partial class MainViewModel : ViewModelBase
         {
             _ = RunUpdates();
         }
+
+        _ = CheckStartupArguments();
     }
 
     private void OnStatusChanged(object? sender, string status)
@@ -95,6 +104,30 @@ public partial class MainViewModel : ViewModelBase
     private void OnModDownloadProgressChanged(object? sender, double progress)
     {
         ProgressBarValue = progress;
+    }
+
+    private async Task CheckStartupArguments()
+    {
+        string[] arguments = Environment.GetCommandLineArgs();
+        int serverArgIndex = Array.FindIndex(arguments, x => x is "--server" or "-s");
+        string server = serverArgIndex >= 0 && serverArgIndex < arguments.Length - 1
+            ? arguments[serverArgIndex + 1]
+            : string.Empty;
+
+        if (server.Length > 0)
+        {
+            _logger?.LogDebug("Server preset argument: {Server}", server);
+
+            foreach (string source in new[] { "local", "ratajmods", "github" })
+            {
+                ServerData? serverData = await _presetSourceFactory!.Get(source).FetchServerData(server);
+                if (serverData == null) continue;
+                ShowLaunchForPreset(serverData);
+                return;
+            }
+
+            StatusText = $"Server preset '{server}' not found!";
+        }
     }
 
     private async Task RunUpdates()
@@ -168,6 +201,11 @@ public partial class MainViewModel : ViewModelBase
 
     [RelayCommand]
     private void ShowSettings() => CurrentPage = _pageFactory!.GetPageViewModel<SettingsViewModel>();
+
+    public void BeforeLaunch(string? name = null)
+    {
+        StatusText = !string.IsNullOrEmpty(name) ? $"Launching {name}.." : "Launching..";
+    }
 
     public void ShowLaunchForPreset(ServerData? preset)
     {
