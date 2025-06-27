@@ -59,6 +59,14 @@ public class LauncherConfig
         _ = ScheduleConfigSave();
     }
 
+    public void SaveIntoHistory(string fileName)
+    {
+        if (!Data.KeepHistory) return;
+        Data.History.Remove(fileName);
+        Data.History.Insert(0, fileName);
+        SaveConfig();
+    }
+
     public async Task ScheduleConfigSave()
     {
         if (_saveToken != null)

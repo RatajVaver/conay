@@ -120,8 +120,13 @@ public partial class MainViewModel : ViewModelBase
 
             foreach (string source in new[] { "local", "ratajmods", "github" })
             {
-                ServerData? serverData = await _presetSourceFactory!.Get(source).FetchServerData(server);
+                IPresetService provider = _presetSourceFactory!.Get(source);
+                ServerData? serverData = await provider.FetchServerData(server);
                 if (serverData == null) continue;
+                BeforeLaunch(serverData.Name);
+                await _steam!.WaitForSteam();
+                provider.SaveModlistFromPreset(server);
+                _launcherConfig?.SaveIntoHistory(server);
                 ShowLaunchForPreset(serverData);
                 return;
             }

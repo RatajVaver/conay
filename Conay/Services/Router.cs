@@ -14,18 +14,7 @@ public class Router(MainViewModel mvm, LaunchState launchState, LauncherConfig l
     {
         if (preset?.FileName != null)
         {
-            if (launcherConfig.Data.KeepHistory)
-            {
-                launcherConfig.Data.History.Remove(preset.FileName);
-                launcherConfig.Data.History.Insert(0, preset.FileName);
-            }
-            else
-            {
-                launcherConfig.Data.History.Clear();
-                launcherConfig.Data.History.Add(preset.FileName);
-            }
-
-            _ = launcherConfig.ScheduleConfigSave();
+            launcherConfig.SaveIntoHistory(preset.FileName);
         }
 
         launchState.Name = preset?.Name ?? string.Empty;
