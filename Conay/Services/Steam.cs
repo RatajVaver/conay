@@ -23,6 +23,7 @@ public class Steam : IModSource
 
     private readonly ILogger<Steam> _logger;
     private readonly HttpService _http;
+    private readonly NotifyService _notifyService;
 
     private bool _isInitialized;
     private bool _isLoggedIn;
@@ -36,13 +37,11 @@ public class Steam : IModSource
     public string AppInstallDir { get; private set; } = string.Empty;
     private string _workshopPath = string.Empty;
 
-    public event EventHandler<string>? StatusChanged;
-    public event EventHandler<double>? DownloadProgressChanged;
-
-    public Steam(ILogger<Steam> logger, HttpService http)
+    public Steam(ILogger<Steam> logger, HttpService http, NotifyService notifyService)
     {
         _logger = logger;
         _http = http;
+        _notifyService = notifyService;
 
         SteamUGC.OnDownloadItemResult += OnModDownloadResult;
 
@@ -88,7 +87,7 @@ public class Steam : IModSource
 
     private void Initialize()
     {
-        StatusChanged?.Invoke(this, "Connecting to Steam..");
+        _notifyService.UpdateStatus(this, "Connecting to Steam..");
 
         try
         {
@@ -102,7 +101,7 @@ public class Steam : IModSource
             _logger.LogDebug("Steam OK: {AccountName}", _steamAccountName);
             _logger.LogDebug("Conan Installed: {IsInstalled}", _isConanInstalled);
 
-            StatusChanged?.Invoke(this, "Connected!");
+            _notifyService.UpdateStatus(this, "Connected!");
         }
         catch
         {
@@ -121,11 +120,11 @@ public class Steam : IModSource
 
     public async Task CheckSubscribedModUpdates()
     {
-        StatusChanged?.Invoke(this, "Checking mod updates..");
+        _notifyService.UpdateStatus(this, "Checking mod updates..");
 
         while (!_isLoggedIn)
         {
-            StatusChanged?.Invoke(this, "Waiting for Steam..");
+            _notifyService.UpdateStatus(this, "Waiting for Steam..");
             await Task.Delay(TimeSpan.FromSeconds(2));
         }
 
@@ -155,7 +154,7 @@ public class Steam : IModSource
             await UpdateMods();
         }
 
-        StatusChanged?.Invoke(this, "Subscribed mods are up to date!");
+        _notifyService.UpdateStatus(this, "Subscribed mods are up to date!");
     }
 
     private async Task<List<ulong>?> GetModsInNeedOfUpdate(ulong[] modIds)
@@ -206,7 +205,7 @@ public class Steam : IModSource
 
     public async Task CheckModUpdates(ulong[] modIds)
     {
-        StatusChanged?.Invoke(this, "Checking mod updates..");
+        _notifyService.UpdateStatus(this, "Checking mod updates..");
         await WaitForSteam();
 
         List<ulong>? mods = await GetModsInNeedOfUpdate(modIds);
@@ -217,7 +216,7 @@ public class Steam : IModSource
                 Item? mod = await Item.GetAsync(modId, 180);
                 if (mod == null) continue;
 
-                StatusChanged?.Invoke(this, $"Checking mod updates ({mod.Value.Title})..");
+                _notifyService.UpdateStatus(this, $"Checking mod updates ({mod.Value.Title})..");
 
                 DateTime localLastUpdated = ModList.GetModFileLastUpdate(_workshopPath, mod.Value.Id.Value);
 
@@ -241,7 +240,7 @@ public class Steam : IModSource
 
         if (_updating)
         {
-            StatusChanged?.Invoke(this, "Updating mods..");
+            _notifyService.UpdateStatus(this, "Updating mods..");
 
             while (_updating)
             {
@@ -253,7 +252,7 @@ public class Steam : IModSource
             await UpdateMods();
         }
 
-        StatusChanged?.Invoke(this, "Steam mods are up to date!");
+        _notifyService.UpdateStatus(this, "Steam mods are up to date!");
     }
 
     private void QueueModUpdate(Item mod)
@@ -264,14 +263,14 @@ public class Steam : IModSource
 
     private async Task UpdateMods()
     {
-        DownloadProgressChanged?.Invoke(this, 0);
+        _notifyService.UpdateProgress(this, 0);
         _updating = true;
 
         while (_updateQueue.Count > 0)
         {
             Item mod = _updateQueue.First();
 
-            StatusChanged?.Invoke(this,
+            _notifyService.UpdateStatus(this,
                 $"Updating {_updateQueue.Count} {(_updateQueue.Count == 1 ? "mod" : "mods")} ({mod.Title})..");
 
             bool started = mod.Download();
@@ -285,7 +284,7 @@ public class Steam : IModSource
         }
 
         _updating = false;
-        DownloadProgressChanged?.Invoke(this, 100);
+        _notifyService.UpdateProgress(this, 100);
     }
 
     private async Task MonitorDownloadProgress(Item mod)
@@ -293,7 +292,7 @@ public class Steam : IModSource
         while (mod.IsDownloadPending || mod.IsDownloading)
         {
             double progress = mod.DownloadAmount;
-            DownloadProgressChanged?.Invoke(this, progress * 100f);
+            _notifyService.UpdateProgress(this, progress * 100f);
             await Task.Delay(100);
         }
     }
@@ -340,7 +339,7 @@ public class Steam : IModSource
 
     private void LaunchSteam()
     {
-        StatusChanged?.Invoke(this, "Launching Steam..");
+        _notifyService.UpdateStatus(this, "Launching Steam..");
         Protocol.Open("steam://-/\" -silent");
     }
 

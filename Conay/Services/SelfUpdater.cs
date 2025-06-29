@@ -10,16 +10,13 @@ using Microsoft.Extensions.Logging;
 
 namespace Conay.Services;
 
-public class SelfUpdater(ILogger<SelfUpdater> logger, HttpService http)
+public class SelfUpdater(ILogger<SelfUpdater> logger, HttpService http, NotifyService notifyService)
 {
     private const string LatestReleaseUrl =
         "https://api.github.com/repos/RatajVaver/conay/releases/latest";
 
     private const string InstallerDownloadUrl =
         "https://github.com/RatajVaver/conay/releases/latest/download/ConayInstaller.exe";
-
-    public event EventHandler<string>? StatusChanged;
-    public event EventHandler<double>? DownloadProgressChanged;
 
     private static int[] ParseVersion(string version)
     {
@@ -67,12 +64,12 @@ public class SelfUpdater(ILogger<SelfUpdater> logger, HttpService http)
 
     private void ReportProgress(float progress)
     {
-        DownloadProgressChanged?.Invoke(this, progress * 100);
+        notifyService.UpdateProgress(this, progress * 100);
     }
 
     public async Task DownloadInstaller()
     {
-        StatusChanged?.Invoke(this, "Downloading Conay update..");
+        notifyService.UpdateStatus(this, "Downloading Conay update..");
 
         string appDirectory = AppContext.BaseDirectory;
         string parentDirectory = Directory.GetParent(appDirectory)!.FullName;
@@ -94,11 +91,12 @@ public class SelfUpdater(ILogger<SelfUpdater> logger, HttpService http)
             catch (Exception ex)
             {
                 logger.LogError(ex, "Failed to run the update installer!");
-                StatusChanged?.Invoke(this, "Failed to run the update installer!");
+                notifyService.UpdateStatus(this, "Failed to run the update installer!");
                 return;
             }
 
-            StatusChanged?.Invoke(this, "Update downloaded, installer will be launched and this window will close..");
+            notifyService.UpdateStatus(this,
+                "Update downloaded, installer will be launched and this window will close..");
 
             await Task.Delay(TimeSpan.FromSeconds(3));
 
@@ -107,7 +105,7 @@ public class SelfUpdater(ILogger<SelfUpdater> logger, HttpService http)
         else
         {
             logger.LogError("Failed to download Conay update!");
-            StatusChanged?.Invoke(this, "Failed to update Conay!");
+            notifyService.UpdateStatus(this, "Failed to update Conay!");
         }
     }
 }

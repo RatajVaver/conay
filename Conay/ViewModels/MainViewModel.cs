@@ -22,6 +22,13 @@ namespace Conay.ViewModels;
 public partial class MainViewModel : ViewModelBase
 {
     private readonly PageFactory? _pageFactory;
+    private readonly Steam? _steam;
+    private readonly LaunchState? _launchState;
+    private readonly LauncherConfig? _launcherConfig;
+    private readonly SelfUpdater? _selfUpdater;
+    private readonly PresetSourceFactory? _presetSourceFactory;
+    private readonly ServerPresetFactory? _serverPresetFactory;
+    private readonly ILogger<MainViewModel>? _logger;
 
     [ObservableProperty]
     private bool _isMenuCollapsed;
@@ -42,14 +49,6 @@ public partial class MainViewModel : ViewModelBase
     [ObservableProperty]
     private double _progressBarValue;
 
-    private readonly Steam? _steam;
-    private readonly LaunchState? _launchState;
-    private readonly LauncherConfig? _launcherConfig;
-    private readonly SelfUpdater? _selfUpdater;
-    private readonly PresetSourceFactory? _presetSourceFactory;
-    private readonly ServerPresetFactory? _serverPresetFactory;
-    private readonly ILogger<MainViewModel>? _logger;
-
     public bool IsLaunchPageActive => CurrentPage is LaunchViewModel;
     public bool IsFavoritePageActive => CurrentPage is FavoriteViewModel;
     public bool IsServersPageActive => CurrentPage is ServersViewModel;
@@ -61,9 +60,9 @@ public partial class MainViewModel : ViewModelBase
         _currentPage = new PageViewModel(); // fallback for designer
     }
 
-    public MainViewModel(PageFactory pageFactory, LaunchState launchState, LaunchWorker launchWorker,
-        LauncherConfig launcherConfig, SelfUpdater selfUpdater, Steam steam, ModSourceFactory modSourceFactory,
-        PresetSourceFactory presetSourceFactory, ServerPresetFactory serverPresetFactory, ILogger<MainViewModel> logger)
+    public MainViewModel(PageFactory pageFactory, LaunchState launchState, LauncherConfig launcherConfig,
+        SelfUpdater selfUpdater, Steam steam, NotifyService notifyService, PresetSourceFactory presetSourceFactory,
+        ServerPresetFactory serverPresetFactory, ILogger<MainViewModel> logger)
     {
         _pageFactory = pageFactory;
         _launchState = launchState;
@@ -74,16 +73,8 @@ public partial class MainViewModel : ViewModelBase
         _presetSourceFactory = presetSourceFactory;
         _serverPresetFactory = serverPresetFactory;
 
-        launchWorker.StatusChanged += OnStatusChanged;
-
-        _selfUpdater.StatusChanged += OnStatusChanged;
-        _selfUpdater.DownloadProgressChanged += OnModDownloadProgressChanged;
-
-        _steam.StatusChanged += OnStatusChanged;
-        _steam.DownloadProgressChanged += OnModDownloadProgressChanged;
-
-        modSourceFactory.StatusChanged += OnStatusChanged;
-        modSourceFactory.DownloadProgressChanged += OnModDownloadProgressChanged;
+        notifyService.StatusChanged += OnStatusChanged;
+        notifyService.DownloadProgressChanged += OnModDownloadProgressChanged;
 
         IsMenuCollapsed = launcherConfig.Data.MenuCollapsed;
 

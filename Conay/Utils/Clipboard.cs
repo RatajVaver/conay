@@ -6,13 +6,13 @@ namespace Conay.Utils;
 
 public static class Clipboard
 {
-    public static IClipboard Get()
+    public static IClipboard? Get()
     {
-        return Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime
+        if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            MainWindow: { } window
+            return desktop.MainWindow?.Clipboard;
         }
-            ? window.Clipboard!
-            : null!;
+
+        return null;
     }
 }

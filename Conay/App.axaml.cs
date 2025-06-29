@@ -91,6 +91,7 @@ public class App : Application
         collection.AddSingleton<ModList>();
         collection.AddSingleton<Router>();
         collection.AddSingleton<HttpService>();
+        collection.AddSingleton<NotifyService>();
         collection.AddSingleton<LaunchState>();
         collection.AddSingleton<LaunchWorker>();
         collection.AddSingleton<LauncherConfig>();

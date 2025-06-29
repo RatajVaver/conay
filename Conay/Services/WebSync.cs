@@ -14,23 +14,22 @@ public class WebSync : IModSource
     private readonly ILogger<WebSync> _logger;
     private readonly HttpService _http;
     private readonly ModList _modList;
+    private readonly NotifyService _notifyService;
     private readonly string _sourceName;
     private readonly string _indexUrl;
     private readonly string _modsUrl;
-
-    public event EventHandler<string>? StatusChanged;
-    public event EventHandler<double>? DownloadProgressChanged;
 
     private readonly List<ExternalModInfo> _updateQueue = [];
     private List<ExternalModInfo> _mods = [];
     private bool _loaded;
 
-    public WebSync(ILogger<WebSync> logger, HttpService http, ModList modList, string sourceName, string indexUrl,
-        string modsUrl)
+    public WebSync(ILogger<WebSync> logger, HttpService http, ModList modList, NotifyService notifyService,
+        string sourceName, string indexUrl, string modsUrl)
     {
         _logger = logger;
         _http = http;
         _modList = modList;
+        _notifyService = notifyService;
         _sourceName = sourceName;
         _indexUrl = indexUrl;
         _modsUrl = modsUrl;
@@ -66,7 +65,7 @@ public class WebSync : IModSource
 
     public async Task CheckModUpdates(string[] modNames)
     {
-        StatusChanged?.Invoke(this, "Checking external mod updates..");
+        _notifyService.UpdateStatus(this, "Checking external mod updates..");
 
         foreach (string pakName in modNames)
         {
@@ -86,18 +85,18 @@ public class WebSync : IModSource
             await UpdateMods();
         }
 
-        StatusChanged?.Invoke(this, "External mods are up to date!");
+        _notifyService.UpdateStatus(this, "External mods are up to date!");
     }
 
     private async Task UpdateMods()
     {
-        DownloadProgressChanged?.Invoke(this, 0);
+        _notifyService.UpdateProgress(this, 0);
 
         while (_updateQueue.Count > 0)
         {
             ExternalModInfo mod = _updateQueue.First();
 
-            StatusChanged?.Invoke(this,
+            _notifyService.UpdateStatus(this,
                 $"Updating {_updateQueue.Count} {(_updateQueue.Count == 1 ? "mod" : "mods")} ({mod.Title ?? mod.FileName})..");
 
             bool success = await _http.Download($"{_modsUrl}/{mod.FileName}.pak",
@@ -108,11 +107,11 @@ public class WebSync : IModSource
             _updateQueue.RemoveAt(0);
         }
 
-        DownloadProgressChanged?.Invoke(this, 100);
+        _notifyService.UpdateProgress(this, 100);
     }
 
     private void ReportProgress(float progress)
     {
-        DownloadProgressChanged?.Invoke(this, progress * 100);
+        _notifyService.UpdateProgress(this, progress * 100);
     }
 }

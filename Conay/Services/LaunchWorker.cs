@@ -17,9 +17,9 @@ public class LaunchWorker(
     Steam steam,
     GameConfig gameConfig,
     LauncherConfig launcherConfig,
-    ModSourceFactory modSourceFactory)
+    ModSourceFactory modSourceFactory,
+    NotifyService notifyService)
 {
-    public event EventHandler<string>? StatusChanged;
     private bool _launching;
 
     public void Launch()
@@ -30,7 +30,7 @@ public class LaunchWorker(
         string presetName = string.IsNullOrEmpty(state.Name) ? "last played modlist" : state.Name;
 
         logger.LogDebug("Launching '{Preset}'..", presetName);
-        StatusChanged?.Invoke(this, $"Launching {presetName}..");
+        notifyService.UpdateStatus(this, $"Launching {presetName}..");
 
         _ = LaunchSequence();
     }
@@ -73,11 +73,11 @@ public class LaunchWorker(
         }
         else
         {
-            StatusChanged?.Invoke(this, "All mods are updated.");
+            notifyService.UpdateStatus(this, "All mods are updated.");
 
             if (launcherConfig.Data.Clipboard && state.Ip != string.Empty)
             {
-                _ = Clipboard.Get().SetTextAsync(state.Ip);
+                _ = Clipboard.Get()?.SetTextAsync(state.Ip);
             }
 
             _launching = false;
@@ -86,7 +86,7 @@ public class LaunchWorker(
 
     private async Task RunGame()
     {
-        StatusChanged?.Invoke(this, "Launching the game..");
+        notifyService.UpdateStatus(this, "Launching the game..");
 
         if (launcherConfig.Data.DirectConnect && state.Ip != string.Empty)
         {
@@ -100,16 +100,16 @@ public class LaunchWorker(
 
         if (launcherConfig.Data.Clipboard && state.Ip != string.Empty)
         {
-            _ = Clipboard.Get().SetTextAsync(state.Ip);
+            _ = Clipboard.Get()?.SetTextAsync(state.Ip);
         }
 
         for (int i = 20; i > 1; i--)
         {
-            StatusChanged?.Invoke(this, $"Launching the game (this window will close in {i} seconds)..");
+            notifyService.UpdateStatus(this, $"Launching the game (this window will close in {i} seconds)..");
             await Task.Delay(TimeSpan.FromSeconds(1));
         }
 
-        StatusChanged?.Invoke(this, "Launching the game..");
+        notifyService.UpdateStatus(this, "Launching the game..");
     }
 
     private void LaunchConan(string? args = null)
