@@ -46,6 +46,7 @@ public partial class ModItemViewModel : ViewModelBase, ILazyLoad
     public bool ShowDefaultIcon => string.IsNullOrEmpty(Icon) && _launcherConfig.Data.DisplayIcons;
 
     public bool IsLoaded { get; set; }
+    public bool IsVisible { get; set; }
 
     public ModItemViewModel(Steam steam, LauncherConfig launcherConfig, ModSourceFactory modSourceFactory,
         string modPath)

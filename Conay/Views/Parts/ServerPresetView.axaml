@@ -70,9 +70,12 @@
             </StackPanel>
             <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
                 <StackPanel Orientation="Vertical" Margin="20 0">
-                    <Label Content="{Binding Players, Mode=OneWay}" FontSize="22"
-                           Foreground="{Binding PlayerCountColor, Mode=OneWay}" HorizontalAlignment="Right">
-                    </Label>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <Label Classes="spinner" Content="&#xeb44;" IsVisible="{Binding RefreshInProgress}"></Label>
+                        <Label Content="{Binding Players, Mode=OneWay}" FontSize="22"
+                               Foreground="{Binding PlayerCountColor, Mode=OneWay}">
+                        </Label>
+                    </StackPanel>
                     <Label Content="{Binding Map, Mode=OneWay}" HorizontalAlignment="Right"></Label>
                 </StackPanel>
                 <Button Cursor="Hand" Classes="play" Command="{Binding LaunchServerPresetCommand}">

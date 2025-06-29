@@ -24,4 +24,6 @@ public class ServerPresetFactory(IServiceProvider serviceProvider, Steam steam)
 
         return preset;
     }
+
+    public List<ServerPresetViewModel> GetAll() => _serverPresets;
 }

@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
+using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
@@ -44,6 +47,7 @@ public partial class MainViewModel : ViewModelBase
     private readonly LauncherConfig? _launcherConfig;
     private readonly SelfUpdater? _selfUpdater;
     private readonly PresetSourceFactory? _presetSourceFactory;
+    private readonly ServerPresetFactory? _serverPresetFactory;
     private readonly ILogger<MainViewModel>? _logger;
 
     public bool IsLaunchPageActive => CurrentPage is LaunchViewModel;
@@ -59,7 +63,7 @@ public partial class MainViewModel : ViewModelBase
 
     public MainViewModel(PageFactory pageFactory, LaunchState launchState, LaunchWorker launchWorker,
         LauncherConfig launcherConfig, SelfUpdater selfUpdater, Steam steam, ModSourceFactory modSourceFactory,
-        PresetSourceFactory presetSourceFactory, ILogger<MainViewModel> logger)
+        PresetSourceFactory presetSourceFactory, ServerPresetFactory serverPresetFactory, ILogger<MainViewModel> logger)
     {
         _pageFactory = pageFactory;
         _launchState = launchState;
@@ -68,6 +72,7 @@ public partial class MainViewModel : ViewModelBase
         _steam = steam;
         _logger = logger;
         _presetSourceFactory = presetSourceFactory;
+        _serverPresetFactory = serverPresetFactory;
 
         launchWorker.StatusChanged += OnStatusChanged;
 
@@ -91,6 +96,13 @@ public partial class MainViewModel : ViewModelBase
         else
         {
             _ = RunUpdates();
+
+            if (_launcherConfig.Data.QueryServers)
+            {
+                DispatcherTimer refreshTimer = new() { Interval = TimeSpan.FromSeconds(30) };
+                refreshTimer.Tick += (_, _) => RefreshVisibleServers();
+                refreshTimer.Start();
+            }
         }
 
         _ = CheckStartupArguments();
@@ -222,5 +234,14 @@ public partial class MainViewModel : ViewModelBase
         }
 
         CurrentPage = _pageFactory!.GetPageViewModel<LaunchViewModel>(lvm => { lvm.LaunchCommand.Execute(null); });
+    }
+
+    private void RefreshVisibleServers()
+    {
+        List<ServerPresetViewModel> serverPresets = _serverPresetFactory!.GetAll();
+        foreach (ServerPresetViewModel preset in serverPresets.Where(preset => preset.IsVisible))
+        {
+            _ = preset.GetServerOnlineStatus();
+        }
     }
 }

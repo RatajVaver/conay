@@ -107,7 +107,7 @@
         <Setter Property="Margin" Value="0"></Setter>
         <Setter Property="Padding" Value="0"></Setter>
     </Style>
-    
+
     <Style Selector="Button.unfavorite">
         <Setter Property="Foreground" Value="#f0294d"></Setter>
     </Style>
@@ -126,7 +126,7 @@
         <Setter Property="Background" Value="Transparent"></Setter>
         <Setter Property="Foreground" Value="#5865f2"></Setter>
     </Style>
-    
+
     <Style Selector="Button.link:pointerover /template/ ContentPresenter">
         <Setter Property="Background" Value="Transparent"></Setter>
         <Setter Property="Foreground" Value="#d9cb9a"></Setter>
@@ -146,6 +146,23 @@
         <Setter Property="FontSize" Value="14"></Setter>
         <Setter Property="FontFamily" Value="{DynamicResource Phosphor}"></Setter>
         <Setter Property="VerticalAlignment" Value="Center"></Setter>
+    </Style>
+
+    <Style Selector="Label.spinner">
+        <Setter Property="Foreground" Value="#666"></Setter>
+        <Setter Property="FontSize" Value="18"></Setter>
+        <Setter Property="FontFamily" Value="{DynamicResource Phosphor}"></Setter>
+        <Setter Property="VerticalAlignment" Value="Center"></Setter>
+        <Style.Animations>
+            <Animation Duration="0:0:1" IterationCount="Infinite">
+                <KeyFrame Cue="0%">
+                    <Setter Property="RotateTransform.Angle" Value="0" />
+                </KeyFrame>
+                <KeyFrame Cue="100%">
+                    <Setter Property="RotateTransform.Angle" Value="360" />
+                </KeyFrame>
+            </Animation>
+        </Style.Animations>
     </Style>
 
     <!--

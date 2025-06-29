@@ -66,6 +66,9 @@ public partial class ServerPresetViewModel : ViewModelBase, ILazyLoad
     [ObservableProperty]
     private string _ping = "Ping: N/A";
 
+    [ObservableProperty]
+    private bool _refreshInProgress;
+
     public bool ShowIcon => !string.IsNullOrEmpty(Icon)
                             && _launcherConfig.Data is { DisplayIcons: true, OfflineMode: false };
 
@@ -82,6 +85,7 @@ public partial class ServerPresetViewModel : ViewModelBase, ILazyLoad
     public string ModdedTooltip => $"Modded ({ModsCount} mods)";
 
     public bool IsLoaded { get; set; }
+    public bool IsVisible { get; set; }
 
     public readonly string File;
     private int? _queryPort;
@@ -178,14 +182,17 @@ public partial class ServerPresetViewModel : ViewModelBase, ILazyLoad
         }
     }
 
-    private async Task GetServerOnlineStatus()
+    public async Task GetServerOnlineStatus()
     {
         if (_queryPort == null) return;
+
+        RefreshInProgress = true;
 
         ServerQueryResult result =
             await Steam.QueryServer(IpAddress.Split(':')[0], (int)_queryPort, _failedQueries > 0);
         if (result.MaxPlayers <= 0)
         {
+            RefreshInProgress = false;
             _failedQueries++;
             if (_failedQueries <= 1)
             {
@@ -201,6 +208,7 @@ public partial class ServerPresetViewModel : ViewModelBase, ILazyLoad
 
         UpdatePing(result.Ping);
         UpdatePlayerCountColor(result.Players, result.MaxPlayers);
+        RefreshInProgress = false;
     }
 
     [RelayCommand]

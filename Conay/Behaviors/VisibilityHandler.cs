@@ -39,21 +39,22 @@ public class VisibilityHandler
 
     private static void OnControlAttached(object? sender, VisualTreeAttachmentEventArgs e)
     {
-        if (sender is Control control)
+        if (sender is Control { DataContext: ILazyLoad vm })
         {
-            CheckAndTriggerLoad(control);
+            vm.IsVisible = true;
+
+            if (!vm.IsLoaded)
+            {
+                _ = vm.LoadDataAsync();
+            }
         }
     }
 
     private static void OnControlDetached(object? sender, VisualTreeAttachmentEventArgs e)
     {
-    }
-
-    private static void CheckAndTriggerLoad(Control control)
-    {
-        if (control.DataContext is ILazyLoad { IsLoaded: false } vm)
+        if (sender is Control { DataContext: ILazyLoad vm })
         {
-            _ = vm.LoadDataAsync();
+            vm.IsVisible = false;
         }
     }
 }
