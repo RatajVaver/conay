@@ -145,7 +145,10 @@ public partial class MainViewModel : ViewModelBase
         if (_steam == null)
             return;
 
-        await _steam.CheckSubscribedModUpdates();
+        if (_launcherConfig?.Data.UpdateSubscribedModsOnLaunch ?? false)
+        {
+            await _steam.CheckSubscribedModUpdates();
+        }
     }
 
     private async Task CheckSelfUpdate()
@@ -156,11 +159,20 @@ public partial class MainViewModel : ViewModelBase
         if (_launcherConfig.Data is not { OfflineMode: false, CheckUpdates: true })
             return;
 
-        StatusText = "Checking Conay update..";
+        StatusText = "Checking Conay updates..";
 
         bool foundUpdate = await _selfUpdater.CheckUpdate();
         if (!foundUpdate)
+        {
+            if (StatusText == "Checking Conay updates..")
+            {
+                StatusText = "";
+            }
+
             return;
+        }
+
+        StatusText = "New Conay update available!";
 
         IMsBox<ButtonResult> box = MessageBoxManager
             .GetMessageBoxStandard("Conay",
@@ -170,6 +182,10 @@ public partial class MainViewModel : ViewModelBase
         if (result.Equals(ButtonResult.Yes))
         {
             await _selfUpdater.DownloadInstaller();
+        }
+        else if (StatusText == "New Conay update available!")
+        {
+            StatusText = "";
         }
     }
 
