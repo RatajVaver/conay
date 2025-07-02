@@ -50,6 +50,8 @@ public partial class ServerPresetViewModel : ViewModelBase, ILazyLoad
     [NotifyPropertyChangedFor(nameof(IsMechPvP))]
     [NotifyPropertyChangedFor(nameof(IsDicePvP))]
     [NotifyPropertyChangedFor(nameof(HasConaySync))]
+    [NotifyPropertyChangedFor(nameof(ProvidedByServerAdmins))]
+    [NotifyPropertyChangedFor(nameof(ProvidedByCommunity))]
     private string[]? _tags;
 
     [ObservableProperty]
@@ -82,6 +84,8 @@ public partial class ServerPresetViewModel : ViewModelBase, ILazyLoad
     public bool IsMechPvP => Tags?.Contains("mech") ?? false;
     public bool IsDicePvP => Tags?.Contains("dice") ?? false;
     public bool HasConaySync => Tags?.Contains("sync") ?? false;
+    public bool ProvidedByServerAdmins => !HasConaySync && _provider.GetProviderName() == "ratajmods";
+    public bool ProvidedByCommunity => !HasConaySync && _provider.GetProviderName() != "ratajmods";
     public string ModdedTooltip => $"Modded ({ModsCount} mods)";
 
     public bool IsLoaded { get; set; }

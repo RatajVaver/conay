@@ -51,6 +51,14 @@
                            IsVisible="{Binding HasConaySync, Mode=OneWay}"
                            ToolTip.Tip="ConaySync (Modlist is always up to date)">
                     </Label>
+                    <Label Classes="badge" Content="&#xe606;"
+                           IsVisible="{Binding ProvidedByServerAdmins, Mode=OneWay}"
+                           ToolTip.Tip="Officially supported (Modlist is maintained by the server admins)">
+                    </Label>
+                    <Label Classes="badge orange" Content="&#xe576;"
+                           IsVisible="{Binding ProvidedByCommunity, Mode=OneWay}"
+                           ToolTip.Tip="Unofficially supported (Modlist is maintained by players through GitHub and might be out of date)">
+                    </Label>
                     <Label Classes="badge" Content="&#xe2da;"
                            IsVisible="{Binding !IsModded, Mode=OneWay}" ToolTip.Tip="Vanilla (no mods)">
                     </Label>

@@ -148,6 +148,14 @@
         <Setter Property="VerticalAlignment" Value="Center"></Setter>
     </Style>
 
+    <Style Selector="Label.red">
+        <Setter Property="Foreground" Value="#e35c4d"></Setter>
+    </Style>
+
+    <Style Selector="Label.orange">
+        <Setter Property="Foreground" Value="#e3bb4d"></Setter>
+    </Style>
+
     <Style Selector="Label.spinner">
         <Setter Property="Foreground" Value="#666"></Setter>
         <Setter Property="FontSize" Value="18"></Setter>
