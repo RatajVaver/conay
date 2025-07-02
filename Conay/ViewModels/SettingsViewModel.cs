@@ -17,6 +17,9 @@ public partial class SettingsViewModel : PageViewModel
     private bool _checkUpdates = true;
 
     [ObservableProperty]
+    private bool _updateSubscribedModsOnLaunch = true;
+
+    [ObservableProperty]
     private bool _launchGame = true;
 
     [ObservableProperty]
@@ -49,6 +52,7 @@ public partial class SettingsViewModel : PageViewModel
         _gameConfig = gameConfig;
 
         CheckUpdates = config.Data.CheckUpdates;
+        UpdateSubscribedModsOnLaunch = config.Data.UpdateSubscribedModsOnLaunch;
         LaunchGame = config.Data.LaunchGame;
         DirectConnect = config.Data.DirectConnect;
         DisableCinematic = config.Data.DisableCinematic;
@@ -64,6 +68,13 @@ public partial class SettingsViewModel : PageViewModel
     {
         if (value == _config.Data.CheckUpdates) return;
         _config.Data.CheckUpdates = value;
+        _ = _config.ScheduleConfigSave();
+    }
+
+    partial void OnUpdateSubscribedModsOnLaunchChanged(bool value)
+    {
+        if (value == _config.Data.UpdateSubscribedModsOnLaunch) return;
+        _config.Data.UpdateSubscribedModsOnLaunch = value;
         _ = _config.ScheduleConfigSave();
     }
 

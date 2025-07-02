@@ -8,6 +8,9 @@ public class Config
     [JsonPropertyName("checkUpdates")]
     public bool CheckUpdates { get; set; } = true;
 
+    [JsonPropertyName("updateSubscribed")]
+    public bool UpdateSubscribedModsOnLaunch { get; set; } = true;
+
     [JsonPropertyName("launch")]
     public bool LaunchGame { get; set; } = true;
 

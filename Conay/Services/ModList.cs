@@ -18,6 +18,7 @@ public class ModList
     private readonly GameConfig _gameConfig;
 
     private string? _modListPath;
+    private string? _serverModListPath;
     private string? _workshopPath;
     public string? LocalModsPath;
     private readonly List<string> _currentMods = [];
@@ -38,22 +39,18 @@ public class ModList
         if (_steam.AppInstallDir == string.Empty) return;
 
         _modListPath = Path.GetFullPath(Path.Combine(_steam.AppInstallDir, "ConanSandbox/Mods/modlist.txt"));
+        _serverModListPath = Path.GetFullPath(Path.Combine(_steam.AppInstallDir, "ConanSandbox/servermodlist.txt"));
         _workshopPath = Path.GetFullPath(Path.Combine(_steam.AppInstallDir, "../../workshop/content/440900"));
         LocalModsPath = Path.GetFullPath(Path.Combine(_steam.AppInstallDir, "ConanSandbox/Mods"));
     }
 
-    private void ParseModList()
+    private void LoadModListFromFile(string path)
     {
-        RefreshPaths();
-
-        if (!File.Exists(_modListPath))
-            return;
-
         _currentMods.Clear();
 
         try
         {
-            string[] lines = File.ReadAllLines(_modListPath);
+            string[] lines = File.ReadAllLines(path);
             for (int i = 0; i < lines.Length; i += 1)
             {
                 string line = lines[i].Replace('\\', '/');
@@ -71,6 +68,16 @@ public class ModList
         }
 
         _modlistParsed = true;
+    }
+
+    private void ParseModList()
+    {
+        RefreshPaths();
+
+        if (!File.Exists(_modListPath))
+            return;
+
+        LoadModListFromFile(_modListPath);
 
         _logger.LogDebug("Currently loaded: {Mods} mods", _currentMods.Count);
     }
@@ -170,6 +177,13 @@ public class ModList
 
     public string CreatePresetFromCurrentModList()
     {
+        RefreshPaths();
+
+        if (_serverModListPath != null && File.Exists(_serverModListPath))
+        {
+            LoadModListFromFile(_serverModListPath);
+        }
+
         string appDirectory = AppContext.BaseDirectory;
         string presetsPath = Path.GetFullPath(Path.Combine(appDirectory, "servers"));
         string fileName = $"preset{Epoch.Current.ToString()[6..]}.json";

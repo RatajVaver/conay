@@ -18,6 +18,10 @@
                           Content="Direct connect to server after launch"
                           ToolTip.Tip="Uncheck this if your game hangs on trying to connect to the server.">
                 </CheckBox>
+                <CheckBox IsChecked="{Binding UpdateSubscribedModsOnLaunch, Mode=TwoWay}"
+                          Content="Update subscribed mods on Conay startup"
+                          ToolTip.Tip="Uncheck this if you don't want to update subscribed Workshop mods right away as Conay launches. Mods will still update when selecting a server and launching the game regardless of this setting.">
+                </CheckBox>
                 <CheckBox IsChecked="{Binding OfflineMode, Mode=TwoWay}"
                           Content="Offline mode (no internet access)"
                           ToolTip.Tip="Check this and restart the app if you only want to swap modlists while being offline.">
