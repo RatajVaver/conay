@@ -85,7 +85,7 @@ public partial class ServerPresetViewModel : ViewModelBase, ILazyLoad
     public bool IsDicePvP => Tags?.Contains("dice") ?? false;
     public bool HasConaySync => Tags?.Contains("sync") ?? false;
     public bool ProvidedByServerAdmins => !HasConaySync && _provider.GetProviderName() == "ratajmods";
-    public bool ProvidedByCommunity => !HasConaySync && _provider.GetProviderName() != "ratajmods";
+    public bool ProvidedByCommunity => !HasConaySync && _provider.GetProviderName() == "github";
     public string ModdedTooltip => $"Modded ({ModsCount} mods)";
 
     public bool IsLoaded { get; set; }
