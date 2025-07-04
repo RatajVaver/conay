@@ -7,7 +7,7 @@ from operator import itemgetter
 os.chdir(os.path.dirname(os.path.abspath(sys.argv[0])))
 
 servers = []
-ranks = { "halcyon": 5, "crossroads": 4, "chains": 3, "wod": 2, "tyranny": 1 }
+ranks = { "halcyon": 3, "crossroads": 6, "chains": 5, "tyranny": 4, "wildheart": 7, "neoneden": 5 }
 
 for filename in glob.glob("../servers/*.json"):
     with open(filename, "r") as content:

@@ -1,15 +1,23 @@
 [
     {
-        "file": "halcyon",
-        "name": "Halcyon D&D"
+        "file": "wildheart",
+        "name": "The Wildheart"
     },
     {
         "file": "crossroads",
         "name": "Crossroads: Forgotten Realms RP"
     },
     {
+        "file": "neoneden",
+        "name": "Neon Eden"
+    },
+    {
         "file": "tyranny",
         "name": "Lands of Tyranny"
+    },
+    {
+        "file": "halcyon",
+        "name": "Halcyon D&D"
     },
     {
         "file": "aloria",
@@ -32,10 +40,6 @@
         "name": "Mortal Memories"
     },
     {
-        "file": "neoneden",
-        "name": "Neon Eden"
-    },
-    {
         "file": "newhorizons",
         "name": "New Horizons"
     },
@@ -46,14 +50,6 @@
     {
         "file": "temptingfate",
         "name": "Tempting Fate"
-    },
-    {
-        "file": "veilofsouls",
-        "name": "Veil of Souls"
-    },
-    {
-        "file": "wildheart",
-        "name": "The Wildheart"
     },
     {
         "file": "worldofdarkness",
