@@ -1,14 +1,46 @@
 ﻿using System;
 using System.IO;
+using System.Net;
 using System.Net.Http;
+using System.Net.Sockets;
 using System.Threading.Tasks;
 using Conay.Utils;
 using Microsoft.Extensions.Logging;
 
 namespace Conay.Services;
 
-public class HttpService(ILogger<HttpService> logger)
+public class HttpService
 {
+    private readonly ILogger<HttpService> _logger;
+    private readonly SocketsHttpHandler _handler;
+
+    public HttpService(ILogger<HttpService> logger)
+    {
+        _logger = logger;
+
+        _handler = new SocketsHttpHandler
+        {
+            ConnectCallback = async (context, cancellationToken) =>
+            {
+                IPHostEntry entry = await Dns.GetHostEntryAsync(context.DnsEndPoint.Host, AddressFamily.InterNetwork,
+                    cancellationToken);
+                Socket socket = new(SocketType.Stream, ProtocolType.Tcp);
+                socket.NoDelay = true;
+
+                try
+                {
+                    await socket.ConnectAsync(entry.AddressList, context.DnsEndPoint.Port, cancellationToken);
+                    return new NetworkStream(socket, ownsSocket: true);
+                }
+                catch
+                {
+                    socket.Dispose();
+                    throw;
+                }
+            }
+        };
+    }
+
     public async Task<string> Get(string url, TimeSpan? timeout = null)
     {
         using HttpClient client = new();
@@ -21,7 +53,7 @@ public class HttpService(ILogger<HttpService> logger)
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Failed to read data from {Url}!", url);
+            _logger.LogError(ex, "Failed to read data from: {Url}", url);
             return string.Empty;
         }
     }
@@ -39,7 +71,7 @@ public class HttpService(ILogger<HttpService> logger)
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Failed to post data to {Url}!", url);
+            _logger.LogError(ex, "Failed to post data to: {Url}", url);
             return string.Empty;
         }
     }
@@ -59,7 +91,7 @@ public class HttpService(ILogger<HttpService> logger)
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Failed to download {Url}!", url);
+            _logger.LogError(ex, "Failed to download: {Url}", url);
             return false;
         }
 

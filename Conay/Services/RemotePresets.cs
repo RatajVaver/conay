@@ -24,13 +24,19 @@ public class RemotePresets(
         string json = await http.Get(indexUrl);
         List<ServerInfo> servers = [];
 
+        if (json == string.Empty)
+        {
+            logger.LogError("Failed to load server list from: {URL}", indexUrl);
+            return servers;
+        }
+
         try
         {
             servers = JsonSerializer.Deserialize<List<ServerInfo>>(json) ?? [];
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Failed to parse server list from {URL}!", indexUrl);
+            logger.LogError(ex, "Failed to parse server list from: {URL}", indexUrl);
         }
 
         foreach (ServerInfo server in servers)
@@ -55,7 +61,7 @@ public class RemotePresets(
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Failed to parse {File}!", fileName);
+            logger.LogError(ex, "Failed to parse: {File}", fileName);
         }
 
         if (preset == null) return null;
