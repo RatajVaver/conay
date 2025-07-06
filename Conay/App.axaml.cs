@@ -23,6 +23,8 @@ public class App : Application
 
     public override void Initialize()
     {
+        AppContext.SetSwitch("System.Net.DisableIPv6", true);
+
         AvaloniaXamlLoader.Load(this);
         DataTemplates.Add(new ViewLocator());
 

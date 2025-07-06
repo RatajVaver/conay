@@ -54,6 +54,13 @@ public class SelfUpdater(ILogger<SelfUpdater> logger, HttpService http, NotifySe
     {
         string currentVersion = Meta.GetVersion();
         string json = await http.Get(LatestReleaseUrl);
+
+        if (json == string.Empty)
+        {
+            logger.LogError("Failed to check Conay updates!");
+            return false;
+        }
+
         AppReleaseData? releaseData = JsonSerializer.Deserialize<AppReleaseData>(json);
         if (releaseData == null)
             return false;
