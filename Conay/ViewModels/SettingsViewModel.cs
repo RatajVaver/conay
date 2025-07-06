@@ -78,33 +78,44 @@ public partial class SettingsViewModel : PageViewModel
         DefaultTabIndex = tabIndex;
     }
 
-    partial void OnCheckUpdatesChanged(bool value)
+    private void UpdateConfig<T>(T currentValue, T newValue, Action<T> updateConfig)
     {
-        if (value == _config.Data.CheckUpdates) return;
-        _config.Data.CheckUpdates = value;
+        if (Equals(currentValue, newValue)) return;
+        updateConfig(newValue);
         _ = _config.ScheduleConfigSave();
     }
 
-    partial void OnUpdateSubscribedModsOnLaunchChanged(bool value)
-    {
-        if (value == _config.Data.UpdateSubscribedModsOnLaunch) return;
-        _config.Data.UpdateSubscribedModsOnLaunch = value;
-        _ = _config.ScheduleConfigSave();
-    }
+    partial void OnCheckUpdatesChanged(bool value) =>
+        UpdateConfig(_config.Data.CheckUpdates, value,
+            v => _config.Data.CheckUpdates = v);
 
-    partial void OnLaunchGameChanged(bool value)
-    {
-        if (value == _config.Data.LaunchGame) return;
-        _config.Data.LaunchGame = value;
-        _ = _config.ScheduleConfigSave();
-    }
+    partial void OnUpdateSubscribedModsOnLaunchChanged(bool value) =>
+        UpdateConfig(_config.Data.UpdateSubscribedModsOnLaunch, value,
+            v => _config.Data.UpdateSubscribedModsOnLaunch = v);
 
-    partial void OnDirectConnectChanged(bool value)
-    {
-        if (value == _config.Data.DirectConnect) return;
-        _config.Data.DirectConnect = value;
-        _ = _config.ScheduleConfigSave();
-    }
+    partial void OnLaunchGameChanged(bool value) =>
+        UpdateConfig(_config.Data.LaunchGame, value,
+            v => _config.Data.LaunchGame = v);
+
+    partial void OnDirectConnectChanged(bool value) =>
+        UpdateConfig(_config.Data.DirectConnect, value,
+            v => _config.Data.DirectConnect = v);
+
+    partial void OnOfflineModeChanged(bool value) =>
+        UpdateConfig(_config.Data.OfflineMode, value,
+            v => _config.Data.OfflineMode = v);
+
+    partial void OnDisplayIconsChanged(bool value) =>
+        UpdateConfig(_config.Data.DisplayIcons, value,
+            v => _config.Data.DisplayIcons = v);
+    
+    partial void OnClipboardChanged(bool value) =>
+        UpdateConfig(_config.Data.Clipboard, value,
+            v => _config.Data.Clipboard = v);
+
+    partial void OnQueryServersChanged(bool value) =>
+        UpdateConfig(_config.Data.QueryServers, value,
+            v => _config.Data.QueryServers = v);
 
     partial void OnDisableCinematicChanged(bool value)
     {
@@ -158,20 +169,6 @@ public partial class SettingsViewModel : PageViewModel
         }
     }
 
-    partial void OnOfflineModeChanged(bool value)
-    {
-        if (value == _config.Data.OfflineMode) return;
-        _config.Data.OfflineMode = value;
-        _ = _config.ScheduleConfigSave();
-    }
-
-    partial void OnDisplayIconsChanged(bool value)
-    {
-        if (value == _config.Data.DisplayIcons) return;
-        _config.Data.DisplayIcons = value;
-        _ = _config.ScheduleConfigSave();
-    }
-
     partial void OnUseCacheChanged(bool value)
     {
         if (value == _config.Data.UseCache) return;
@@ -187,10 +184,10 @@ public partial class SettingsViewModel : PageViewModel
 
     partial void OnDefaultTabIndexChanged(int value)
     {
-        if(value < 0 || value >= _tabs.Length) return;
+        if (value < 0 || value >= _tabs.Length) return;
         string tabName = _tabs[value];
 
-        if(tabName == _config.Data.DefaultTab) return;
+        if (tabName == _config.Data.DefaultTab) return;
         _config.Data.DefaultTab = tabName;
         _ = _config.ScheduleConfigSave();
     }
@@ -205,20 +202,6 @@ public partial class SettingsViewModel : PageViewModel
             _config.Data.History.Clear();
         }
 
-        _ = _config.ScheduleConfigSave();
-    }
-
-    partial void OnClipboardChanged(bool value)
-    {
-        if (value == _config.Data.Clipboard) return;
-        _config.Data.Clipboard = value;
-        _ = _config.ScheduleConfigSave();
-    }
-
-    partial void OnQueryServersChanged(bool value)
-    {
-        if (value == _config.Data.QueryServers) return;
-        _config.Data.QueryServers = value;
         _ = _config.ScheduleConfigSave();
     }
 

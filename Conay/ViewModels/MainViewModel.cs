@@ -75,7 +75,7 @@ public partial class MainViewModel : ViewModelBase
 
         notifyService.StatusChanged += OnStatusChanged;
         notifyService.DownloadProgressChanged += OnModDownloadProgressChanged;
-        
+
         router.OnBeforeLaunch += BeforeLaunch;
         router.ShowLaunchForPreset += ShowLaunchForPreset;
 
@@ -157,6 +157,10 @@ public partial class MainViewModel : ViewModelBase
         if (_launcherConfig?.Data.UpdateSubscribedModsOnLaunch ?? false)
         {
             await _steam.CheckSubscribedModUpdates();
+        }
+        else if (StatusText == "Loading..")
+        {
+            StatusText = "";
         }
     }
 

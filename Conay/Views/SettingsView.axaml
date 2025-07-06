@@ -36,7 +36,8 @@
                 </CheckBox>
                 <StackPanel Orientation="Horizontal">
                     <Label Content="Default tab:" VerticalAlignment="Center"></Label>
-                    <ComboBox SelectedIndex="{Binding DefaultTabIndex, Mode=TwoWay}" MaxDropDownHeight="100" Margin="5">
+                    <ComboBox SelectedIndex="{Binding DefaultTabIndex, Mode=TwoWay}" MaxDropDownHeight="100" Margin="5"
+                              Padding="10 0" MinWidth="120">
                         <ComboBoxItem>Launch</ComboBoxItem>
                         <ComboBoxItem>Favorite</ComboBoxItem>
                         <ComboBoxItem>Servers</ComboBoxItem>
