@@ -48,7 +48,18 @@ public class App : Application
             desktop.MainWindow = splashScreen;
             splashScreen.Show();
 
-            Dispatcher.UIThread.Post(() => { InitializeApplication(desktop, splashScreen); });
+            Dispatcher.UIThread.Post(async void () =>
+            {
+                try
+                {
+                    await Dispatcher.UIThread.InvokeAsync(() => { }, DispatcherPriority.Render);
+                    InitializeApplication(desktop, splashScreen);
+                }
+                catch (Exception ex)
+                {
+                    LogFatalException("Failed to initialize application", ex);
+                }
+            });
         }
 
         base.OnFrameworkInitializationCompleted();

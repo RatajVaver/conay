@@ -60,6 +60,12 @@ public class RemotePresets(
 
         string json = await http.Get($"{serversDirectory}/{fileName}.json");
 
+        if (json == string.Empty)
+        {
+            logger.LogError("Failed to fetch server data for: {File}", fileName);
+            return null;
+        }
+
         try
         {
             preset = JsonSerializer.Deserialize<ServerData>(json);
