@@ -35,6 +35,12 @@ public class Config
     [JsonPropertyName("displayIcons")]
     public bool DisplayIcons { get; set; } = true;
 
+    [JsonPropertyName("cache")]
+    public bool UseCache { get; set; } = true;
+
+    [JsonPropertyName("defaultTab")]
+    public string DefaultTab { get; set; } = "servers";
+
     [JsonPropertyName("queryServers")]
     public bool QueryServers { get; set; } = true;
 

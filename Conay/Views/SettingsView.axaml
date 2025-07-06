@@ -34,10 +34,15 @@
                           Content="Copy IP to clipboard on launch"
                           ToolTip.Tip="IP address of the selected server will be copied into your clipboard so that you can easily Ctrl+V it into the Direct Connect window later.">
                 </CheckBox>
-                <CheckBox IsChecked="{Binding DisplayIcons, Mode=TwoWay}"
-                          Content="Display icons for mods and servers"
-                          ToolTip.Tip="Uncheck this if you don't want to see icons or if the app runs slow or takes long to load.">
-                </CheckBox>
+                <StackPanel Orientation="Horizontal">
+                    <Label Content="Default tab:" VerticalAlignment="Center"></Label>
+                    <ComboBox SelectedIndex="{Binding DefaultTabIndex, Mode=TwoWay}" MaxDropDownHeight="100" Margin="5">
+                        <ComboBoxItem>Launch</ComboBoxItem>
+                        <ComboBoxItem>Favorite</ComboBoxItem>
+                        <ComboBoxItem>Servers</ComboBoxItem>
+                        <ComboBoxItem>Presets</ComboBoxItem>
+                    </ComboBox>
+                </StackPanel>
             </StackPanel>
             <StackPanel Grid.Column="1">
                 <Label Content="Server List Settings"></Label>
@@ -48,6 +53,14 @@
                 <CheckBox IsChecked="{Binding QueryServers, Mode=TwoWay}"
                           Content="Show online player count"
                           ToolTip.Tip="Use Steam Query for supported servers to display number of online players and a map name in the list.">
+                </CheckBox>
+                <CheckBox IsChecked="{Binding DisplayIcons, Mode=TwoWay}"
+                          Content="Display icons for mods and servers"
+                          ToolTip.Tip="Uncheck this if you don't want to see icons or if the app runs slow or takes long to load.">
+                </CheckBox>
+                <CheckBox IsChecked="{Binding UseCache, Mode=TwoWay}"
+                          Content="Use cache for images and lists"
+                          ToolTip.Tip="While this is enabled, Conay will save server icons and server lists into a cache folder to make the usage more seamless.">
                 </CheckBox>
                 <Label Content="Game Settings" Margin="0 20 0 0"></Label>
                 <CheckBox IsChecked="{Binding DisableCinematic, Mode=TwoWay}"

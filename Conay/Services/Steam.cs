@@ -373,7 +373,7 @@ public class Steam : IModSource
                     Map = server.Information.Map,
                     Players = server.Information.OnlinePlayers,
                     MaxPlayers = server.Information.MaxPlayers,
-                    Ping = Environment.TickCount - startTime,
+                    Ping = Environment.TickCount - startTime
                 };
 
                 server.Dispose();

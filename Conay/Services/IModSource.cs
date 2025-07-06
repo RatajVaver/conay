@@ -1,5 +1,3 @@
 ﻿namespace Conay.Services;
 
-public interface IModSource
-{
-}
+public interface IModSource;

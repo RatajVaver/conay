@@ -1,13 +1,16 @@
-﻿using Conay.Data;
-using Conay.ViewModels;
+﻿using System;
+using Conay.Data;
 
 namespace Conay.Services;
 
-public class Router(MainViewModel mvm, LaunchState launchState, LauncherConfig launcherConfig)
+public class Router(LaunchState launchState, LauncherConfig launcherConfig)
 {
+    public event Action<string?>? OnBeforeLaunch;
+    public event Action<ServerData?>? ShowLaunchForPreset;
+
     public void BeforeLaunch(string? name = null)
     {
-        mvm.BeforeLaunch(name);
+        OnBeforeLaunch?.Invoke(name);
     }
 
     public void ReadyForLaunch(ServerData? preset)
@@ -19,6 +22,6 @@ public class Router(MainViewModel mvm, LaunchState launchState, LauncherConfig l
 
         launchState.Name = preset?.Name ?? string.Empty;
         launchState.Ip = preset?.Ip ?? string.Empty;
-        mvm.ShowLaunchForPreset(preset);
+        ShowLaunchForPreset?.Invoke(preset);
     }
 }

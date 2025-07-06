@@ -18,8 +18,6 @@ public partial class LaunchViewModel : PageViewModel
     private readonly ModList _modList;
     private readonly LaunchState _launchState;
     private readonly LaunchWorker _launchWorker;
-    private readonly LauncherConfig _launcherConfig;
-    private readonly GameConfig _gameConfig;
     private readonly ModItemFactory _modItemFactory;
 
     [ObservableProperty]
@@ -37,14 +35,12 @@ public partial class LaunchViewModel : PageViewModel
     public ObservableCollection<ModItemViewModel> Mods { get; } = [];
 
     public LaunchViewModel(Steam steam, ModList modList, LaunchState launchState, LaunchWorker launchWorker,
-        LauncherConfig launcherConfig, GameConfig gameConfig, ModItemFactory modItemFactory)
+        ModItemFactory modItemFactory)
     {
         _steam = steam;
         _modList = modList;
         _launchState = launchState;
         _launchWorker = launchWorker;
-        _launcherConfig = launcherConfig;
-        _gameConfig = gameConfig;
         _modItemFactory = modItemFactory;
 
         _ = LoadModlist();
@@ -69,7 +65,6 @@ public partial class LaunchViewModel : PageViewModel
     private void LoadLaunchData()
     {
         Title = !string.IsNullOrEmpty(_launchState.Name) ? _launchState.Name : "Last played modlist";
-        //Subtitle = !string.IsNullOrEmpty(_launchState.Ip) ? _launchState.Ip : _gameConfig.GetLastConnected();
         Subtitle = _launchState.Ip;
     }
 

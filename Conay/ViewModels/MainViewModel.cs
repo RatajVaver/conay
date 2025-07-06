@@ -62,7 +62,7 @@ public partial class MainViewModel : ViewModelBase
 
     public MainViewModel(PageFactory pageFactory, LaunchState launchState, LauncherConfig launcherConfig,
         SelfUpdater selfUpdater, Steam steam, NotifyService notifyService, PresetSourceFactory presetSourceFactory,
-        ServerPresetFactory serverPresetFactory, ILogger<MainViewModel> logger)
+        ServerPresetFactory serverPresetFactory, Router router, ILogger<MainViewModel> logger)
     {
         _pageFactory = pageFactory;
         _launchState = launchState;
@@ -75,10 +75,19 @@ public partial class MainViewModel : ViewModelBase
 
         notifyService.StatusChanged += OnStatusChanged;
         notifyService.DownloadProgressChanged += OnModDownloadProgressChanged;
+        
+        router.OnBeforeLaunch += BeforeLaunch;
+        router.ShowLaunchForPreset += ShowLaunchForPreset;
 
         IsMenuCollapsed = launcherConfig.Data.MenuCollapsed;
 
-        ShowServers();
+        switch (launcherConfig.Data.DefaultTab)
+        {
+            case "launch": ShowLaunch(); break;
+            case "favorite": ShowFavorite(); break;
+            case "presets": ShowPresets(); break;
+            default: ShowServers(); break;
+        }
 
         if (_launcherConfig.Data.OfflineMode)
         {
@@ -226,12 +235,12 @@ public partial class MainViewModel : ViewModelBase
     [RelayCommand]
     private void ShowSettings() => CurrentPage = _pageFactory!.GetPageViewModel<SettingsViewModel>();
 
-    public void BeforeLaunch(string? name = null)
+    private void BeforeLaunch(string? name = null)
     {
         StatusText = !string.IsNullOrEmpty(name) ? $"Launching {name}.." : "Launching..";
     }
 
-    public void ShowLaunchForPreset(ServerData? preset)
+    private void ShowLaunchForPreset(ServerData? preset)
     {
         if (_launchState != null)
         {

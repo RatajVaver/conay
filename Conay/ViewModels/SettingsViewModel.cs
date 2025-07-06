@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using System;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Conay.Services;
 using Conay.Utils;
@@ -38,6 +39,12 @@ public partial class SettingsViewModel : PageViewModel
     private bool _displayIcons = true;
 
     [ObservableProperty]
+    private bool _useCache = true;
+
+    [ObservableProperty]
+    private int _defaultTabIndex = 2;
+
+    [ObservableProperty]
     private bool _keepHistory = true;
 
     [ObservableProperty]
@@ -45,6 +52,8 @@ public partial class SettingsViewModel : PageViewModel
 
     [ObservableProperty]
     private bool _queryServers = true;
+
+    private readonly string[] _tabs = ["launch", "favorite", "servers", "presets"];
 
     public SettingsViewModel(LauncherConfig config, GameConfig gameConfig)
     {
@@ -61,7 +70,12 @@ public partial class SettingsViewModel : PageViewModel
         KeepHistory = config.Data.KeepHistory;
         Clipboard = config.Data.Clipboard;
         DisplayIcons = config.Data.DisplayIcons;
+        UseCache = config.Data.UseCache;
         QueryServers = config.Data.QueryServers;
+
+        int tabIndex = Array.IndexOf(_tabs, config.Data.DefaultTab);
+        if (tabIndex == -1) tabIndex = 2;
+        DefaultTabIndex = tabIndex;
     }
 
     partial void OnCheckUpdatesChanged(bool value)
@@ -155,6 +169,29 @@ public partial class SettingsViewModel : PageViewModel
     {
         if (value == _config.Data.DisplayIcons) return;
         _config.Data.DisplayIcons = value;
+        _ = _config.ScheduleConfigSave();
+    }
+
+    partial void OnUseCacheChanged(bool value)
+    {
+        if (value == _config.Data.UseCache) return;
+        _config.Data.UseCache = value;
+
+        if (!value)
+        {
+            _config.ClearCache();
+        }
+
+        _ = _config.ScheduleConfigSave();
+    }
+
+    partial void OnDefaultTabIndexChanged(int value)
+    {
+        if(value < 0 || value >= _tabs.Length) return;
+        string tabName = _tabs[value];
+
+        if(tabName == _config.Data.DefaultTab) return;
+        _config.Data.DefaultTab = tabName;
         _ = _config.ScheduleConfigSave();
     }
 

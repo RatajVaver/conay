@@ -1,6 +1,8 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using AsyncImageLoader;
+using AsyncImageLoader.Loaders;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Data.Core.Plugins;
@@ -66,7 +68,25 @@ public class App : Application
         ServiceProvider services = collection.BuildServiceProvider();
         _logger = services.GetRequiredService<ILogger<App>>();
 
-        desktop.MainWindow = new MainView()
+        LauncherConfig launcherConfig = services.GetRequiredService<LauncherConfig>();
+        if (launcherConfig.Data.UseCache)
+        {
+            if (Directory.Exists("cache"))
+            {
+                string[] cacheFiles = Directory.GetFiles("cache");
+                foreach (string file in cacheFiles)
+                {
+                    FileInfo fi = new(file);
+                    if (fi.LastWriteTime < DateTime.Now.AddDays(-7) && fi.Extension != ".json")
+                        fi.Delete();
+                }
+            }
+
+            ImageLoader.AsyncImageLoader.Dispose();
+            ImageLoader.AsyncImageLoader = new DiskCachedWebImageLoader("cache/");
+        }
+
+        desktop.MainWindow = new MainView
         {
             DataContext = services.GetRequiredService<MainViewModel>()
         };
@@ -145,7 +165,7 @@ public class App : Application
 
             if (_logger != null)
             {
-                _logger.LogCritical(exception, message);
+                _logger.LogCritical(exception, "Fatal error ({Type})", message);
             }
             else
             {

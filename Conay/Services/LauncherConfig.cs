@@ -67,6 +67,20 @@ public class LauncherConfig
         SaveConfig();
     }
 
+    public void ClearCache()
+    {
+        if (!Directory.Exists("cache")) return;
+
+        try
+        {
+            Directory.Delete("cache", true);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to clear cache!");
+        }
+    }
+
     public async Task ScheduleConfigSave()
     {
         if (_saveToken != null)

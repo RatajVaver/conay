@@ -1,5 +1,3 @@
 ﻿namespace Conay.ViewModels;
 
-public class PageViewModel : ViewModelBase
-{
-}
+public class PageViewModel : ViewModelBase;
