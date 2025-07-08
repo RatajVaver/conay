@@ -5,7 +5,7 @@
 !define COPYRIGHT "RatajVaver"
 !define DESCRIPTION "Conan Exiles Mod Launcher"
 !define INSTALLER_NAME "dist\ConayInstaller.exe"
-!define MAIN_APP_EXE "Conay\Conay.exe"
+!define MAIN_APP_EXE "Conay.exe"
 !define INSTALL_TYPE "SetShellVarContext current"
 !define MUI_ICON "assets\icon.ico"
 !define MUI_WELCOMEFINISHPAGE_BITMAP "assets\header.bmp"
@@ -50,17 +50,23 @@ InstallDir "$PROGRAMFILES\Steam\steamapps\common\Conan Exiles\ConanSandbox\"
 
 Section -MainProgram
   ${INSTALL_TYPE}
-  SetOverwrite ifnewer
-  SetOutPath "$INSTDIR\Conay"
+  SetOverwrite on
+  StrLen $0 $INSTDIR
+  StrLen $1 "Conay"
+  IntOp $2 $0 - $1
+  StrCpy $3 $INSTDIR $1 $2
+  ${If} $3 != "Conay"
+    StrCpy $INSTDIR "$INSTDIR\Conay"
+  ${EndIf}
+  SetOutPath "$INSTDIR"
   File "dist\Conay\Conay.exe"
   File "dist\Conay\av_libglesv2.dll"
   File "dist\Conay\libHarfBuzzSharp.dll"
   File "dist\Conay\libSkiaSharp.dll"
   File "dist\Conay\steam_api64.dll"
-  Delete "$INSTDIR\Conay\ConayGUI.exe" # remove old version
-  CreateShortcut "$DESKTOP\Conay.lnk" "$INSTDIR\Conay\Conay.exe"
+  CreateShortcut "$DESKTOP\Conay.lnk" "$INSTDIR\Conay.exe"
 SectionEnd
 
 Function post_install
-  SetOutPath "$INSTDIR\Conay"
+  SetOutPath "$INSTDIR"
 Functionend
