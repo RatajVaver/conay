@@ -78,7 +78,7 @@ public class SelfUpdater(ILogger<SelfUpdater> logger, HttpService http, NotifySe
     {
         notifyService.UpdateStatus(this, "Downloading Conay update..");
 
-        string appDirectory = AppContext.BaseDirectory;
+        string appDirectory = AppContext.BaseDirectory.TrimEnd(Path.DirectorySeparatorChar);
         string parentDirectory = Directory.GetParent(appDirectory)!.FullName;
         string installerPath = Path.GetFullPath(Path.Combine(appDirectory, "ConayInstaller.exe"));
 
