@@ -20,14 +20,6 @@
         "name": "Halcyon D&D"
     },
     {
-        "file": "aloria",
-        "name": "Aloria Legends"
-    },
-    {
-        "file": "isleofarcanum",
-        "name": "Isle of Arcanum"
-    },
-    {
         "file": "mortalmemories",
         "name": "Mortal Memories"
     },
@@ -38,10 +30,6 @@
     {
         "file": "oldguard",
         "name": "Old Guard D&D"
-    },
-    {
-        "file": "temptingfate",
-        "name": "Tempting Fate"
     },
     {
         "file": "worldofdarkness",
