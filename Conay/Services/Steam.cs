@@ -149,7 +149,16 @@ public class Steam : IModSource
             pageNumber++;
         }
 
-        if (_updateQueue.Count > 0)
+        if (_updating)
+        {
+            _notifyService.UpdateStatus(this, "Updating mods..");
+
+            while (_updating)
+            {
+                await Task.Delay(TimeSpan.FromSeconds(1));
+            }
+        }
+        else if (_updateQueue.Count > 0)
         {
             await UpdateMods();
         }
@@ -280,7 +289,11 @@ public class Steam : IModSource
             }
 
             await MonitorDownloadProgress(mod);
-            _updateQueue.RemoveAt(0);
+
+            if (_updateQueue.Count > 0)
+            {
+                _updateQueue.RemoveAt(0);
+            }
         }
 
         _updating = false;
