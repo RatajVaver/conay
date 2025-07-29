@@ -1,8 +1,6 @@
 ﻿using System;
 using System.IO;
-using System.Net;
 using System.Net.Http;
-using System.Net.Sockets;
 using System.Threading.Tasks;
 using Conay.Utils;
 using Microsoft.Extensions.Logging;
@@ -54,10 +52,8 @@ public class HttpService(ILogger<HttpService> logger)
 
         try
         {
-            using (FileStream file = new(filePath, FileMode.Create, FileAccess.Write, FileShare.None))
-            {
-                await client.DownloadAsync(url, file, progress);
-            }
+            await using FileStream file = new(filePath, FileMode.Create, FileAccess.Write, FileShare.None);
+            await client.DownloadAsync(url, file, progress);
         }
         catch (Exception ex)
         {

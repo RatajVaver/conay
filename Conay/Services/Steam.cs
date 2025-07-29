@@ -21,6 +21,9 @@ public class Steam : IModSource
 {
     private const uint AppId = 440900;
 
+    private const string WorkshopApiUrl =
+        "https://api.steampowered.com/ISteamRemoteStorage/GetPublishedFileDetails/v1/";
+
     private readonly ILogger<Steam> _logger;
     private readonly HttpService _http;
     private readonly NotifyService _notifyService;
@@ -175,15 +178,19 @@ public class Steam : IModSource
         postData.Add(new KeyValuePair<string, string>("itemcount", modIds.Length.ToString()));
 
         FormUrlEncodedContent encoded = new(postData);
-        string json =
-            await _http.Post("https://api.steampowered.com/ISteamRemoteStorage/GetPublishedFileDetails/v1/",
-                encoded);
+        string json = await _http.Post(WorkshopApiUrl, encoded);
+        if (string.IsNullOrEmpty(json))
+        {
+            _logger.LogError("Failed to check mod updates through API (slower fallback will be used)");
+            return null;
+        }
 
-        JsonDocument? response = JsonSerializer.Deserialize<JsonDocument>(json);
         PublishedFileDetails[]? mods = null;
 
         try
         {
+            JsonDocument? response = JsonSerializer.Deserialize<JsonDocument>(json);
+
             mods = response?.RootElement.GetProperty("response")
                 .GetProperty("publishedfiledetails")
                 .Deserialize<PublishedFileDetails[]>();
