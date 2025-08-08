@@ -142,6 +142,8 @@ public class Steam : IModSource
 
             foreach (Item entry in page.Value.Entries)
             {
+                if (entry.Result != Result.OK) continue;
+
                 DateTime localLastUpdated = ModList.GetModFileLastUpdate(_workshopPath, entry.Id.Value);
 
                 if (!entry.NeedsUpdate && entry.Updated < localLastUpdated) continue;
@@ -287,6 +289,16 @@ public class Steam : IModSource
         {
             Item mod = _updateQueue.First();
 
+            if (mod.Result is Result.AccessDenied or Result.FileNotFound)
+            {
+                _notifyService.UpdateStatus(this,
+                    $"Mod #{mod.Id} cannot be updated (not accessible on Steam Workshop)");
+                _logger.LogWarning("Could not update mod #{Mod} (not accessible on Steam Workshop)!", mod.Id);
+                await Task.Delay(500);
+                _updateQueue.RemoveAt(0);
+                continue;
+            }
+
             _notifyService.UpdateStatus(this,
                 $"Updating {_updateQueue.Count} {(_updateQueue.Count == 1 ? "mod" : "mods")} ({mod.Title})..");
 
@@ -322,7 +334,7 @@ public class Steam : IModSource
     {
         if (result != Result.OK)
         {
-            _logger.LogDebug("Result: {Result}", result);
+            _logger.LogWarning("Mod download failed: {Result}", result);
         }
 
         _logger.LogDebug("Download complete");
