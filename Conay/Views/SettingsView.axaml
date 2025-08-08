@@ -22,6 +22,10 @@
                           Content="Update subscribed mods on Conay startup"
                           ToolTip.Tip="Uncheck this if you don't want to update subscribed Workshop mods right away as Conay launches. Mods will still update when selecting a server and launching the game regardless of this setting.">
                 </CheckBox>
+                <CheckBox IsChecked="{Binding AutomaticallySubscribe, Mode=TwoWay}"
+                          Content="Automatically subscribe to mods on Workshop"
+                          ToolTip.Tip="When enabled, Conay will subscribe to all mods in the selected server's modlist on the Steam Workshop whenever you launch the game.">
+                </CheckBox>
                 <CheckBox IsChecked="{Binding OfflineMode, Mode=TwoWay}"
                           Content="Offline mode (no internet access)"
                           ToolTip.Tip="Check this and restart the app if you only want to swap modlists while being offline.">

@@ -11,6 +11,9 @@ public class Config
     [JsonPropertyName("updateSubscribed")]
     public bool UpdateSubscribedModsOnLaunch { get; set; } = true;
 
+    [JsonPropertyName("autoSubscribe")]
+    public bool AutomaticallySubscribe { get; set; }
+
     [JsonPropertyName("launch")]
     public bool LaunchGame { get; set; } = true;
 

@@ -13,6 +13,7 @@ using Microsoft.Extensions.Logging;
 using SteamQuery;
 using SteamQuery.Enums;
 using Steamworks;
+using Steamworks.Data;
 using Steamworks.Ugc;
 
 namespace Conay.Services;
@@ -366,6 +367,25 @@ public class Steam : IModSource
     public static void OpenWorkshopPage(ulong modId)
     {
         Protocol.Open("steam://url/CommunityFilePage/" + modId);
+    }
+
+    public async Task SubscribeToMods(ulong[] modIds)
+    {
+        _notifyService.UpdateStatus(this, "Subscribing to mods..");
+        await WaitForSteam();
+
+        PublishedFileId[] mods = modIds.Select(modId => (PublishedFileId)modId).ToArray();
+        Query query = Query.Items.WithFileId(mods);
+        ResultPage? page = await query.GetPageAsync(1);
+        if (page is { ResultCount: > 0 })
+        {
+            foreach (Item entry in page.Value.Entries)
+            {
+                if (entry.IsSubscribed) continue;
+                _notifyService.UpdateStatus(this, $"Subscribing to mods ({entry.Title})..");
+                await entry.Subscribe();
+            }
+        }
     }
 
     public static async Task<ServerQueryResult> QueryServer(string ipAddress, int queryPort, bool retrying = false)

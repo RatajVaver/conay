@@ -57,6 +57,11 @@ public class LaunchWorker(
 
         if (steamMods.Count > 0)
         {
+            if (launcherConfig.Data.AutomaticallySubscribe)
+            {
+                await steam.SubscribeToMods(steamMods.ToArray());
+            }
+
             await steam.CheckModUpdates(steamMods.ToArray());
         }
 
