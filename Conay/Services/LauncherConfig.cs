@@ -11,15 +11,17 @@ namespace Conay.Services;
 public class LauncherConfig
 {
     private readonly ILogger<LauncherConfig> _logger;
+    private readonly NotifyService _notifyService;
     public readonly Config Data;
     private readonly string _configPath;
     private readonly JsonSerializerOptions _options = new() { WriteIndented = true };
 
     private CancellationTokenSource? _saveToken;
 
-    public LauncherConfig(ILogger<LauncherConfig> logger)
+    public LauncherConfig(ILogger<LauncherConfig> logger, NotifyService notifyService)
     {
         _logger = logger;
+        _notifyService = notifyService;
         Data = new Config();
 
         string appDirectory = AppContext.BaseDirectory;
@@ -92,7 +94,7 @@ public class LauncherConfig
 
         try
         {
-            await Task.Delay(TimeSpan.FromSeconds(2), _saveToken.Token);
+            await Task.Delay(TimeSpan.FromSeconds(1), _saveToken.Token);
             SaveConfig();
         }
         catch (TaskCanceledException)
@@ -109,6 +111,7 @@ public class LauncherConfig
         }
         catch (Exception ex)
         {
+            _notifyService.UpdateStatus(this, "Failed to save config (try to run Conay as admin)!");
             _logger.LogError(ex, "Failed to save config!");
         }
     }
