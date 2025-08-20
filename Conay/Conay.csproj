@@ -21,20 +21,20 @@
 
     <ItemGroup>
         <PackageReference Include="AsyncImageLoader.Avalonia" Version="3.3.0"/>
-        <PackageReference Include="Avalonia" Version="11.3.0"/>
-        <PackageReference Include="Avalonia.Desktop" Version="11.3.0"/>
-        <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.0"/>
-        <PackageReference Include="Avalonia.Fonts.Inter" Version="11.3.0"/>
+        <PackageReference Include="Avalonia" Version="11.3.4" />
+        <PackageReference Include="Avalonia.Desktop" Version="11.3.4" />
+        <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.4" />
+        <PackageReference Include="Avalonia.Fonts.Inter" Version="11.3.4" />
         <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
-        <PackageReference Include="Avalonia.Diagnostics" Version="11.3.0">
+        <PackageReference Include="Avalonia.Diagnostics" Version="11.3.4">
             <IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
             <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
         </PackageReference>
         <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0"/>
         <PackageReference Include="MessageBox.Avalonia" Version="3.2.0"/>
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.6"/>
-        <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.6"/>
-        <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="9.0.6"/>
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.0-preview.7.25380.108" />
+        <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.0-preview.7.25380.108" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="10.0.0-preview.7.25380.108" />
         <PackageReference Include="SteamQuery.NET" Version="2.0.2"/>
     </ItemGroup>
 

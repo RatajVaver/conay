@@ -48,7 +48,7 @@ public class App : Application
             desktop.MainWindow = splashScreen;
             splashScreen.Show();
 
-            Dispatcher.UIThread.Post(async void () =>
+            Dispatcher.UIThread.InvokeAsync(async () =>
             {
                 try
                 {
