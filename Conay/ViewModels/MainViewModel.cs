@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Threading;
@@ -45,6 +46,9 @@ public partial class MainViewModel : ViewModelBase
     private string _statusText = "Loading..";
 
     public static bool ShowTestingWarning => Meta.GetVersion().Contains('-');
+
+    [ObservableProperty]
+    private bool _showConanRunningWarning;
 
     [ObservableProperty]
     private double _progressBarValue;
@@ -106,6 +110,7 @@ public partial class MainViewModel : ViewModelBase
         }
 
         _ = CheckStartupArguments();
+        _ = CheckConanRunning();
     }
 
     private void OnStatusChanged(object? sender, string status)
@@ -202,6 +207,19 @@ public partial class MainViewModel : ViewModelBase
         }
     }
 
+    private async Task CheckConanRunning()
+    {
+        bool conanRunning = Process.GetProcessesByName("ConanSandbox").Length > 0;
+        while (conanRunning)
+        {
+            ShowConanRunningWarning = true;
+            await Task.Delay(TimeSpan.FromSeconds(5));
+            conanRunning = Process.GetProcessesByName("ConanSandbox").Length > 0;
+        }
+
+        ShowConanRunningWarning = false;
+    }
+
     [RelayCommand]
     private void ToggleMenuCollapse()
     {
@@ -238,6 +256,25 @@ public partial class MainViewModel : ViewModelBase
 
     [RelayCommand]
     private void ShowSettings() => CurrentPage = _pageFactory!.GetPageViewModel<SettingsViewModel>();
+
+    [RelayCommand]
+    private void KillConanProcess()
+    {
+        try
+        {
+            foreach (Process process in Process.GetProcessesByName("ConanSandbox"))
+            {
+                process.Kill();
+            }
+
+            ShowConanRunningWarning = false;
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, "Failed to kill game process!");
+            StatusText = "Failed to kill game process!";
+        }
+    }
 
     private void BeforeLaunch(string? name = null)
     {

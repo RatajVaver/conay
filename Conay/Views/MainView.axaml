@@ -86,12 +86,27 @@
         <StackPanel Grid.Row="2" Background="{DynamicResource PrimaryBackground}">
             <Label Content="{Binding StatusText}" Foreground="#888" Padding="10 8"></Label>
             <ProgressBar CornerRadius="0" Foreground="#509cfd" Value="{Binding ProgressBarValue}"></ProgressBar>
+
             <Border Background="#c79714" Padding="5" IsVisible="{Binding ShowTestingWarning}">
                 <TextBlock TextAlignment="Center" TextWrapping="Wrap" Foreground="#000" FontSize="12" FontWeight="Bold">
                     You are using a pre-release version of Conay.
                     Testing versions have to be updated manually.
                     If you encounter any bugs, please report them on my Discord.
                 </TextBlock>
+            </Border>
+
+            <Border Background="#c79714" Padding="5" IsVisible="{Binding ShowConanRunningWarning}">
+                <Grid ColumnDefinitions="* Auto">
+                    <TextBlock TextAlignment="Center" TextWrapping="Wrap" Foreground="#000" FontSize="12"
+                               FontWeight="Bold" VerticalAlignment="Center">
+                        Conan Exiles is currently running.
+                        You might want to close the game to ensure updates go through properly.
+                    </TextBlock>
+                    <Button Grid.Column="1" Classes="killIt" Command="{Binding KillConanProcessCommand}"
+                            ToolTip.Tip="Kill the process">
+                        <Label Classes="icon" Content="&#xe916;"></Label>
+                    </Button>
+                </Grid>
             </Border>
         </StackPanel>
     </Grid>

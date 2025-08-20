@@ -37,6 +37,18 @@
                         <Label Content="&#xe2e2;"></Label>
                     </Button>
                 </StackPanel>
+                <Border Background="#c79714" Padding="5" IsVisible="True" Width="400">
+                    <Grid ColumnDefinitions="* Auto">
+                        <TextBlock TextAlignment="Center" TextWrapping="Wrap" Foreground="#000" FontSize="12"
+                                   FontWeight="Bold">
+                            Conan Exiles is currently running.
+                            You might want to close the game to ensure updates go through properly.
+                        </TextBlock>
+                        <Button Grid.Column="1" Classes="killIt">
+                            <Label Classes="icon" Content="&#xe916;"></Label>
+                        </Button>
+                    </Grid>
+                </Border>
             </StackPanel>
         </Border>
     </Design.PreviewWith>
@@ -139,6 +151,28 @@
 
     <Style Selector="Button.unfavorite Label, Button.discord Label">
         <Setter Property="FontSize" Value="22"></Setter>
+        <Setter Property="FontFamily" Value="{DynamicResource PhosphorFill}"></Setter>
+    </Style>
+
+    <Style Selector="Button.killIt">
+        <Setter Property="Padding" Value="3"></Setter>
+        <Setter Property="Margin" Value="10 0 0 0"></Setter>
+        <Setter Property="BorderBrush" Value="#000"></Setter>
+        <Setter Property="BorderThickness" Value="2"></Setter>
+        <Setter Property="Background" Value="#ad8413"></Setter>
+        <Setter Property="Foreground" Value="#000"></Setter>
+    </Style>
+
+    <Style Selector="Button.killIt:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="#947113"></Setter>
+        <Setter Property="BorderBrush" Value="#000"></Setter>
+        <Setter Property="Foreground" Value="#000"></Setter>
+    </Style>
+
+    <Style Selector="Button.killIt Label.icon">
+        <Setter Property="Padding" Value="0"></Setter>
+        <Setter Property="Margin" Value="0"></Setter>
+        <Setter Property="FontSize" Value="20"></Setter>
         <Setter Property="FontFamily" Value="{DynamicResource PhosphorFill}"></Setter>
     </Style>
 
