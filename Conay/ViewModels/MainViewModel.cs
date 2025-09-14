@@ -213,7 +213,7 @@ public partial class MainViewModel : ViewModelBase
         while (conanRunning)
         {
             ShowConanRunningWarning = true;
-            await Task.Delay(TimeSpan.FromSeconds(5));
+            await Task.Delay(TimeSpan.FromSeconds(1));
             conanRunning = Process.GetProcessesByName("ConanSandbox").Length > 0;
         }
 
