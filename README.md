@@ -42,6 +42,8 @@ If your server is not on the list, you can either ask the server staff to add it
 
 If you are using older version of Conay, or want to dive into advanced usage with CLI, please follow the instructions included with older installations.
 
+If you are using **Linux**, Conay works only through Valve's Proton (make sure to force it to use the same version as the game).
+
 ## Bug reports
 
 Have you found a bug? Please report it in the issues tab.
@@ -55,5 +57,6 @@ Do you want to expand this project? Feel free to fork it and open PR.
 ## Supported servers
 
 You can find a list of supported servers on [ratajmods.net/conay/servers](https://ratajmods.net/conay/servers)
+
 
 If you own a server and want to add it to the list, please follow the instructions on the website.
