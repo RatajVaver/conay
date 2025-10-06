@@ -243,8 +243,7 @@ public partial class ServerPresetViewModel : ViewModelBase, ILazyLoad
     {
         if (string.IsNullOrEmpty(Discord)) return;
 
-        string discord = Discord.Replace("https://discord.gg/", "discord://-/invite/");
-        Protocol.Open(discord);
+        Protocol.Open(Discord);
     }
 
     [RelayCommand]
