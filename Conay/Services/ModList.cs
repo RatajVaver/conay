@@ -175,13 +175,34 @@ public class ModList
         _logger.LogDebug("Modlist saved");
     }
 
+    private string? GetNewerModlistFile()
+    {
+        DateTime modListLastEdit = Epoch.UnixEpoch;
+        if (_modListPath != null && File.Exists(_modListPath))
+        {
+            modListLastEdit = File.GetLastWriteTimeUtc(_modListPath);
+        }
+
+        if (_serverModListPath == null || !File.Exists(_serverModListPath))
+            return _modListPath;
+
+        DateTime serverModListLastEdit = File.GetLastWriteTimeUtc(_serverModListPath);
+        if (serverModListLastEdit > modListLastEdit)
+        {
+            return _serverModListPath;
+        }
+
+        return _modListPath;
+    }
+
     public string CreatePresetFromCurrentModList()
     {
         RefreshPaths();
 
-        if (_serverModListPath != null && File.Exists(_serverModListPath))
+        string? modListPath = GetNewerModlistFile();
+        if (modListPath != null && File.Exists(modListPath))
         {
-            LoadModListFromFile(_serverModListPath);
+            LoadModListFromFile(modListPath);
         }
 
         string appDirectory = AppContext.BaseDirectory;
