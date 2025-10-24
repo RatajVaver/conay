@@ -7,7 +7,13 @@
              xmlns:vm="clr-namespace:Conay.ViewModels"
              x:DataType="vm:ServersViewModel">
     <Grid>
-        <Label IsVisible="{Binding ListIsEmpty}">No servers found! You might be offline.</Label>
+        <StackPanel IsVisible="{Binding ListIsEmpty}">
+            <Label>No servers found! You might be offline.</Label>
+            <Label Margin="0 10 0 0" FontSize="12">
+                If you're not offline, something on your computer (e.g. antivirus)
+                is likely blocking Conay from communicating with the internet.
+            </Label>
+        </StackPanel>
         <ItemsControl ItemsSource="{Binding Presets}">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
