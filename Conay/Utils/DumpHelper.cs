@@ -17,6 +17,16 @@ public static class DumpHelper
         AppDomain.CurrentDomain.UnhandledException -= CurrentDomain_UnhandledException;
     }
 
+    public static void ThrowError(string message)
+    {
+        MessageBox(IntPtr.Zero, message, "Conay", 0x00000010);
+    }
+
+    public static void ThrowError(Exception? ex)
+    {
+        CreateMiniDump(ex);
+    }
+
     [DllImport("dbghelp.dll")]
     private static extern bool MiniDumpWriteDump(IntPtr hProcess,
         int processId,
@@ -39,6 +49,8 @@ public static class DumpHelper
         string timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
         string dumpFile = $"logs/crash_{timestamp}.dmp";
         string logFile = $"logs/crash_{timestamp}.log";
+        bool logsWritten = false;
+        bool dumpCreated = false;
 
         try
         {
@@ -53,6 +65,7 @@ public static class DumpHelper
         try
         {
             File.WriteAllText(logFile, ex?.ToString());
+            logsWritten = true;
         }
         catch
         {
@@ -71,22 +84,32 @@ public static class DumpHelper
                 IntPtr.Zero,
                 IntPtr.Zero,
                 IntPtr.Zero);
+
+            dumpCreated = true;
         }
         catch
         {
             // ignored
         }
 
-        try
+        if (dumpCreated)
         {
             MessageBox(IntPtr.Zero,
                 $"Application crashed - please report this issue!\n\nDetails: {ex?.Message}\n\nDump created at:\n{Path.GetFullPath(dumpFile)}",
                 "Conay",
                 0x00000010);
         }
-        catch
+        else if (logsWritten)
         {
-            // ignored
+            MessageBox(IntPtr.Zero,
+                $"Application crashed - please report this issue!\n\nDetails: {ex?.Message}\n\nLogs saved at:\n{Path.GetFullPath(logFile)}",
+                "Conay", 0x00000010);
+        }
+        else
+        {
+            MessageBox(IntPtr.Zero,
+                $"Application crashed - please report this issue!\n\nDetails: {ex?.Message}\n\nFailed to write logs!",
+                "Conay", 0x00000010);
         }
     }
 }

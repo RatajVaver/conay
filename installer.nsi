@@ -24,7 +24,7 @@ Caption "${APP_NAME}"
 OutFile "${INSTALLER_NAME}"
 BrandingText "${APP_NAME}"
 XPStyle on
-InstallDir "$PROGRAMFILES\Steam\steamapps\common\Conan Exiles\ConanSandbox\"
+InstallDir "C:\Conay\"
 
 !include "MUI.nsh"
 !include "nsDialogs.nsh"

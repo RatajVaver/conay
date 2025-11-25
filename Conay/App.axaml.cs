@@ -12,6 +12,7 @@ using Conay.Data;
 using Conay.Factories;
 using Conay.Services;
 using Conay.Services.Logger;
+using Conay.Utils;
 using Conay.ViewModels;
 using Conay.Views;
 using Microsoft.Extensions.DependencyInjection;
@@ -57,6 +58,7 @@ public class App : Application
                 }
                 catch (Exception ex)
                 {
+                    splashScreen.Close();
                     LogFatalException("Failed to initialize application", ex);
                 }
             });
@@ -184,10 +186,19 @@ public class App : Application
                 File.AppendAllText("logs/fatal.log", logMessage + "\n");
             }
         }
+        catch (UnauthorizedAccessException ex)
+        {
+            Console.Error.WriteLine($"ACCESS ERROR: {message}");
+            Console.Error.WriteLine(exception);
+            Console.Error.WriteLine(ex);
+            DumpHelper.ThrowError(
+                "Conay cannot save or modify files because it is currently located in a protected directory that requires administrator privileges.\n\nIf your installation is located in Program Files, please move Conay to another location. Do not move the game itself, just the launcher.");
+        }
         catch
         {
             Console.Error.WriteLine($"FATAL ERROR: {message}");
             Console.Error.WriteLine(exception);
+            DumpHelper.ThrowError(exception);
         }
     }
 }
