@@ -111,8 +111,16 @@ public class RemotePresets(
     {
         if (!config.Data.UseCache) return;
 
-        if (!Directory.Exists("cache"))
-            Directory.CreateDirectory("cache");
+        try
+        {
+            if (!Directory.Exists("cache"))
+                Directory.CreateDirectory("cache");
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to create cache folder!");
+            return;
+        }
 
         try
         {

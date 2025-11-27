@@ -72,8 +72,15 @@ public class App : Application
     {
         BindingPlugins.DataValidators.RemoveAt(0);
 
-        if (!Directory.Exists("logs"))
-            Directory.CreateDirectory("logs");
+        try
+        {
+            if (!Directory.Exists("logs"))
+                Directory.CreateDirectory("logs");
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine(ex);
+        }
 
         ServiceCollection collection = new();
         ConfigureServices(collection);
@@ -86,12 +93,19 @@ public class App : Application
         {
             if (Directory.Exists("cache"))
             {
-                string[] cacheFiles = Directory.GetFiles("cache");
-                foreach (string file in cacheFiles)
+                try
                 {
-                    FileInfo fi = new(file);
-                    if (fi.LastWriteTime < DateTime.Now.AddDays(-7) && fi.Extension != ".json")
-                        fi.Delete();
+                    string[] cacheFiles = Directory.GetFiles("cache");
+                    foreach (string file in cacheFiles)
+                    {
+                        FileInfo fi = new(file);
+                        if (fi.LastWriteTime < DateTime.Now.AddDays(-7) && fi.Extension != ".json")
+                            fi.Delete();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to clear old files from cache!");
                 }
             }
 
@@ -106,6 +120,8 @@ public class App : Application
 
         desktop.MainWindow.Show();
         splashScreen.Close();
+
+        FileLogger.AppLoaded = true;
     }
 
     private static void ConfigureServices(IServiceCollection collection)
@@ -191,8 +207,7 @@ public class App : Application
             Console.Error.WriteLine($"ACCESS ERROR: {message}");
             Console.Error.WriteLine(exception);
             Console.Error.WriteLine(ex);
-            DumpHelper.ThrowError(
-                "Conay cannot save or modify files because it is currently located in a protected directory that requires administrator privileges.\n\nIf your installation is located in Program Files, please move Conay to another location. Do not move the game itself, just the launcher.");
+            DumpHelper.FilePermWarn();
         }
         catch
         {

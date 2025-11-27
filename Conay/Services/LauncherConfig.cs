@@ -111,7 +111,8 @@ public class LauncherConfig
         }
         catch (Exception ex)
         {
-            _notifyService.UpdateStatus(this, "Failed to save config (try to run Conay as admin)!");
+            _notifyService.UpdateStatus(this,
+                "Failed to save config! Try to run Conay as administrator, or move it into another location.");
             _logger.LogError(ex, "Failed to save config!");
         }
     }

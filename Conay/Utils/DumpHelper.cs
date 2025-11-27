@@ -17,7 +17,15 @@ public static class DumpHelper
         AppDomain.CurrentDomain.UnhandledException -= CurrentDomain_UnhandledException;
     }
 
-    public static void ThrowError(string message)
+    public static void FilePermWarn()
+    {
+        ThrowError("Conay cannot save or modify files because it is currently located in" +
+                   " a protected directory that requires administrator privileges.\n\n" +
+                   "If your installation is located in Program Files, please move Conay" +
+                   " to another location. Do not move the game itself, just the launcher.");
+    }
+
+    private static void ThrowError(string message)
     {
         MessageBox(IntPtr.Zero, message, "Conay", 0x00000010);
     }

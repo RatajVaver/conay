@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using Conay.Utils;
 using Microsoft.Extensions.Logging;
 
 namespace Conay.Services.Logger;
@@ -11,6 +12,8 @@ public class FileLogger(string categoryName, string filePath) : ILogger
         return null;
     }
 
+    private static bool _thrownError;
+    public static bool AppLoaded { get; set; }
     public bool IsEnabled(LogLevel logLevel) => true;
 
     public void Log<TState>(LogLevel logLevel, EventId eventId,
@@ -24,6 +27,17 @@ public class FileLogger(string categoryName, string filePath) : ILogger
             message += Environment.NewLine + exception;
         }
 
-        File.AppendAllText(filePath, message + Environment.NewLine);
+        try
+        {
+            File.AppendAllText(filePath, message + Environment.NewLine);
+        }
+        catch
+        {
+            if (AppLoaded && !_thrownError)
+            {
+                DumpHelper.FilePermWarn();
+                _thrownError = true;
+            }
+        }
     }
 }
