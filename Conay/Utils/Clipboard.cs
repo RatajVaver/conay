@@ -1,4 +1,5 @@
 ﻿using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Input.Platform;
 
@@ -8,11 +9,10 @@ public static class Clipboard
 {
     public static IClipboard? Get()
     {
-        if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
-        {
-            return desktop.MainWindow?.Clipboard;
-        }
+        if (Application.Current?.ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop)
+            return null;
 
-        return null;
+        TopLevel? topLevel = TopLevel.GetTopLevel(desktop.MainWindow);
+        return topLevel?.Clipboard;
     }
 }
