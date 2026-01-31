@@ -44,6 +44,9 @@
                 </StackPanel>
                 <StackPanel Orientation="Horizontal">
                     <Label Content="{Binding IpAddress, Mode=OneWay}"></Label>
+                    <Label Classes="badge" Content="&#xe2da;"
+                           IsVisible="{Binding !IsModded, Mode=OneWay}" ToolTip.Tip="Vanilla (no mods)">
+                    </Label>
                     <Label Classes="badge" Content="&#xe390;"
                            IsVisible="{Binding IsModded, Mode=OneWay}" ToolTip.Tip="{Binding ModdedTooltip}">
                     </Label>
@@ -58,9 +61,6 @@
                     <Label Classes="badge orange" Content="&#xe576;"
                            IsVisible="{Binding ProvidedByCommunity, Mode=OneWay}"
                            ToolTip.Tip="Unofficially supported (Modlist is maintained by players through GitHub and might be out of date)">
-                    </Label>
-                    <Label Classes="badge" Content="&#xe2da;"
-                           IsVisible="{Binding !IsModded, Mode=OneWay}" ToolTip.Tip="Vanilla (no mods)">
                     </Label>
                     <Label Classes="badge" Content="&#xe9f4;"
                            IsVisible="{Binding IsRoleplay, Mode=OneWay}" ToolTip.Tip="Roleplay">
