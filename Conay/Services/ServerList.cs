@@ -11,6 +11,7 @@ public class ServerList
     private readonly PresetSourceFactory _sourceFactory;
     private readonly LauncherConfig _launcherConfig;
     private List<ServerInfo> _servers = [];
+    private readonly HashSet<string> _localRemoteConflicts = [];
     public bool LocalServersLoaded;
     public bool RemoteServersLoaded;
 
@@ -35,9 +36,12 @@ public class ServerList
             {
                 IPresetService provider = _sourceFactory.Get(origin);
                 List<ServerInfo> remoteServers = await provider.GetServerList();
-                foreach (ServerInfo server in remoteServers.Where(server => _servers.All(x => x.File != server.File)))
+                foreach (ServerInfo server in remoteServers)
                 {
-                    _servers.Add(server);
+                    if (_servers.Any(x => x.File == server.File && x.Provider?.GetType() == typeof(LocalPresets)))
+                        _localRemoteConflicts.Add(server.File);
+                    else if (_servers.All(x => x.File != server.File))
+                        _servers.Add(server);
                 }
             }
 
@@ -71,6 +75,15 @@ public class ServerList
         return await server.Provider!.FetchServerData(fileName);
     }
 
+    public async Task RefreshLocalServers()
+    {
+        _servers.RemoveAll(x => x.Provider?.GetType() == typeof(LocalPresets));
+        IPresetService localPresets = _sourceFactory.Get("local");
+        List<ServerInfo> localServers = await localPresets.GetServerList();
+        _servers.InsertRange(0, localServers);
+        OrderServersByHistory();
+    }
+
     public List<ServerInfo> GetLocalServers()
     {
         return _servers.Where(x => x.Provider?.GetType() == typeof(LocalPresets)).ToList();
@@ -80,6 +93,8 @@ public class ServerList
     {
         return _servers.Where(x => x.Provider?.GetType() == typeof(RemotePresets)).ToList();
     }
+
+    public IReadOnlyCollection<string> GetLocalRemoteConflicts() => _localRemoteConflicts;
 
     public List<ServerInfo> GetFavoriteServers()
     {

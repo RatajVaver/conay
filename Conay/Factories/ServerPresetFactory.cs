@@ -20,5 +20,7 @@ public class ServerPresetFactory(Router router, LauncherConfig launcherConfig, S
         return preset;
     }
 
+    public void Invalidate(string fileName) => _serverPresets.RemoveAll(x => x.File == fileName);
+
     public List<ServerPresetViewModel> GetAll() => _serverPresets;
 }

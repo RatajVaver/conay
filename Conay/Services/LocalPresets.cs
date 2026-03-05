@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Conay.Data;
 using Microsoft.Extensions.Logging;
@@ -79,6 +80,33 @@ public class LocalPresets : IPresetService
     {
         List<ServerData> presets = GetLocalPresets();
         return Task.FromResult(presets.Find(x => x.FileName == fileName));
+    }
+
+    public void ClearCache() => _presetsCache = null;
+
+    public void SavePreset(string fileName, ServerData data)
+    {
+        if (!Directory.Exists(_presetsPath))
+            Directory.CreateDirectory(_presetsPath);
+
+        JsonSerializerOptions options = new()
+        {
+            WriteIndented = true,
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+        };
+
+        try
+        {
+            string json = JsonSerializer.Serialize(data, options);
+            File.WriteAllText(Path.Combine(_presetsPath, fileName + ".json"), json);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to save preset ({FileName})!", fileName);
+            return;
+        }
+
+        ClearCache();
     }
 
     public void SaveModlistFromPreset(string fileName)

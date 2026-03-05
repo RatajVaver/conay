@@ -1,0 +1,55 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="550" d:DesignHeight="550"
+             x:Class="Conay.Views.AddPresetView"
+             xmlns:vm="clr-namespace:Conay.ViewModels"
+             x:DataType="vm:AddPresetViewModel">
+    <StackPanel Orientation="Vertical" Spacing="12">
+        <Label FontSize="20">New preset</Label>
+
+        <Grid ColumnDefinitions="140, *" RowDefinitions="Auto, Auto, Auto, Auto">
+            <Label Grid.Row="0" Grid.Column="0" VerticalAlignment="Center">File Name*</Label>
+            <TextBox Grid.Row="0" Grid.Column="1" x:Name="FileNameBox"
+                     Text="{Binding FileName, Mode=TwoWay}"
+                     Watermark="e.g. myserver (lowercase alphanumeric)" />
+
+            <Label Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" Margin="0 8 0 0">Server Name</Label>
+            <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding Name, Mode=TwoWay}"
+                     Watermark="optional" Margin="0 8 0 0" />
+
+            <Label Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" Margin="0 8 0 0">Server IP</Label>
+            <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding Ip, Mode=TwoWay}"
+                     Watermark="optional" Margin="0 8 0 0" />
+
+            <Label Grid.Row="3" Grid.Column="0" VerticalAlignment="Center" Margin="0 8 0 0">Password</Label>
+            <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding Password, Mode=TwoWay}"
+                     Watermark="optional" Margin="0 8 0 0" />
+        </Grid>
+
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10">
+            <Button Command="{Binding CancelCommand}">
+                <StackPanel Orientation="Horizontal">
+                    <Label Classes="icon" Content="&#xe4f6;" />
+                    <Label Classes="text" Content="Cancel" />
+                </StackPanel>
+            </Button>
+            <Button Command="{Binding SaveCommand}">
+                <StackPanel Orientation="Horizontal">
+                    <Label Classes="icon" Content="&#xe248;" />
+                    <Label Classes="text" Content="Save" />
+                </StackPanel>
+            </Button>
+        </StackPanel>
+
+        <Label Content="{Binding ModsLabel}" Foreground="#777" />
+        <ItemsControl ItemsSource="{Binding Mods}">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <VirtualizingStackPanel Orientation="Vertical" />
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+        </ItemsControl>
+    </StackPanel>
+</UserControl>

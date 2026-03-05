@@ -29,6 +29,7 @@ public partial class MainViewModel : ViewModelBase
     private readonly SelfUpdater? _selfUpdater;
     private readonly PresetSourceFactory? _presetSourceFactory;
     private readonly ServerPresetFactory? _serverPresetFactory;
+    private readonly ServerList? _serverList;
     private readonly ILogger<MainViewModel>? _logger;
 
     [ObservableProperty]
@@ -51,6 +52,9 @@ public partial class MainViewModel : ViewModelBase
     private bool _showConanRunningWarning;
 
     [ObservableProperty]
+    private string? _conflictWarning;
+
+    [ObservableProperty]
     private double _progressBarValue;
 
     public bool IsLaunchPageActive => CurrentPage is LaunchViewModel;
@@ -66,7 +70,7 @@ public partial class MainViewModel : ViewModelBase
 
     public MainViewModel(PageFactory pageFactory, LaunchState launchState, LauncherConfig launcherConfig,
         SelfUpdater selfUpdater, Steam steam, NotifyService notifyService, PresetSourceFactory presetSourceFactory,
-        ServerPresetFactory serverPresetFactory, Router router, ILogger<MainViewModel> logger)
+        ServerPresetFactory serverPresetFactory, ServerList serverList, Router router, ILogger<MainViewModel> logger)
     {
         _pageFactory = pageFactory;
         _launchState = launchState;
@@ -76,12 +80,15 @@ public partial class MainViewModel : ViewModelBase
         _logger = logger;
         _presetSourceFactory = presetSourceFactory;
         _serverPresetFactory = serverPresetFactory;
+        _serverList = serverList;
 
         notifyService.StatusChanged += OnStatusChanged;
         notifyService.DownloadProgressChanged += OnModDownloadProgressChanged;
 
         router.OnBeforeLaunch += BeforeLaunch;
         router.ShowLaunchForPreset += ShowLaunchForPreset;
+        router.OnShowAddPreset += () => CurrentPage = _pageFactory!.GetPageViewModel<AddPresetViewModel>();
+        router.OnShowPresets += () => ShowPresets();
 
         IsMenuCollapsed = launcherConfig.Data.MenuCollapsed;
 
@@ -111,6 +118,7 @@ public partial class MainViewModel : ViewModelBase
 
         _ = CheckStartupArguments();
         _ = CheckConanRunning();
+        _ = CheckPresetConflicts();
     }
 
     private void OnStatusChanged(object? sender, string status)
@@ -205,6 +213,21 @@ public partial class MainViewModel : ViewModelBase
         {
             StatusText = "";
         }
+    }
+
+    private async Task CheckPresetConflicts()
+    {
+        if (_serverList == null)
+            return;
+
+        while (!_serverList.RemoteServersLoaded)
+            await Task.Delay(50);
+
+        IReadOnlyCollection<string> conflicts = _serverList.GetLocalRemoteConflicts();
+        if (conflicts.Count > 0)
+            ConflictWarning =
+                $"Local preset name ({string.Join(", ", conflicts)}) is conflicting with official listing." +
+                $" This can cause issues. Consider renaming or deleting your local preset.";
     }
 
     private async Task CheckConanRunning()

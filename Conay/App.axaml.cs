@@ -161,6 +161,7 @@ public class App : Application
         collection.AddSingleton<FavoriteViewModel>();
         collection.AddSingleton<ServersViewModel>();
         collection.AddTransient<PresetsViewModel>();
+        collection.AddTransient<AddPresetViewModel>();
         collection.AddSingleton<SettingsViewModel>();
 
         collection.AddSingleton<Func<Type, PageViewModel>>(x => type =>

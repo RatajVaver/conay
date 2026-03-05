@@ -3,9 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-using Conay.Data;
 using Conay.Utils;
 using Microsoft.Extensions.Logging;
 
@@ -195,47 +192,14 @@ public class ModList
         return _modListPath;
     }
 
-    public string CreatePresetFromCurrentModList()
+    public List<string> ReloadCurrentModList()
     {
         RefreshPaths();
 
         string? modListPath = GetNewerModlistFile();
         if (modListPath != null && File.Exists(modListPath))
-        {
             LoadModListFromFile(modListPath);
-        }
 
-        string appDirectory = AppContext.BaseDirectory;
-        string presetsPath = Path.GetFullPath(Path.Combine(appDirectory, "servers"));
-        string fileName = $"preset{Epoch.Current.ToString()[6..]}.json";
-        string filePath = Path.Combine(presetsPath, fileName);
-
-        ServerData newPreset = new()
-        {
-            Name = "New preset",
-            Ip = _gameConfig.GetLastConnected(),
-            Mods = _currentMods
-        };
-
-        if (!Directory.Exists(presetsPath))
-            Directory.CreateDirectory(presetsPath);
-
-        JsonSerializerOptions options = new()
-        {
-            WriteIndented = true,
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-        };
-
-        try
-        {
-            string jsonString = JsonSerializer.Serialize(newPreset, options);
-            File.WriteAllText(filePath, jsonString);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Failed to create new preset!");
-        }
-
-        return fileName;
+        return _currentMods;
     }
 }

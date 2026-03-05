@@ -95,6 +95,12 @@
                 </TextBlock>
             </Border>
 
+            <Border Background="#c79714" Padding="5"
+                    IsVisible="{Binding ConflictWarning, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                <TextBlock TextAlignment="Center" TextWrapping="Wrap" Foreground="#000" FontSize="12" FontWeight="Bold"
+                           Text="{Binding ConflictWarning}" />
+            </Border>
+
             <Border Background="#c79714" Padding="5" IsVisible="{Binding ShowConanRunningWarning}">
                 <Grid ColumnDefinitions="* Auto">
                     <TextBlock TextAlignment="Center" TextWrapping="Wrap" Foreground="#000" FontSize="12"

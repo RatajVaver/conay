@@ -7,11 +7,16 @@ public class Router(LaunchState launchState, LauncherConfig launcherConfig)
 {
     public event Action<string?>? OnBeforeLaunch;
     public event Action<ServerData?>? ShowLaunchForPreset;
+    public event Action? OnShowAddPreset;
+    public event Action? OnShowPresets;
 
     public void BeforeLaunch(string? name = null)
     {
         OnBeforeLaunch?.Invoke(name);
     }
+
+    public void ShowAddPreset() => OnShowAddPreset?.Invoke();
+    public void ShowPresets() => OnShowPresets?.Invoke();
 
     public void ReadyForLaunch(ServerData? preset)
     {
