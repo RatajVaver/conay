@@ -37,12 +37,13 @@ public partial class AddPresetViewModel : PageViewModel
     public ObservableCollection<ModItemViewModel> Mods { get; } = [];
 
     public AddPresetViewModel(LocalPresets localPresets, ServerList serverList, ServerPresetFactory serverPresetFactory,
-        ModList modList, ModItemFactory modItemFactory, Router router)
+        ModList modList, ModItemFactory modItemFactory, GameConfig gameConfig, Router router)
     {
         _localPresets = localPresets;
         _serverList = serverList;
         _serverPresetFactory = serverPresetFactory;
         _router = router;
+        _ip = gameConfig.GetLastConnected();
 
         List<string> currentMods = modList.ReloadCurrentModList();
         foreach (string modPath in currentMods)
