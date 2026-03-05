@@ -12,12 +12,40 @@
                 <Label Content="{Binding Title}"></Label>
                 <Label Content="{Binding Subtitle}"></Label>
             </StackPanel>
-            <Button Grid.Column="1" Cursor="Hand" Classes="play" Command="{Binding LaunchCommand}"
+            <Button Grid.Column="1" Classes="play" Command="{Binding LaunchCommand}"
                     IsEnabled="{Binding !Launching}">
                 <Label Content="&#xe3d0;"></Label>
             </Button>
         </Grid>
         <StackPanel Grid.Row="1" Orientation="Vertical">
+            <Border IsVisible="{Binding ShowSupportBox}" Background="#111" BorderBrush="#222"
+                    BorderThickness="1" Padding="18 16" Margin="0 20 0 0">
+                <StackPanel Orientation="Vertical" Spacing="10">
+                    <TextBlock FontSize="13" Foreground="#eee">Are you enjoying Conay?</TextBlock>
+                    <TextBlock Foreground="#aaa" FontSize="12" TextWrapping="Wrap" LineHeight="20">
+                        Conay relies on backend services to keep server listings and mod lists up to date.
+                        These cost real money to run and maintain, as they serve data to over 10k active users.
+                        If you find Conay useful, even a small donation makes a real difference. 💜
+                    </TextBlock>
+                    <TextBlock Foreground="#777" FontSize="12">
+                        And don't worry, I hate popups like these myself, you will not see it very often.
+                    </TextBlock>
+                    <StackPanel Orientation="Horizontal" Spacing="16" Margin="0 4 0 0">
+                        <Button Classes="link" Command="{Binding OpenDonateCommand}" Padding="0">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <Label Classes="icon" Content="&#xe810;" VerticalAlignment="Center"></Label>
+                                <TextBlock FontSize="13" VerticalAlignment="Center">Donate on Ko-fi</TextBlock>
+                            </StackPanel>
+                        </Button>
+                        <Button Classes="discord" Command="{Binding OpenDiscordCommand}" Padding="0">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <Label Classes="icon" Content="&#xe61a;" VerticalAlignment="Center"></Label>
+                                <TextBlock FontSize="13" VerticalAlignment="Center">Share feedback</TextBlock>
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
             <Label Content="{Binding ModsLoaded}" Foreground="#777" Margin="0 30 0 10"></Label>
             <ItemsControl ItemsSource="{Binding Mods}">
                 <ItemsControl.ItemsPanel>

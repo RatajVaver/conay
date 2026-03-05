@@ -71,10 +71,11 @@ public class ModList
     {
         RefreshPaths();
 
-        if (!File.Exists(_modListPath))
+        string? modListPath = GetNewerModlistFile();
+        if (modListPath == null || !File.Exists(modListPath))
             return;
 
-        LoadModListFromFile(_modListPath);
+        LoadModListFromFile(modListPath);
 
         _logger.LogDebug("Currently loaded: {Mods} mods", _currentMods.Count);
     }
@@ -194,12 +195,8 @@ public class ModList
 
     public List<string> ReloadCurrentModList()
     {
-        RefreshPaths();
-
-        string? modListPath = GetNewerModlistFile();
-        if (modListPath != null && File.Exists(modListPath))
-            LoadModListFromFile(modListPath);
-
+        _modlistParsed = false;
+        ParseModList();
         return _currentMods;
     }
 }

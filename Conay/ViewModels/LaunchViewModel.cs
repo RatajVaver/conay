@@ -1,10 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using Conay.Data;
+using Conay.Utils;
 using Conay.Factories;
 using Conay.Services;
 using Conay.ViewModels.Parts;
@@ -31,6 +33,8 @@ public partial class LaunchViewModel : PageViewModel
 
     [ObservableProperty]
     private bool _launching;
+
+    public bool ShowSupportBox { get; } = Random.Shared.NextDouble() < 0.03;
 
     public ObservableCollection<ModItemViewModel> Mods { get; } = [];
 
@@ -67,6 +71,12 @@ public partial class LaunchViewModel : PageViewModel
         Title = !string.IsNullOrEmpty(_launchState.Name) ? _launchState.Name : "Last played modlist";
         Subtitle = _launchState.Ip;
     }
+
+    [RelayCommand]
+    private static void OpenDonate() => Protocol.Open("https://ko-fi.com/rataj");
+
+    [RelayCommand]
+    private static void OpenDiscord() => Protocol.Open("https://discord.gg/3WJNxCTn8m");
 
     [RelayCommand]
     private void Launch()

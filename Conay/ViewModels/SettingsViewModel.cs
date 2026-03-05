@@ -116,7 +116,7 @@ public partial class SettingsViewModel : PageViewModel
     partial void OnDisplayIconsChanged(bool value) =>
         UpdateConfig(_config.Data.DisplayIcons, value,
             v => _config.Data.DisplayIcons = v);
-    
+
     partial void OnClipboardChanged(bool value) =>
         UpdateConfig(_config.Data.Clipboard, value,
             v => _config.Data.Clipboard = v);
@@ -214,26 +214,14 @@ public partial class SettingsViewModel : PageViewModel
     }
 
     [RelayCommand]
-    private static void OpenDiscord()
-    {
-        Protocol.Open("discord://-/invite/3WJNxCTn8m");
-    }
+    private static void OpenDiscord() => Protocol.Open("https://discord.gg/3WJNxCTn8m");
 
     [RelayCommand]
-    private static void OpenRepository()
-    {
-        Protocol.Open("https://github.com/RatajVaver/conay");
-    }
+    private static void OpenRepository() => Protocol.Open("https://github.com/RatajVaver/conay");
 
     [RelayCommand]
-    private static void OpenWebsite()
-    {
-        Protocol.Open("https://ratajmods.net/");
-    }
+    private static void OpenWebsite() => Protocol.Open("https://ratajmods.net/");
 
     [RelayCommand]
-    private static void OpenDonate()
-    {
-        Protocol.Open("https://ko-fi.com/rataj");
-    }
+    private static void OpenDonate() => Protocol.Open("https://ko-fi.com/rataj");
 }

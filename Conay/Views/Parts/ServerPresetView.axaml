@@ -86,7 +86,7 @@
                     </StackPanel>
                     <Label Content="{Binding Map, Mode=OneWay}" HorizontalAlignment="Right"></Label>
                 </StackPanel>
-                <Button Cursor="Hand" Classes="play" Command="{Binding LaunchServerPresetCommand}">
+                <Button Classes="play" Command="{Binding LaunchServerPresetCommand}">
                     <Label Content="&#xe3d0;"></Label>
                 </Button>
             </StackPanel>

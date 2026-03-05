@@ -30,13 +30,13 @@
                 </StackPanel>
             </StackPanel>
             <StackPanel Grid.Column="2" VerticalAlignment="Center">
-                <Button Cursor="Hand" Classes="small" Command="{Binding OpenWorkshopPageCommand}"
+                <Button Classes="small" Command="{Binding OpenWorkshopPageCommand}"
                         IsVisible="{Binding IsWorkshopMod, Mode=OneWay}" ToolTip.Tip="Visit Steam Workshop page">
                     <StackPanel Orientation="Horizontal">
                         <Label Classes="icon" Content="&#xe2e2;"></Label>
                     </StackPanel>
                 </Button>
-                <Button Cursor="Hand" Classes="small" Command="{Binding OpenLocalFolderCommand}"
+                <Button Classes="small" Command="{Binding OpenLocalFolderCommand}"
                         IsVisible="{Binding !IsWorkshopMod, Mode=OneWay}" ToolTip.Tip="Open folder">
                     <StackPanel Orientation="Horizontal">
                         <Label Classes="icon" Content="&#xe256;"></Label>
