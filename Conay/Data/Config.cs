@@ -47,6 +47,9 @@ public class Config
     [JsonPropertyName("queryServers")]
     public bool QueryServers { get; set; } = true;
 
+    [JsonPropertyName("backupTotCustom")]
+    public bool BackupTotCustom { get; set; }
+
     [JsonPropertyName("keepHistory")]
     public bool KeepHistory { get; set; } = true;
 

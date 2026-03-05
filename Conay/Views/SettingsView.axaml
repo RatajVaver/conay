@@ -76,6 +76,10 @@
                           Content="Use recommended immersive settings"
                           ToolTip.Tip="Enabling this will: Hide sheathed weapons, hide journey UI and contextual controls, enable audio at 25% volume even when the game is minimized.">
                 </CheckBox>
+                <CheckBox IsChecked="{Binding BackupTotCustom, Mode=TwoWay}"
+                          Content="Back up TotCustom saves on launch"
+                          ToolTip.Tip="Before launching the game, Conay will zip the TotCustom save folder and store up to 3 rotating backups in the Conay/backups folder.">
+                </CheckBox>
             </StackPanel>
         </Grid>
         <TextBlock Foreground="#999" FontSize="13" LineHeight="18" TextWrapping="Wrap">

@@ -56,6 +56,9 @@ public partial class SettingsViewModel : PageViewModel
     [ObservableProperty]
     private bool _queryServers = true;
 
+    [ObservableProperty]
+    private bool _backupTotCustom;
+
     private readonly string[] _tabs = ["launch", "favorite", "servers", "presets"];
 
     public SettingsViewModel(LauncherConfig config, GameConfig gameConfig)
@@ -76,6 +79,7 @@ public partial class SettingsViewModel : PageViewModel
         DisplayIcons = config.Data.DisplayIcons;
         UseCache = config.Data.UseCache;
         QueryServers = config.Data.QueryServers;
+        BackupTotCustom = config.Data.BackupTotCustom;
 
         int tabIndex = Array.IndexOf(_tabs, config.Data.DefaultTab);
         if (tabIndex == -1) tabIndex = 2;
@@ -199,6 +203,10 @@ public partial class SettingsViewModel : PageViewModel
         _config.Data.DefaultTab = tabName;
         _ = _config.ScheduleConfigSave();
     }
+
+    partial void OnBackupTotCustomChanged(bool value) =>
+        UpdateConfig(_config.Data.BackupTotCustom, value,
+            v => _config.Data.BackupTotCustom = v);
 
     partial void OnKeepHistoryChanged(bool value)
     {

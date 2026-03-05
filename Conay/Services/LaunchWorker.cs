@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Compression;
 using System.Threading.Tasks;
 using Conay.Data;
 using Conay.Factories;
@@ -37,6 +38,11 @@ public class LaunchWorker(
 
     private async Task LaunchSequence()
     {
+        if (launcherConfig.Data.BackupTotCustom)
+        {
+            BackupTotCustom();
+        }
+
         List<string> mods = modList.GetCurrentModList();
         List<ulong> steamMods = [];
         List<string> externalMods = [];
@@ -141,6 +147,39 @@ public class LaunchWorker(
         else
         {
             Protocol.Open("steam://run/440900/");
+        }
+    }
+
+    private void BackupTotCustom()
+    {
+        string sourceDir = Path.GetFullPath(
+            Path.Combine(steam.AppInstallDir, "ConanSandbox/Saved/SaveGames/TotCustom"));
+
+        if (!Directory.Exists(sourceDir))
+        {
+            logger.LogDebug("TotCustom folder not found, skipping backup.");
+            return;
+        }
+
+        try
+        {
+            string backupDir = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "backups"));
+            Directory.CreateDirectory(backupDir);
+
+            string slot1 = Path.Combine(backupDir, "TotCustom_1.zip");
+            string slot2 = Path.Combine(backupDir, "TotCustom_2.zip");
+            string slot3 = Path.Combine(backupDir, "TotCustom_3.zip");
+
+            if (File.Exists(slot2)) File.Move(slot2, slot3, overwrite: true);
+            if (File.Exists(slot1)) File.Move(slot1, slot2, overwrite: true);
+
+            ZipFile.CreateFromDirectory(sourceDir, slot1);
+
+            logger.LogDebug("TotCustom backup saved to '{Path}'.", slot1);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to back up TotCustom!");
         }
     }
 }
