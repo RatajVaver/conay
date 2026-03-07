@@ -89,8 +89,10 @@ public partial class MainViewModel : ViewModelBase
 
         router.OnBeforeLaunch += BeforeLaunch;
         router.ShowLaunchForPreset += ShowLaunchForPreset;
-        router.OnShowAddPreset += () => CurrentPage = _pageFactory!.GetPageViewModel<AddPresetViewModel>(vm => vm.LoadCurrentModlist());
-        router.OnShowEditPreset += preset => CurrentPage = _pageFactory!.GetPageViewModel<AddPresetViewModel>(vm => vm.Prefill(preset));
+        router.OnShowAddPreset += () =>
+            CurrentPage = _pageFactory!.GetPageViewModel<AddPresetViewModel>(vm => vm.LoadCurrentModlist());
+        router.OnShowEditPreset += preset =>
+            CurrentPage = _pageFactory!.GetPageViewModel<AddPresetViewModel>(vm => vm.Prefill(preset));
         router.OnShowPresets += ShowPresets;
 
         IsMenuCollapsed = launcherConfig.Data.MenuCollapsed;
@@ -270,7 +272,7 @@ public partial class MainViewModel : ViewModelBase
     [RelayCommand]
     private void ShowServers() => CurrentPage = _pageFactory!.GetPageViewModel<ServersViewModel>(svm =>
     {
-        foreach (ServerPresetViewModel server in svm.Presets)
+        foreach (ServerPresetViewModel server in svm.FilteredPresets)
         {
             server.IsFavorite = _launcherConfig!.IsServerFavorite(server.File);
         }

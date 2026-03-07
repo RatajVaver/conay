@@ -29,7 +29,7 @@
         </Border>
         <Grid Grid.Row="1" Background="{DynamicResource PrimaryBackground}" VerticalAlignment="Stretch"
               ColumnDefinitions="Auto, *">
-            <ScrollViewer Grid.Column="1" x:Name="Scroller" HorizontalScrollBarVisibility="Disabled">
+            <ScrollViewer Grid.Column="1" x:Name="Scroller" HorizontalScrollBarVisibility="Disabled" Margin="0 0 4 0">
                 <Border Padding="20 20 35 20">
                     <ContentControl Content="{Binding CurrentPage}"></ContentControl>
                 </Border>

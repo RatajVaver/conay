@@ -51,6 +51,7 @@ public partial class ServerPresetViewModel : ViewModelBase, ILazyLoad
     [NotifyPropertyChangedFor(nameof(IsRoleplay))]
     [NotifyPropertyChangedFor(nameof(IsMechPvP))]
     [NotifyPropertyChangedFor(nameof(IsDicePvP))]
+    [NotifyPropertyChangedFor(nameof(IsErotic))]
     [NotifyPropertyChangedFor(nameof(HasConaySync))]
     [NotifyPropertyChangedFor(nameof(ProvidedByServerAdmins))]
     [NotifyPropertyChangedFor(nameof(ProvidedByCommunity))]
@@ -86,12 +87,14 @@ public partial class ServerPresetViewModel : ViewModelBase, ILazyLoad
     public bool IsRoleplay => Tags?.Contains("roleplay") ?? false;
     public bool IsMechPvP => Tags?.Contains("mech") ?? false;
     public bool IsDicePvP => Tags?.Contains("dice") ?? false;
+    public bool IsErotic => Tags?.Contains("erp") ?? false;
     public bool HasConaySync => Tags?.Contains("sync") ?? false;
     public bool ProvidedByServerAdmins => !HasConaySync && _provider.GetProviderName() == "ratajmods";
     public bool ProvidedByCommunity => !HasConaySync && _provider.GetProviderName() == "github";
     public string ModdedTooltip => $"Modded ({ModsCount} mods)";
 
     public bool IsLoaded { get; set; }
+    public bool IsDataLoaded { get; private set; }
     public bool IsVisible { get; set; }
 
     public readonly string File;
@@ -172,7 +175,7 @@ public partial class ServerPresetViewModel : ViewModelBase, ILazyLoad
 
     private async Task UpdateServerData()
     {
-        ServerData? preset = await _provider.FetchServerData(_serverInfo.File);
+        ServerData? preset = await Task.Run(() => _provider.FetchServerData(_serverInfo.File));
         if (preset != null)
         {
             IpAddress = preset.Ip;
@@ -183,6 +186,8 @@ public partial class ServerPresetViewModel : ViewModelBase, ILazyLoad
             _queryPort = preset.QueryPort;
             _preset = preset;
         }
+
+        IsDataLoaded = true;
 
         if (_launcherConfig.Data is { QueryServers: true, OfflineMode: false })
         {

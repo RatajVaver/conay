@@ -71,6 +71,9 @@
                     <Label Classes="badge" Content="&#xe1f6;"
                            IsVisible="{Binding IsDicePvP, Mode=OneWay}" ToolTip.Tip="Dice PvP">
                     </Label>
+                    <Label Classes="badge" Content="&#xe8e8;"
+                           IsVisible="{Binding IsErotic, Mode=OneWay}" ToolTip.Tip="Erotic Roleplay">
+                    </Label>
                     <Label Classes="badge" Content="&#xe142;"
                            Foreground="{Binding PingColor, Mode=OneWay}" ToolTip.Tip="{Binding Ping, Mode=OneWay}">
                     </Label>

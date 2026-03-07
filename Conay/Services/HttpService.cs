@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using Conay.Utils;
 using Microsoft.Extensions.Logging;
@@ -9,15 +10,21 @@ namespace Conay.Services;
 
 public class HttpService(ILogger<HttpService> logger)
 {
+    private static readonly HttpClient Client = CreateClient();
+
+    private static HttpClient CreateClient()
+    {
+        HttpClient client = new() { Timeout = System.Threading.Timeout.InfiniteTimeSpan };
+        client.DefaultRequestHeaders.Add("User-Agent", Meta.GetUserAgent());
+        return client;
+    }
+
     public async Task<string> Get(string url, TimeSpan? timeout = null)
     {
-        using HttpClient client = new();
-        client.DefaultRequestHeaders.Add("User-Agent", Meta.GetUserAgent());
-        client.Timeout = timeout ?? TimeSpan.FromSeconds(10);
-
+        using CancellationTokenSource cts = new(timeout ?? TimeSpan.FromSeconds(10));
         try
         {
-            return await client.GetStringAsync(url);
+            return await Client.GetStringAsync(url, cts.Token).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -28,14 +35,11 @@ public class HttpService(ILogger<HttpService> logger)
 
     public async Task<string> Post(string url, HttpContent? postData, TimeSpan? timeout = null)
     {
-        using HttpClient client = new();
-        client.DefaultRequestHeaders.Add("User-Agent", Meta.GetUserAgent());
-        client.Timeout = timeout ?? TimeSpan.FromSeconds(10);
-
+        using CancellationTokenSource cts = new(timeout ?? TimeSpan.FromSeconds(10));
         try
         {
-            HttpResponseMessage response = await client.PostAsync(url, postData);
-            return await response.Content.ReadAsStringAsync();
+            HttpResponseMessage response = await Client.PostAsync(url, postData, cts.Token);
+            return await response.Content.ReadAsStringAsync(cts.Token);
         }
         catch (Exception ex)
         {
@@ -46,14 +50,11 @@ public class HttpService(ILogger<HttpService> logger)
 
     public async Task<bool> Download(string url, string filePath, IProgress<float>? progress = null)
     {
-        using HttpClient client = new();
-        client.DefaultRequestHeaders.Add("User-Agent", Meta.GetUserAgent());
-        client.Timeout = TimeSpan.FromMinutes(5);
-
+        using CancellationTokenSource cts = new(TimeSpan.FromMinutes(5));
         try
         {
             await using FileStream file = new(filePath, FileMode.Create, FileAccess.Write, FileShare.None);
-            await client.DownloadAsync(url, file, progress);
+            await Client.DownloadAsync(url, file, progress, cts.Token);
         }
         catch (Exception ex)
         {

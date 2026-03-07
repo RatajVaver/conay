@@ -1,4 +1,4 @@
-﻿<UserControl xmlns="https://github.com/avaloniaui"
+<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -6,20 +6,117 @@
              x:Class="Conay.Views.ServersView"
              xmlns:vm="clr-namespace:Conay.ViewModels"
              x:DataType="vm:ServersViewModel">
-    <Grid>
-        <StackPanel IsVisible="{Binding ListIsEmpty}">
+    <UserControl.Styles>
+        <Style Selector="TextBox.filterSearch">
+            <Setter Property="BorderBrush" Value="#333" />
+            <Setter Property="Padding" Value="8 5" />
+            <Setter Property="MinHeight" Value="0" />
+            <Setter Property="FontSize" Value="13" />
+        </Style>
+        <Style Selector="TextBox.filterSearch:pointerover /template/ Border">
+            <Setter Property="BorderBrush" Value="#555" />
+        </Style>
+        <Style Selector="TextBox.filterSearch:focus /template/ Border">
+            <Setter Property="BorderBrush" Value="#777" />
+        </Style>
+        <Style Selector="Slider.compact">
+            <Setter Property="MinHeight" Value="0" />
+        </Style>
+        <Style Selector="Slider.compact /template/ Thumb">
+            <Setter Property="Width" Value="12" />
+            <Setter Property="Height" Value="12" />
+        </Style>
+    </UserControl.Styles>
+    <StackPanel>
+        <Border Background="#0d0d0d" Padding="8 4" Margin="0 0 0 10"
+                IsEnabled="{Binding !IsLoadingForFilter}">
+            <Grid ColumnDefinitions="Auto, *, Auto, *, Auto" VerticalAlignment="Center">
+                <TextBox Grid.Column="0"
+                         Classes="filterSearch"
+                         Text="{Binding SearchText}"
+                         Watermark="Search"
+                         Width="180"
+                         BorderThickness="1"
+                         VerticalAlignment="Center"
+                         VerticalContentAlignment="Center" />
+
+                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="0" VerticalAlignment="Center">
+                    <Button Classes="tagFilter"
+                            Classes.tagInclude="{Binding ModdedFilterIsInclude}"
+                            Classes.tagExclude="{Binding ModdedFilterIsExclude}"
+                            Command="{Binding ToggleModdedFilterCommand}"
+                            ToolTip.Tip="Modded">
+                        <Label Content="&#xe390;" />
+                    </Button>
+                    <Button Classes="tagFilter"
+                            Classes.tagInclude="{Binding RoleplayFilterIsInclude}"
+                            Classes.tagExclude="{Binding RoleplayFilterIsExclude}"
+                            Command="{Binding ToggleRoleplayFilterCommand}"
+                            ToolTip.Tip="Roleplay">
+                        <Label Content="&#xe9f4;" />
+                    </Button>
+                    <Button Classes="tagFilter"
+                            Classes.tagInclude="{Binding MechPvpFilterIsInclude}"
+                            Classes.tagExclude="{Binding MechPvpFilterIsExclude}"
+                            Command="{Binding ToggleMechPvpFilterCommand}"
+                            ToolTip.Tip="Mech PvP">
+                        <Label Content="&#xe5ba;" />
+                    </Button>
+                    <Button Classes="tagFilter"
+                            Classes.tagInclude="{Binding DicePvpFilterIsInclude}"
+                            Classes.tagExclude="{Binding DicePvpFilterIsExclude}"
+                            Command="{Binding ToggleDicePvpFilterCommand}"
+                            ToolTip.Tip="Dice PvP">
+                        <Label Content="&#xe1f6;" />
+                    </Button>
+                    <Button Classes="tagFilter"
+                            Classes.tagInclude="{Binding EroticFilterIsInclude}"
+                            Classes.tagExclude="{Binding EroticFilterIsExclude}"
+                            Command="{Binding ToggleEroticFilterCommand}"
+                            ToolTip.Tip="Erotic Roleplay">
+                        <Label Content="&#xe8e8;" />
+                    </Button>
+                    <Button Classes="modeToggle"
+                            Command="{Binding ToggleFilterModeCommand}"
+                            Content="{Binding FilterModeLabel}" />
+                </StackPanel>
+
+                <StackPanel Grid.Column="4" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                    <Label Content="Min players:" FontSize="12" VerticalAlignment="Center" Foreground="#555" />
+                    <Slider Classes="compact"
+                            Minimum="0" Maximum="100"
+                            Value="{Binding MinPlayerCount}"
+                            Width="150" VerticalAlignment="Center" />
+                    <Label Content="{Binding MinPlayerCountLabel}" FontSize="12" VerticalAlignment="Center" Width="36" />
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <StackPanel IsVisible="{Binding IsLoadingForFilter}"
+                    Orientation="Horizontal" Spacing="8" Margin="0 0 0 10">
+            <Label Classes="spinner" Content="&#xeb44;" />
+            <Label Content="Loading server data for filters.." FontSize="12"
+                   Foreground="#888" VerticalAlignment="Center" />
+        </StackPanel>
+
+        <StackPanel IsVisible="{Binding IsActuallyEmpty}">
             <Label>No servers found! You might be offline.</Label>
             <Label Margin="0 10 0 0" FontSize="12">
                 If you're not offline, something on your computer (e.g. antivirus)
                 is likely blocking Conay from communicating with the internet.
             </Label>
         </StackPanel>
-        <ItemsControl ItemsSource="{Binding Presets}">
+
+        <Label IsVisible="{Binding HasNoFilterResults}" Foreground="#555" FontSize="14">
+            No servers match your filters.
+        </Label>
+
+        <ItemsControl ItemsSource="{Binding FilteredPresets}">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
                     <VirtualizingStackPanel Orientation="Vertical" />
                 </ItemsPanelTemplate>
             </ItemsControl.ItemsPanel>
         </ItemsControl>
-    </Grid>
+    </StackPanel>
 </UserControl>

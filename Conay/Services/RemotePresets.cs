@@ -18,6 +18,7 @@ public class RemotePresets(
     string serversDirectory) : IPresetService
 {
     private readonly List<ServerData> _presetsCache = [];
+    private readonly object _cacheLock = new();
 
     public string GetProviderName() => name;
 
@@ -54,9 +55,11 @@ public class RemotePresets(
 
     public async Task<ServerData?> FetchServerData(string fileName)
     {
-        ServerData? preset = _presetsCache.Find(x => x.FileName == fileName);
-        if (preset != null)
-            return preset;
+        lock (_cacheLock)
+        {
+            ServerData? cached = _presetsCache.Find(x => x.FileName == fileName);
+            if (cached != null) return cached;
+        }
 
         string json = await http.Get($"{serversDirectory}/{fileName}.json");
 
@@ -66,6 +69,7 @@ public class RemotePresets(
             return null;
         }
 
+        ServerData? preset;
         try
         {
             preset = JsonSerializer.Deserialize<ServerData>(json);
@@ -73,12 +77,13 @@ public class RemotePresets(
         catch (Exception ex)
         {
             logger.LogError(ex, "Failed to parse: {File}", fileName);
+            return null;
         }
 
         if (preset == null) return null;
 
         preset.FileName = fileName;
-        _presetsCache.Add(preset);
+        lock (_cacheLock) _presetsCache.Add(preset);
 
         return preset;
     }

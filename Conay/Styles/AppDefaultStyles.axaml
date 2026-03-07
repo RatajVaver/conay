@@ -238,4 +238,65 @@
     <Style Selector="Button#PART_CloseButton:pointerover /template/ ContentPresenter">
         <Setter Property="Background" Value="#7a1717"></Setter>
     </Style>
+
+    <Style Selector="ScrollBar:vertical">
+        <Setter Property="Width" Value="10"></Setter>
+    </Style>
+
+    <Style Selector="Button.tagFilter">
+        <Setter Property="Background" Value="Transparent"></Setter>
+        <Setter Property="Foreground" Value="#444"></Setter>
+        <Setter Property="Padding" Value="6 2"></Setter>
+        <Setter Property="Margin" Value="0"></Setter>
+        <Setter Property="MinHeight" Value="0"></Setter>
+    </Style>
+
+    <Style Selector="Button.tagFilter:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="Transparent"></Setter>
+        <Setter Property="Foreground" Value="#888"></Setter>
+    </Style>
+
+    <Style Selector="Button.tagFilter.tagInclude /template/ ContentPresenter">
+        <Setter Property="Background" Value="#1e4020"></Setter>
+        <Setter Property="Foreground" Value="#7dce82"></Setter>
+    </Style>
+
+    <Style Selector="Button.tagFilter.tagInclude:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="#2a5a2d"></Setter>
+        <Setter Property="Foreground" Value="#9de8a2"></Setter>
+    </Style>
+
+    <Style Selector="Button.tagFilter.tagExclude /template/ ContentPresenter">
+        <Setter Property="Background" Value="#3d1e1e"></Setter>
+        <Setter Property="Foreground" Value="#ce7d7d"></Setter>
+    </Style>
+
+    <Style Selector="Button.tagFilter.tagExclude:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="#522a2a"></Setter>
+        <Setter Property="Foreground" Value="#de9d9d"></Setter>
+    </Style>
+
+    <Style Selector="Button.tagFilter Label">
+        <Setter Property="FontSize" Value="18"></Setter>
+        <Setter Property="FontFamily" Value="{DynamicResource Phosphor}"></Setter>
+        <Setter Property="VerticalAlignment" Value="Center"></Setter>
+        <Setter Property="Padding" Value="0"></Setter>
+        <Setter Property="Margin" Value="0"></Setter>
+    </Style>
+
+    <Style Selector="Button.modeToggle">
+        <Setter Property="Background" Value="#1a1a1a"></Setter>
+        <Setter Property="Foreground" Value="#666"></Setter>
+        <Setter Property="Padding" Value="6 2"></Setter>
+        <Setter Property="FontSize" Value="11"></Setter>
+        <Setter Property="MinHeight" Value="0"></Setter>
+        <Setter Property="Margin" Value="4 0 0 0"></Setter>
+        <Setter Property="HorizontalContentAlignment" Value="Center"></Setter>
+        <Setter Property="VerticalContentAlignment" Value="Center"></Setter>
+    </Style>
+
+    <Style Selector="Button.modeToggle:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="#242424"></Setter>
+        <Setter Property="Foreground" Value="#bbb"></Setter>
+    </Style>
 </Styles>

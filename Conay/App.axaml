@@ -20,8 +20,8 @@
     </Application.Styles>
 
     <Application.Resources>
-        <SolidColorBrush x:Key="TitleBarBackground" Color="#000" Opacity="0.85"></SolidColorBrush>
-        <SolidColorBrush x:Key="PrimaryBackground" Color="#111" Opacity="0.85"></SolidColorBrush>
+        <SolidColorBrush x:Key="TitleBarBackground" Color="#000" Opacity="0.9"></SolidColorBrush>
+        <SolidColorBrush x:Key="PrimaryBackground" Color="#111" Opacity="0.9"></SolidColorBrush>
         <SolidColorBrush x:Key="ActiveBackground" Color="#0e2133"></SolidColorBrush>
 
         <FontFamily x:Key="Phosphor">Assets/Fonts/Phosphor.ttf#Phosphor</FontFamily>
