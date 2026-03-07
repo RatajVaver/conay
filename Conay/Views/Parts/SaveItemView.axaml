@@ -1,0 +1,53 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vmp="clr-namespace:Conay.ViewModels.Parts"
+             x:DataType="vmp:SaveItemViewModel"
+             x:Class="Conay.Views.Parts.SaveItemView">
+    <Border BorderThickness="1" BorderBrush="#222" Padding="14 10" Margin="0 0 0 10">
+        <Grid ColumnDefinitions="*, Auto">
+            <StackPanel Grid.Column="0" Orientation="Vertical" IsVisible="{Binding !IsRenaming}"
+                        VerticalAlignment="Center">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <TextBlock FontSize="16" Foreground="#fcfcfc" Text="{Binding Name, Mode=OneWay}" />
+                    <Border Background="#163d17" Padding="4 2" CornerRadius="2"
+                            IsVisible="{Binding IsCurrentlyLoaded, Mode=OneWay}"
+                            VerticalAlignment="Center">
+                        <TextBlock FontSize="10" Foreground="#5a9e5c" VerticalAlignment="Center">loaded</TextBlock>
+                    </Border>
+                </StackPanel>
+                <TextBlock FontSize="12" Foreground="#555" Margin="0 3 0 0"
+                           Text="{Binding Details, Mode=OneWay}" />
+            </StackPanel>
+
+            <Grid Grid.Column="0" ColumnDefinitions="*, Auto, Auto" ColumnSpacing="8"
+                  IsVisible="{Binding IsRenaming}" VerticalAlignment="Center">
+                <TextBox Grid.Column="0" Text="{Binding EditName, Mode=TwoWay}" />
+                <Button Grid.Column="1" Command="{Binding ConfirmRenameCommand}">
+                    <StackPanel Orientation="Horizontal">
+                        <Label Classes="icon" Content="&#xe248;"></Label>
+                        <Label Classes="text" Content="Save"></Label>
+                    </StackPanel>
+                </Button>
+                <Button Grid.Column="2" Command="{Binding CancelRenameCommand}">
+                    <StackPanel Orientation="Horizontal">
+                        <Label Classes="icon" Content="&#xe4f6;"></Label>
+                        <Label Classes="text" Content="Cancel"></Label>
+                    </StackPanel>
+                </Button>
+            </Grid>
+
+            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center"
+                        Spacing="2" IsVisible="{Binding !IsRenaming}">
+                <Button Classes="muted" Command="{Binding StartRenameCommand}" ToolTip.Tip="Rename">
+                    <Label Classes="icon" Content="&#xe3ae;"></Label>
+                </Button>
+                <Button Classes="muted" Command="{Binding DeleteCommand}" ToolTip.Tip="Delete save" Margin="5 0 15 0">
+                    <Label Classes="icon" Content="&#xe4a6;"></Label>
+                </Button>
+                <Button Classes="play" Command="{Binding LoadCommand}" ToolTip.Tip="Load save">
+                    <Label Content="&#xe3d0;"></Label>
+                </Button>
+            </StackPanel>
+        </Grid>
+    </Border>
+</UserControl>

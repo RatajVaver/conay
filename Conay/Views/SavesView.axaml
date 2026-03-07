@@ -1,0 +1,112 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="550" d:DesignHeight="550"
+             x:Class="Conay.Views.SavesView"
+             xmlns:vm="clr-namespace:Conay.ViewModels"
+             x:DataType="vm:SavesViewModel">
+    <StackPanel Orientation="Vertical" Spacing="10">
+        <Grid ColumnDefinitions="*, Auto">
+            <TextBlock Grid.Column="0" Foreground="#aaa" FontSize="12" TextWrapping="Wrap" LineHeight="20"
+                       Margin="0 0 20 10" VerticalAlignment="Center">
+                Saves manager lets you keep multiple singleplayer save states and swap between them.
+                Each save captures all .db files from the game's Saved folder, this includes every map you've played.
+                Saves also include your currently loaded modlist.
+                When loading a save, you'll be asked what to do with the currently loaded one first.
+                Save files are stored in the Conay/saves folder and can be freely backed up, moved or deleted.
+            </TextBlock>
+            <Button Grid.Column="1" Command="{Binding OpenSavesFolderCommand}" VerticalAlignment="Top">
+                <StackPanel Orientation="Horizontal">
+                    <Label Classes="icon" Content="&#xe256;"></Label>
+                    <Label Classes="text" Content="Open folder"></Label>
+                </StackPanel>
+            </Button>
+        </Grid>
+
+        <Border IsVisible="{Binding ShowActionPanel}" Background="#1a1a1a" BorderBrush="#333"
+                BorderThickness="1" Padding="16 14">
+            <StackPanel Orientation="Vertical" Spacing="10">
+                <TextBlock FontSize="13" Foreground="#eee">What do you want to do with the currently loaded save?</TextBlock>
+                <StackPanel Orientation="Horizontal" Spacing="10">
+                    <Button Command="{Binding SaveCurrentAndLoadCommand}">
+                        <StackPanel Orientation="Horizontal">
+                            <Label Classes="icon" Content="&#xe248;"></Label>
+                            <Label Classes="text" Content="Save current"></Label>
+                        </StackPanel>
+                    </Button>
+                    <Button Command="{Binding DiscardCurrentAndLoadCommand}">
+                        <StackPanel Orientation="Horizontal">
+                            <Label Classes="icon" Content="&#xe4a6;"></Label>
+                            <Label Classes="text" Content="Discard current"></Label>
+                        </StackPanel>
+                    </Button>
+                    <Button Command="{Binding CancelActionCommand}">
+                        <StackPanel Orientation="Horizontal">
+                            <Label Classes="icon" Content="&#xe4f6;"></Label>
+                            <Label Classes="text" Content="Cancel"></Label>
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+
+        <Border IsVisible="{Binding ShowNamePanel}" Background="#1a1a1a" BorderBrush="#333"
+                BorderThickness="1" Padding="16 14">
+            <StackPanel Orientation="Vertical" Spacing="10">
+                <TextBlock FontSize="13" Foreground="#eee" Text="{Binding NamePanelTitle}" />
+                <Grid ColumnDefinitions="*, Auto, Auto" ColumnSpacing="8">
+                    <TextBox Grid.Column="0" Text="{Binding NewSaveName, Mode=TwoWay}"
+                             Watermark="Enter a name.." />
+                    <Button Grid.Column="1" Command="{Binding ConfirmSaveCurrentCommand}">
+                        <StackPanel Orientation="Horizontal">
+                            <Label Classes="icon" Content="&#xe248;"></Label>
+                            <Label Classes="text" Content="Save"></Label>
+                        </StackPanel>
+                    </Button>
+                    <Button Grid.Column="2" Command="{Binding CancelActionCommand}">
+                        <StackPanel Orientation="Horizontal">
+                            <Label Classes="icon" Content="&#xe4f6;"></Label>
+                            <Label Classes="text" Content="Cancel"></Label>
+                        </StackPanel>
+                    </Button>
+                </Grid>
+            </StackPanel>
+        </Border>
+
+        <Border BorderThickness="1" BorderBrush="#333" Background="#111" Padding="14 12">
+            <Grid ColumnDefinitions="*, Auto">
+                <StackPanel Grid.Column="0" Orientation="Vertical" VerticalAlignment="Center">
+                    <TextBlock FontSize="11" Foreground="#444" Margin="0 0 0 4">CURRENTLY LOADED</TextBlock>
+                    <TextBlock FontSize="16" Foreground="#fcfcfc" Text="{Binding CurrentSaveName}" />
+                    <TextBlock FontSize="12" Foreground="#555" Text="{Binding CurrentSaveDetails}"
+                               IsVisible="{Binding HasCurrentSave}" Margin="0 3 0 0" />
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                    <Button IsVisible="{Binding HasCurrentSave}"
+                            Command="{Binding SaveCurrentCommand}"
+                            ToolTip.Tip="Move current game save to Conay saves">
+                        <StackPanel Orientation="Horizontal">
+                            <Label Classes="icon" Content="&#xe248;"></Label>
+                        </StackPanel>
+                    </Button>
+                    <Button Command="{Binding NewSaveCommand}"
+                            ToolTip.Tip="Start a fresh save">
+                        <StackPanel Orientation="Horizontal">
+                            <Label Classes="icon" Content="&#xe2cc;"></Label>
+                            <Label Classes="text" Content="New Save"></Label>
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <ItemsControl ItemsSource="{Binding Saves}">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <VirtualizingStackPanel Orientation="Vertical" />
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+        </ItemsControl>
+    </StackPanel>
+</UserControl>

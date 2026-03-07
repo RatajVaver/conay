@@ -86,6 +86,16 @@
                     </StackPanel>
                     <Label Content="{Binding Map, Mode=OneWay}" HorizontalAlignment="Right"></Label>
                 </StackPanel>
+                <StackPanel Orientation="Horizontal" Spacing="2" IsVisible="{Binding IsLocalPreset, Mode=OneWay}"
+                            VerticalAlignment="Center">
+                    <Button Classes="muted" Command="{Binding EditPresetCommand}" ToolTip.Tip="Edit preset">
+                        <Label Classes="icon" Content="&#xe3ae;"></Label>
+                    </Button>
+                    <Button Classes="muted" Command="{Binding DeletePresetCommand}" ToolTip.Tip="Delete preset"
+                            Margin="5 0 15 0">
+                        <Label Classes="icon" Content="&#xe4a6;"></Label>
+                    </Button>
+                </StackPanel>
                 <Button Classes="play" Command="{Binding LaunchServerPresetCommand}">
                     <Label Content="&#xe3d0;"></Label>
                 </Button>

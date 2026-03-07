@@ -40,6 +40,7 @@ public partial class MainViewModel : ViewModelBase
     [NotifyPropertyChangedFor(nameof(IsFavoritePageActive))]
     [NotifyPropertyChangedFor(nameof(IsServersPageActive))]
     [NotifyPropertyChangedFor(nameof(IsPresetsPageActive))]
+    [NotifyPropertyChangedFor(nameof(IsSavesPageActive))]
     [NotifyPropertyChangedFor(nameof(IsSettingsPageActive))]
     private PageViewModel? _currentPage;
 
@@ -61,6 +62,7 @@ public partial class MainViewModel : ViewModelBase
     public bool IsFavoritePageActive => CurrentPage is FavoriteViewModel;
     public bool IsServersPageActive => CurrentPage is ServersViewModel;
     public bool IsPresetsPageActive => CurrentPage is PresetsViewModel;
+    public bool IsSavesPageActive => CurrentPage is SavesViewModel;
     public bool IsSettingsPageActive => CurrentPage is SettingsViewModel;
 
     public MainViewModel()
@@ -87,8 +89,9 @@ public partial class MainViewModel : ViewModelBase
 
         router.OnBeforeLaunch += BeforeLaunch;
         router.ShowLaunchForPreset += ShowLaunchForPreset;
-        router.OnShowAddPreset += () => CurrentPage = _pageFactory!.GetPageViewModel<AddPresetViewModel>();
-        router.OnShowPresets += () => ShowPresets();
+        router.OnShowAddPreset += () => CurrentPage = _pageFactory!.GetPageViewModel<AddPresetViewModel>(vm => vm.LoadCurrentModlist());
+        router.OnShowEditPreset += preset => CurrentPage = _pageFactory!.GetPageViewModel<AddPresetViewModel>(vm => vm.Prefill(preset));
+        router.OnShowPresets += ShowPresets;
 
         IsMenuCollapsed = launcherConfig.Data.MenuCollapsed;
 
@@ -97,6 +100,7 @@ public partial class MainViewModel : ViewModelBase
             case "launch": ShowLaunch(); break;
             case "favorite": ShowFavorite(); break;
             case "presets": ShowPresets(); break;
+            case "saves": ShowSaves(); break;
             default: ShowServers(); break;
         }
 
@@ -276,6 +280,9 @@ public partial class MainViewModel : ViewModelBase
 
     [RelayCommand]
     private void ShowPresets() => CurrentPage = _pageFactory!.GetPageViewModel<PresetsViewModel>();
+
+    [RelayCommand]
+    private void ShowSaves() => CurrentPage = _pageFactory!.GetPageViewModel<SavesViewModel>();
 
     [RelayCommand]
     private void ShowSettings() => CurrentPage = _pageFactory!.GetPageViewModel<SettingsViewModel>();

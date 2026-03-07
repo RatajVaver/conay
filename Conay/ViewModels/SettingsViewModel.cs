@@ -59,7 +59,7 @@ public partial class SettingsViewModel : PageViewModel
     [ObservableProperty]
     private bool _backupTotCustom;
 
-    private readonly string[] _tabs = ["launch", "favorite", "servers", "presets"];
+    private readonly string[] _tabs = ["launch", "favorite", "servers", "presets", "saves"];
 
     public SettingsViewModel(LauncherConfig config, GameConfig gameConfig)
     {

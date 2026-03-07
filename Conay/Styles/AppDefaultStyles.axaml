@@ -93,6 +93,23 @@
         <Setter Property="Background" Value="Transparent"></Setter>
     </Style>
 
+    <Style Selector="Button.muted">
+        <Setter Property="Background" Value="Transparent"></Setter>
+        <Setter Property="Foreground" Value="#555"></Setter>
+        <Setter Property="Margin" Value="0"></Setter>
+        <Setter Property="Padding" Value="0"></Setter>
+    </Style>
+
+    <Style Selector="Button.muted:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="Transparent"></Setter>
+        <Setter Property="Foreground" Value="#999"></Setter>
+    </Style>
+
+    <Style Selector="Button.muted Label.icon">
+        <Setter Property="FontSize" Value="18"></Setter>
+        <Setter Property="FontFamily" Value="{DynamicResource Phosphor}"></Setter>
+    </Style>
+
     <Style Selector="Button.play">
         <Setter Property="Background" Value="Transparent"></Setter>
         <Setter Property="Foreground" Value="#205e22"></Setter>

@@ -65,6 +65,13 @@
                                 <Label Classes="text" Content="Presets" IsVisible="{Binding !IsMenuCollapsed}"></Label>
                             </StackPanel>
                         </Button>
+                        <Button HorizontalAlignment="Stretch" Classes.active="{Binding IsSavesPageActive}"
+                                Command="{Binding ShowSavesCommand}">
+                            <StackPanel Orientation="Horizontal">
+                                <Label Classes="icon" Content="&#xe248;"></Label>
+                                <Label Classes="text" Content="Saves" IsVisible="{Binding !IsMenuCollapsed}"></Label>
+                            </StackPanel>
+                        </Button>
                         <Button HorizontalAlignment="Stretch" Classes.active="{Binding IsSettingsPageActive}"
                                 Command="{Binding ShowSettingsCommand}">
                             <StackPanel Orientation="Horizontal">

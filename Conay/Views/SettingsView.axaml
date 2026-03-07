@@ -46,6 +46,7 @@
                         <ComboBoxItem>Favorite</ComboBoxItem>
                         <ComboBoxItem>Servers</ComboBoxItem>
                         <ComboBoxItem>Presets</ComboBoxItem>
+                        <ComboBoxItem>Saves</ComboBoxItem>
                     </ComboBox>
                 </StackPanel>
             </StackPanel>

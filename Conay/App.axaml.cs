@@ -150,6 +150,7 @@ public class App : Application
         collection.AddSingleton<LocalPresets>();
         collection.AddSingleton<ServerList>();
         collection.AddSingleton<SelfUpdater>();
+        collection.AddSingleton<SaveManager>();
 
         collection.AddSingleton<ServerPresetFactory>();
         collection.AddSingleton<PresetSourceFactory>();
@@ -163,6 +164,7 @@ public class App : Application
         collection.AddTransient<PresetsViewModel>();
         collection.AddTransient<AddPresetViewModel>();
         collection.AddSingleton<SettingsViewModel>();
+        collection.AddTransient<SavesViewModel>();
 
         collection.AddSingleton<Func<Type, PageViewModel>>(x => type =>
         {

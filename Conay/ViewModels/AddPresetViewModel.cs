@@ -18,6 +18,8 @@ public partial class AddPresetViewModel : PageViewModel
     private readonly LocalPresets _localPresets;
     private readonly ServerList _serverList;
     private readonly ServerPresetFactory _serverPresetFactory;
+    private readonly ModItemFactory _modItemFactory;
+    private readonly ModList _modList;
     private readonly Router _router;
 
     [ObservableProperty]
@@ -33,7 +35,9 @@ public partial class AddPresetViewModel : PageViewModel
     [ObservableProperty]
     private string _password = string.Empty;
 
-    public string ModsLabel { get; }
+    [ObservableProperty]
+    private string _modsLabel = string.Empty;
+
     public ObservableCollection<ModItemViewModel> Mods { get; } = [];
 
     public AddPresetViewModel(LocalPresets localPresets, ServerList serverList, ServerPresetFactory serverPresetFactory,
@@ -42,16 +46,35 @@ public partial class AddPresetViewModel : PageViewModel
         _localPresets = localPresets;
         _serverList = serverList;
         _serverPresetFactory = serverPresetFactory;
+        _modItemFactory = modItemFactory;
+        _modList = modList;
         _router = router;
         _ip = gameConfig.GetLastConnected();
 
-        List<string> currentMods = modList.ReloadCurrentModList();
-        foreach (string modPath in currentMods)
-            Mods.Add(modItemFactory.Create(modPath));
+        WeakReferenceMessenger.Default.Send(new ScrollToTopMessage());
+    }
+
+    public void LoadCurrentModlist()
+    {
+        Mods.Clear();
+        foreach (string modPath in _modList.ReloadCurrentModList())
+            Mods.Add(_modItemFactory.Create(modPath));
 
         ModsLabel = $"Mods from current modlist ({Mods.Count}):";
+    }
 
-        WeakReferenceMessenger.Default.Send(new ScrollToTopMessage());
+    public void Prefill(ServerData preset)
+    {
+        FileName = preset.FileName ?? string.Empty;
+        Name = preset.Name;
+        Ip = preset.Ip;
+        Password = preset.Password ?? string.Empty;
+
+        Mods.Clear();
+        foreach (string mod in preset.Mods)
+            Mods.Add(_modItemFactory.Create(mod));
+
+        ModsLabel = $"Mods from preset ({Mods.Count}):";
     }
 
     [RelayCommand(CanExecute = nameof(CanSave))]

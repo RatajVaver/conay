@@ -109,6 +109,14 @@ public class LocalPresets : IPresetService
         ClearCache();
     }
 
+    public void DeletePreset(string fileName)
+    {
+        string filePath = Path.Combine(_presetsPath, fileName + ".json");
+        if (File.Exists(filePath))
+            File.Delete(filePath);
+        ClearCache();
+    }
+
     public void SaveModlistFromPreset(string fileName)
     {
         List<ServerData> presets = GetLocalPresets();

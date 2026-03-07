@@ -7,6 +7,8 @@ using CommunityToolkit.Mvvm.Input;
 using Conay.Data;
 using Conay.Services;
 using Conay.Utils;
+using MsBox.Avalonia;
+using MsBox.Avalonia.Enums;
 
 namespace Conay.ViewModels.Parts;
 
@@ -78,6 +80,7 @@ public partial class ServerPresetViewModel : ViewModelBase, ILazyLoad
 
     public bool ShowDiscord => !string.IsNullOrEmpty(Discord);
     public bool ShowWebsite => !string.IsNullOrEmpty(Website);
+    public bool IsLocalPreset => _provider.GetProviderName() == "local" && File != "_vanilla";
 
     public bool IsModded => ModsCount > 0;
     public bool IsRoleplay => Tags?.Contains("roleplay") ?? false;
@@ -92,6 +95,7 @@ public partial class ServerPresetViewModel : ViewModelBase, ILazyLoad
     public bool IsVisible { get; set; }
 
     public readonly string File;
+    private Action<ServerPresetViewModel>? _onDelete;
     private int? _queryPort;
     private int _failedQueries;
 
@@ -214,6 +218,19 @@ public partial class ServerPresetViewModel : ViewModelBase, ILazyLoad
         UpdatePlayerCountColor(result.Players, result.MaxPlayers);
         RefreshInProgress = false;
     }
+
+    public void SetDeleteCallback(Action<ServerPresetViewModel> onDelete) => _onDelete = onDelete;
+
+    [RelayCommand]
+    private async Task EditPreset()
+    {
+        ServerData? data = await _provider.FetchServerData(File);
+        if (data != null)
+            _router.ShowEditPreset(data);
+    }
+
+    [RelayCommand]
+    private void DeletePreset() => _onDelete?.Invoke(this);
 
     [RelayCommand]
     private async Task LaunchServerPreset()

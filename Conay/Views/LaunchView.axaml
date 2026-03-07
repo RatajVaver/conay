@@ -9,8 +9,8 @@
     <Grid RowDefinitions="Auto, *">
         <Grid Grid.Row="0" ColumnDefinitions="*, Auto">
             <StackPanel Grid.Column="0" Orientation="Vertical">
-                <Label Content="{Binding Title}"></Label>
-                <Label Content="{Binding Subtitle}"></Label>
+                <Label FontSize="15" Content="{Binding Title}"></Label>
+                <Label Foreground="#ccc" FontSize="12" Content="{Binding Subtitle}"></Label>
             </StackPanel>
             <Button Grid.Column="1" Classes="play" Command="{Binding LaunchCommand}"
                     IsEnabled="{Binding !Launching}">
