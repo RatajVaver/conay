@@ -26,6 +26,9 @@ public class ServerData
     [JsonPropertyName("tags")]
     public string[]? Tags { get; set; }
 
+    [JsonPropertyName("battleye")]
+    public bool BattlEye { get; set; }
+
     [JsonPropertyName("mods")]
     public List<string> Mods { get; set; } = [];
 

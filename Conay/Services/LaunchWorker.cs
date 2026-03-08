@@ -125,8 +125,8 @@ public class LaunchWorker(
 
     private void LaunchConan(string? args = null)
     {
-        string exePath =
-            Path.GetFullPath(Path.Combine(steam.AppInstallDir, "ConanSandbox/Binaries/Win64/ConanSandbox.exe"));
+        string exe = state.BattlEye ? "ConanSandbox_BE.exe" : "ConanSandbox.exe";
+        string exePath = Path.GetFullPath(Path.Combine(steam.AppInstallDir, $"ConanSandbox/Binaries/Win64/{exe}"));
         if (File.Exists(exePath))
         {
             try

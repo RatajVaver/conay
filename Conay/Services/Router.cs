@@ -30,6 +30,7 @@ public class Router(LaunchState launchState, LauncherConfig launcherConfig)
         launchState.Name = preset?.Name ?? string.Empty;
         launchState.Ip = preset?.Ip ?? string.Empty;
         launchState.IsSaveLaunch = isSaveLaunch;
+        launchState.BattlEye = preset?.BattlEye ?? false;
         ShowLaunchForPreset?.Invoke(preset);
     }
 }

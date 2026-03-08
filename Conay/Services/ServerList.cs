@@ -32,10 +32,12 @@ public class ServerList
 
         if (!_launcherConfig.Data.OfflineMode)
         {
-            foreach (string origin in new[] { "ratajmods", "github" })
+            List<Task<List<ServerInfo>>> remoteTasks = new[] { "ratajmods", "github" }
+                .Select(origin => _sourceFactory.Get(origin).GetServerList())
+                .ToList();
+
+            foreach (List<ServerInfo> remoteServers in await Task.WhenAll(remoteTasks))
             {
-                IPresetService provider = _sourceFactory.Get(origin);
-                List<ServerInfo> remoteServers = await provider.GetServerList();
                 foreach (ServerInfo server in remoteServers)
                 {
                     if (_servers.Any(x => x.File == server.File && x.Provider?.GetType() == typeof(LocalPresets)))

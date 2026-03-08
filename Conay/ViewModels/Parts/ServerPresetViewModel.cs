@@ -167,6 +167,12 @@ public partial class ServerPresetViewModel : ViewModelBase, ILazyLoad
         PingColor = new HslColor(1, Math.Max(0, 130 - ping / 2), 0.58, 0.66).ToRgb().ToString();
     }
 
+    public async Task WarmCacheAsync()
+    {
+        if (IsLoaded) return;
+        await Task.Run(() => _provider.FetchServerData(_serverInfo.File));
+    }
+
     public async Task LoadDataAsync()
     {
         IsLoaded = true;

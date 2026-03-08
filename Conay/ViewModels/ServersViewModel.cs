@@ -170,25 +170,27 @@ public partial class ServersViewModel : PageViewModel
         RefreshServers();
 
         while (!_serverList.RemoteServersLoaded)
-        {
             await Task.Delay(50);
-            RefreshServers();
-        }
 
-        _preloadCancel?.Cancel();
+        RefreshServers();
+
+        if (_preloadCancel != null)
+            await _preloadCancel.CancelAsync();
         _preloadCancel = new CancellationTokenSource();
         _ = PreloadServerDataAsync(_preloadCancel.Token);
     }
 
     private async Task PreloadServerDataAsync(CancellationToken token)
     {
+        await Task.Delay(TimeSpan.FromSeconds(2), token);
+
         using SemaphoreSlim sem = new(6);
         List<Task> tasks = _allPresets.Select(async p =>
         {
             await sem.WaitAsync(token);
             try
             {
-                await p.LoadDataAsync();
+                await p.WarmCacheAsync();
             }
             finally
             {
