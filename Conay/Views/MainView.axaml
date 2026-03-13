@@ -97,7 +97,6 @@
             <Border Background="#c79714" Padding="5" IsVisible="{Binding ShowTestingWarning}">
                 <TextBlock TextAlignment="Center" TextWrapping="Wrap" Foreground="#000" FontSize="12" FontWeight="Bold">
                     You are using a pre-release version of Conay.
-                    Testing versions have to be updated manually.
                     If you encounter any bugs, please report them on my Discord.
                 </TextBlock>
             </Border>

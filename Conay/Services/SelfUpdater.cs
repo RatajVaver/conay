@@ -66,7 +66,8 @@ public class SelfUpdater(ILogger<SelfUpdater> logger, HttpService http, NotifySe
             return false;
 
         string newestVersion = releaseData.Version;
-        return newestVersion != currentVersion && IsVersionNewer(currentVersion, newestVersion);
+        bool isPreRelease = currentVersion.Contains('-');
+        return newestVersion != currentVersion && (IsVersionNewer(currentVersion, newestVersion) || (isPreRelease && !IsVersionNewer(newestVersion, currentVersion)));
     }
 
     private void ReportProgress(float progress)
