@@ -115,7 +115,7 @@ def main():
             else:
                 webbrowser.open("steam://run/440900/")
 
-        subprocess.check_call("echo {}|clip".format(SERVER_IP), shell=True)
+        subprocess.run(['clip.exe'], input=SERVER_IP, text=True, check=True)
 
         if SINGLEPLAYER:
             fprint("<🎲> Launching the game and starting a singleplayer session..")
