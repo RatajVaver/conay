@@ -125,6 +125,13 @@ public class ModList
 
         _currentMods.Clear();
 
+        string? modsDirectory = Path.GetDirectoryName(_modListPath);
+        if (modsDirectory == null)
+        {
+            _logger.LogError("Can't resolve Mods directory!");
+            return;
+        }
+
         for (int i = 0; i < mods.Length; i++)
         {
             _currentMods.Add(mods[i]);
@@ -132,19 +139,14 @@ public class ModList
             string modIdOrFolder = mods[i].Split('/')[0];
             if (ulong.TryParse(modIdOrFolder, out _))
             {
-                mods[i] = Path.GetFullPath(Path.Combine(_workshopPath, mods[i]));
+                string fullPath = Path.GetFullPath(Path.Combine(_workshopPath, mods[i]));
+                mods[i] = Path.GetRelativePath(modsDirectory, fullPath);
             }
             else
             {
-                mods[i] = Path.GetFullPath(Path.Combine(LocalModsPath, mods[i]));
+                string fullPath = Path.GetFullPath(Path.Combine(LocalModsPath, mods[i]));
+                mods[i] = Path.GetRelativePath(modsDirectory, fullPath);
             }
-        }
-
-        string? modsDirectory = Path.GetDirectoryName(_modListPath);
-        if (modsDirectory == null)
-        {
-            _logger.LogError("Can't resolve Mods directory!");
-            return;
         }
 
         if (!Directory.Exists(modsDirectory))
