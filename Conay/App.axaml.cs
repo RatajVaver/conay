@@ -72,10 +72,13 @@ public class App : Application
     {
         BindingPlugins.DataValidators.RemoveAt(0);
 
+        string logsDirectory = Path.Combine(AppContext.BaseDirectory, "logs");
+        string cacheDirectory = Path.Combine(AppContext.BaseDirectory, "cache");
+
         try
         {
-            if (!Directory.Exists("logs"))
-                Directory.CreateDirectory("logs");
+            if (!Directory.Exists(logsDirectory))
+                Directory.CreateDirectory(logsDirectory);
         }
         catch (Exception ex)
         {
@@ -83,7 +86,7 @@ public class App : Application
         }
 
         ServiceCollection collection = new();
-        ConfigureServices(collection);
+        ConfigureServices(collection, logsDirectory);
 
         ServiceProvider services = collection.BuildServiceProvider();
         _logger = services.GetRequiredService<ILogger<App>>();
@@ -91,16 +94,15 @@ public class App : Application
         LauncherConfig launcherConfig = services.GetRequiredService<LauncherConfig>();
         if (launcherConfig.Data.UseCache)
         {
-            if (Directory.Exists("cache"))
+            if (Directory.Exists(cacheDirectory))
             {
                 try
                 {
-                    string[] cacheFiles = Directory.GetFiles("cache");
-                    foreach (string file in cacheFiles)
+                    DateTime cutoff = DateTime.Now.AddDays(-7);
+                    foreach (string file in Directory.GetFiles(cacheDirectory))
                     {
-                        FileInfo fi = new(file);
-                        if (fi.LastWriteTime < DateTime.Now.AddDays(-7) && fi.Extension != ".json")
-                            fi.Delete();
+                        if (File.GetLastWriteTime(file) < cutoff && Path.GetExtension(file) != ".json")
+                            File.Delete(file);
                     }
                 }
                 catch (Exception ex)
@@ -110,7 +112,7 @@ public class App : Application
             }
 
             ImageLoader.AsyncImageLoader.Dispose();
-            ImageLoader.AsyncImageLoader = new DiskCachedWebImageLoader("cache/");
+            ImageLoader.AsyncImageLoader = new DiskCachedWebImageLoader(cacheDirectory + Path.DirectorySeparatorChar);
         }
 
         desktop.MainWindow = new MainView
@@ -124,13 +126,13 @@ public class App : Application
         FileLogger.AppLoaded = true;
     }
 
-    private static void ConfigureServices(IServiceCollection collection)
+    private static void ConfigureServices(IServiceCollection collection, string logsDirectory)
     {
         collection.AddLogging(logging =>
         {
             logging.ClearProviders();
             logging.AddConsole();
-            logging.AddFile("logs/conay.log");
+            logging.AddFile(Path.Combine(logsDirectory, "conay.log"));
 #if DEBUG
             logging.SetMinimumLevel(LogLevel.Debug);
 #else
@@ -192,8 +194,9 @@ public class App : Application
     {
         try
         {
-            if (!Directory.Exists("logs"))
-                Directory.CreateDirectory("logs");
+            string logsDirectory = Path.Combine(AppContext.BaseDirectory, "logs");
+            if (!Directory.Exists(logsDirectory))
+                Directory.CreateDirectory(logsDirectory);
 
             if (_logger != null)
             {
@@ -202,7 +205,7 @@ public class App : Application
             else
             {
                 string logMessage = $"{DateTime.UtcNow:yyyy-MM-dd HH:mm:ss} [Critical] {message}\n{exception}";
-                File.AppendAllText("logs/fatal.log", logMessage + "\n");
+                File.AppendAllText(Path.Combine(logsDirectory, "fatal.log"), logMessage + "\n");
             }
         }
         catch (UnauthorizedAccessException ex)

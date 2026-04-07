@@ -7,20 +7,20 @@ namespace Conay.Factories;
 
 public class ServerPresetFactory(Router router, LauncherConfig launcherConfig, Steam steam)
 {
-    private readonly List<ServerPresetViewModel> _serverPresets = [];
+    private readonly Dictionary<string, ServerPresetViewModel> _serverPresets = new();
 
     public ServerPresetViewModel Create(ServerInfo serverInfo)
     {
-        ServerPresetViewModel? preset = _serverPresets.Find(x => x.File == serverInfo.File);
-        if (preset != null) return preset;
+        if (_serverPresets.TryGetValue(serverInfo.File, out ServerPresetViewModel? preset))
+            return preset;
 
         preset = new ServerPresetViewModel(router, steam, launcherConfig, serverInfo);
-        _serverPresets.Add(preset);
+        _serverPresets[serverInfo.File] = preset;
 
         return preset;
     }
 
-    public void Invalidate(string fileName) => _serverPresets.RemoveAll(x => x.File == fileName);
+    public void Invalidate(string fileName) => _serverPresets.Remove(fileName);
 
-    public List<ServerPresetViewModel> GetAll() => _serverPresets;
+    public IEnumerable<ServerPresetViewModel> GetAll() => _serverPresets.Values;
 }

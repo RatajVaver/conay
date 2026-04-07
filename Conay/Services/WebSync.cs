@@ -85,6 +85,7 @@ public class WebSync(
             DateTime localLastUpdated = modList.GetLocalModFileLastUpdate("@" + sourceName, pakName);
 
             if (Epoch.ToDateTime(mod.LastUpdate) < localLastUpdated) continue;
+            if (_updateQueue.Any(x => x.FileName == mod.FileName)) continue;
 
             logger.LogDebug("Needs update: {Mod}", mod.Title ?? pakName);
             _updateQueue.Add(mod);

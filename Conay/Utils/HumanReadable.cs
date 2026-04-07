@@ -10,7 +10,7 @@ public static class HumanReadable
 
         return timeSpan.TotalSeconds switch
         {
-            <= 60 => $"{timeSpan.Seconds} seconds ago",
+            <= 60 => $"{(int)timeSpan.TotalSeconds} seconds ago",
 
             _ => timeSpan.TotalMinutes switch
             {

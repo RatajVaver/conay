@@ -40,7 +40,7 @@ public class ServerList
             {
                 foreach (ServerInfo server in remoteServers)
                 {
-                    if (_servers.Any(x => x.File == server.File && x.Provider?.GetType() == typeof(LocalPresets)))
+                    if (_servers.Any(x => x.File == server.File && x.Provider is LocalPresets))
                         _localRemoteConflicts.Add(server.File);
                     else if (_servers.All(x => x.File != server.File))
                         _servers.Add(server);
@@ -79,7 +79,7 @@ public class ServerList
 
     public async Task RefreshLocalServers()
     {
-        _servers.RemoveAll(x => x.Provider?.GetType() == typeof(LocalPresets));
+        _servers.RemoveAll(x => x.Provider is LocalPresets);
         IPresetService localPresets = _sourceFactory.Get("local");
         List<ServerInfo> localServers = await localPresets.GetServerList();
         _servers.InsertRange(0, localServers);
@@ -88,12 +88,12 @@ public class ServerList
 
     public List<ServerInfo> GetLocalServers()
     {
-        return _servers.Where(x => x.Provider?.GetType() == typeof(LocalPresets)).ToList();
+        return _servers.Where(x => x.Provider is LocalPresets).ToList();
     }
 
     public List<ServerInfo> GetRemoteServers()
     {
-        return _servers.Where(x => x.Provider?.GetType() == typeof(RemotePresets)).ToList();
+        return _servers.Where(x => x.Provider is RemotePresets).ToList();
     }
 
     public IReadOnlyCollection<string> GetLocalRemoteConflicts() => _localRemoteConflicts;

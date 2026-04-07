@@ -238,14 +238,15 @@ public partial class MainViewModel : ViewModelBase
 
     private async Task CheckConanRunning()
     {
-        bool conanRunning = Process.GetProcessesByName("ConanSandbox").Length > 0;
-        while (conanRunning)
-        {
-            ShowConanRunningWarning = true;
-            await Task.Delay(TimeSpan.FromSeconds(1));
-            conanRunning = Process.GetProcessesByName("ConanSandbox").Length > 0;
-        }
+        Process[] processes = Process.GetProcessesByName("ConanSandbox");
+        if (processes.Length == 0) return;
 
+        ShowConanRunningWarning = true;
+        await Task.WhenAll(processes.Select(async p =>
+        {
+            await p.WaitForExitAsync();
+            p.Dispose();
+        }));
         ShowConanRunningWarning = false;
     }
 
@@ -297,6 +298,7 @@ public partial class MainViewModel : ViewModelBase
             foreach (Process process in Process.GetProcessesByName("ConanSandbox"))
             {
                 process.Kill();
+                process.Dispose();
             }
 
             ShowConanRunningWarning = false;
@@ -327,8 +329,7 @@ public partial class MainViewModel : ViewModelBase
 
     private void RefreshVisibleServers()
     {
-        List<ServerPresetViewModel> serverPresets = _serverPresetFactory!.GetAll();
-        foreach (ServerPresetViewModel preset in serverPresets.Where(preset => preset.IsVisible))
+        foreach (ServerPresetViewModel preset in _serverPresetFactory!.GetAll().Where(preset => preset.IsVisible))
         {
             _ = preset.GetServerOnlineStatus();
         }

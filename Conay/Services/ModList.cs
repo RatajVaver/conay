@@ -48,10 +48,9 @@ public class ModList
         try
         {
             string[] lines = File.ReadAllLines(path);
-            for (int i = 0; i < lines.Length; i += 1)
+            foreach (string line in lines)
             {
-                string line = lines[i].Replace('\\', '/');
-                string[] parts = line.Split('/');
+                string[] parts = line.Replace('\\', '/').Split('/');
                 if (parts.Length < 2) continue;
 
                 string modId = parts[^2];

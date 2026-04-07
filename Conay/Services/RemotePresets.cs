@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using Conay.Data;
 using Microsoft.Extensions.Logging;
@@ -18,7 +19,7 @@ public class RemotePresets(
     string serversDirectory) : IPresetService
 {
     private readonly List<ServerData> _presetsCache = [];
-    private readonly object _cacheLock = new();
+    private readonly Lock _cacheLock = new();
 
     public string GetProviderName() => name;
 
@@ -99,9 +100,10 @@ public class RemotePresets(
 
     private List<ServerInfo> LoadFromCache()
     {
-        if (!config.Data.UseCache || !File.Exists($"cache/{name}.json")) return [];
+        if (!config.Data.UseCache ||
+            !File.Exists(Path.Combine(AppContext.BaseDirectory, "cache", $"{name}.json"))) return [];
 
-        string json = File.ReadAllText($"cache/{name}.json");
+        string json = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "cache", $"{name}.json"));
         List<ServerInfo> servers = JsonSerializer.Deserialize<List<ServerInfo>>(json) ?? [];
 
         foreach (ServerInfo server in servers)
@@ -118,8 +120,9 @@ public class RemotePresets(
 
         try
         {
-            if (!Directory.Exists("cache"))
-                Directory.CreateDirectory("cache");
+            string cacheDir = Path.Combine(AppContext.BaseDirectory, "cache");
+            if (!Directory.Exists(cacheDir))
+                Directory.CreateDirectory(cacheDir);
         }
         catch (Exception ex)
         {
@@ -129,7 +132,7 @@ public class RemotePresets(
 
         try
         {
-            File.WriteAllText($"cache/{name}.json", jsonData);
+            File.WriteAllText(Path.Combine(AppContext.BaseDirectory, "cache", $"{name}.json"), jsonData);
         }
         catch (Exception ex)
         {

@@ -34,7 +34,7 @@ public partial class LaunchViewModel : PageViewModel
     [ObservableProperty]
     private bool _launching;
 
-    public bool ShowSupportBox { get; } = Random.Shared.NextDouble() < 0.03;
+    public bool ShowSupportBox { get; } = Random.Shared.NextDouble() < 0.02;
 
     public ObservableCollection<ModItemViewModel> Mods { get; } = [];
 

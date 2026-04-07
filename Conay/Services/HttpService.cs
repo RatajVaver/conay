@@ -38,8 +38,8 @@ public class HttpService(ILogger<HttpService> logger)
         using CancellationTokenSource cts = new(timeout ?? TimeSpan.FromSeconds(10));
         try
         {
-            HttpResponseMessage response = await Client.PostAsync(url, postData, cts.Token);
-            return await response.Content.ReadAsStringAsync(cts.Token);
+            HttpResponseMessage response = await Client.PostAsync(url, postData, cts.Token).ConfigureAwait(false);
+            return await response.Content.ReadAsStringAsync(cts.Token).ConfigureAwait(false);
         }
         catch (Exception ex)
         {

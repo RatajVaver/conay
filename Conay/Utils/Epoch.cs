@@ -4,7 +4,7 @@ namespace Conay.Utils;
 
 public static class Epoch
 {
-    public static readonly DateTime UnixEpoch = new(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+    public static readonly DateTime UnixEpoch = DateTime.UnixEpoch;
 
     public static int Current => (int)DateTime.UtcNow.Subtract(UnixEpoch).TotalSeconds;
 

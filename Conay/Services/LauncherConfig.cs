@@ -71,11 +71,12 @@ public class LauncherConfig
 
     public void ClearCache()
     {
-        if (!Directory.Exists("cache")) return;
+        string cacheDirectory = Path.Combine(AppContext.BaseDirectory, "cache");
+        if (!Directory.Exists(cacheDirectory)) return;
 
         try
         {
-            Directory.Delete("cache", true);
+            Directory.Delete(cacheDirectory, true);
         }
         catch (Exception ex)
         {

@@ -274,8 +274,10 @@ public partial class ServersViewModel : PageViewModel
         if (desired.Count == FilteredPresets.Count && desired.SequenceEqual(FilteredPresets))
             return;
 
+        HashSet<ServerPresetViewModel> desiredSet = [..desired];
+
         for (int i = FilteredPresets.Count - 1; i >= 0; i--)
-            if (!desired.Contains(FilteredPresets[i]))
+            if (!desiredSet.Contains(FilteredPresets[i]))
                 FilteredPresets.RemoveAt(i);
 
         for (int i = 0; i < desired.Count; i++)
