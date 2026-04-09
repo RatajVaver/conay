@@ -62,6 +62,11 @@ public partial class ServersViewModel : PageViewModel
     private TagFilterState _eroticFilter = TagFilterState.None;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(BattlEyeFilterIsInclude))]
+    [NotifyPropertyChangedFor(nameof(BattlEyeFilterIsExclude))]
+    private TagFilterState _battlEyeFilter = TagFilterState.None;
+
+    [ObservableProperty]
     private string _searchText = string.Empty;
 
     [ObservableProperty]
@@ -82,6 +87,8 @@ public partial class ServersViewModel : PageViewModel
     public bool DicePvpFilterIsExclude => DicePvpFilter == TagFilterState.Exclude;
     public bool EroticFilterIsInclude => EroticFilter == TagFilterState.Include;
     public bool EroticFilterIsExclude => EroticFilter == TagFilterState.Exclude;
+    public bool BattlEyeFilterIsInclude => BattlEyeFilter == TagFilterState.Include;
+    public bool BattlEyeFilterIsExclude => BattlEyeFilter == TagFilterState.Exclude;
 
     public string FilterModeLabel => FilterModeAnd ? "AND" : "OR";
     public string MinPlayerCountLabel => MinPlayerCount < 1 ? "Any" : $"{(int)MinPlayerCount}+";
@@ -103,6 +110,7 @@ public partial class ServersViewModel : PageViewModel
     partial void OnMechPvpFilterChanged(TagFilterState value) => _ = ApplyFiltersWithLoad();
     partial void OnDicePvpFilterChanged(TagFilterState value) => _ = ApplyFiltersWithLoad();
     partial void OnEroticFilterChanged(TagFilterState value) => _ = ApplyFiltersWithLoad();
+    partial void OnBattlEyeFilterChanged(TagFilterState value) => _ = ApplyFiltersWithLoad();
     partial void OnMinPlayerCountChanged(double value) => _ = ApplyFiltersWithLoad();
 
     private bool _filterLoadInProgress;
@@ -152,6 +160,9 @@ public partial class ServersViewModel : PageViewModel
 
     [RelayCommand]
     private void ToggleEroticFilter() => EroticFilter = Cycle(EroticFilter);
+
+    [RelayCommand]
+    private void ToggleBattlEyeFilter() => BattlEyeFilter = Cycle(BattlEyeFilter);
 
     [RelayCommand]
     private void ToggleFilterMode() => FilterModeAnd = !FilterModeAnd;
@@ -232,6 +243,7 @@ public partial class ServersViewModel : PageViewModel
         MechPvpFilter != TagFilterState.None ||
         DicePvpFilter != TagFilterState.None ||
         EroticFilter != TagFilterState.None ||
+        BattlEyeFilter != TagFilterState.None ||
         MinPlayerCount >= 1;
 
     private CancellationTokenSource? _filterDebounce;
@@ -243,6 +255,7 @@ public partial class ServersViewModel : PageViewModel
             or nameof(ServerPresetViewModel.IsMechPvP)
             or nameof(ServerPresetViewModel.IsDicePvP)
             or nameof(ServerPresetViewModel.IsErotic)
+            or nameof(ServerPresetViewModel.BattleEye)
             or nameof(ServerPresetViewModel.Players))) return;
         if (AnyDataFilterActive)
             ScheduleFilterDebounce();
@@ -309,6 +322,7 @@ public partial class ServersViewModel : PageViewModel
             (preset.IsMechPvP, MechPvpFilter),
             (preset.IsDicePvP, DicePvpFilter),
             (preset.IsErotic, EroticFilter),
+            (preset.BattleEye, BattlEyeFilter),
         ];
 
         if (tagChecks.Any(t => t is { filter: TagFilterState.Exclude, hasTag: true }))

@@ -58,6 +58,9 @@ public partial class ServerPresetViewModel : ViewModelBase, ILazyLoad
     private string[]? _tags;
 
     [ObservableProperty]
+    private bool _battleEye;
+
+    [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsModded))]
     [NotifyPropertyChangedFor(nameof(ModdedTooltip))]
     private int _modsCount;
@@ -188,6 +191,7 @@ public partial class ServerPresetViewModel : ViewModelBase, ILazyLoad
             Discord = preset.Discord;
             Website = preset.Website;
             Tags = preset.Tags;
+            BattleEye = preset.BattlEye;
             ModsCount = preset.Mods.Count;
             _queryPort = preset.QueryPort;
             _preset = preset;

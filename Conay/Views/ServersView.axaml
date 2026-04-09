@@ -76,6 +76,13 @@
                             ToolTip.Tip="Erotic Roleplay">
                         <Label Content="&#xe8e8;" />
                     </Button>
+                    <Button Classes="tagFilter"
+                            Classes.tagInclude="{Binding BattlEyeFilterIsInclude}"
+                            Classes.tagExclude="{Binding BattlEyeFilterIsExclude}"
+                            Command="{Binding ToggleBattlEyeFilterCommand}"
+                            ToolTip.Tip="Requires BattlEye">
+                        <Label Content="&#xe220;" />
+                    </Button>
                     <Button Classes="modeToggle"
                             Command="{Binding ToggleFilterModeCommand}"
                             Content="{Binding FilterModeLabel}" />

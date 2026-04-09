@@ -74,6 +74,9 @@
                     <Label Classes="badge" Content="&#xe8e8;"
                            IsVisible="{Binding IsErotic, Mode=OneWay}" ToolTip.Tip="Erotic Roleplay">
                     </Label>
+                    <Label Classes="badge" Content="&#xe220;"
+                           IsVisible="{Binding BattleEye, Mode=OneWay}" ToolTip.Tip="Requires BattlEye">
+                    </Label>
                     <Label Classes="badge" Content="&#xe142;"
                            Foreground="{Binding PingColor, Mode=OneWay}" ToolTip.Tip="{Binding Ping, Mode=OneWay}">
                     </Label>
