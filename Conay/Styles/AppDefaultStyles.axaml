@@ -225,15 +225,9 @@
         </Style.Animations>
     </Style>
 
-    <!--
-    <Style Selector="Button#PART_MinimizeButton:pointerover /template/ ContentPresenter">
-        <Setter Property="Background" Value="#000" />
+    <Style Selector="Button#PART_FullScreenButton /template/ ContentPresenter">
+        <Setter Property="IsVisible" Value="False" />
     </Style>
-
-    <Style Selector="Button#PART_RestoreButton:pointerover /template/ ContentPresenter">
-        <Setter Property="Background" Value="#000" />
-    </Style>
-    -->
 
     <Style Selector="Button#PART_CloseButton:pointerover /template/ ContentPresenter">
         <Setter Property="Background" Value="#7a1717"></Setter>

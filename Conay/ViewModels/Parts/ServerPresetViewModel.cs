@@ -66,10 +66,10 @@ public partial class ServerPresetViewModel : ViewModelBase, ILazyLoad
     private int _modsCount;
 
     [ObservableProperty]
-    private string _playerCountColor = "#fff";
+    private IBrush _playerCountColor = Brushes.White;
 
     [ObservableProperty]
-    private string _pingColor = "#fff";
+    private IBrush _pingColor = Brushes.White;
 
     [ObservableProperty]
     private string _ping = "Ping: N/A";
@@ -151,23 +151,23 @@ public partial class ServerPresetViewModel : ViewModelBase, ILazyLoad
     {
         if (players == null || maxPlayers == null)
         {
-            PlayerCountColor = "#888";
+            PlayerCountColor = new SolidColorBrush(Color.Parse("#888888"));
             return;
         }
 
         if (players >= maxPlayers - 1)
         {
-            PlayerCountColor = "#db8a76";
+            PlayerCountColor = new SolidColorBrush(Color.Parse("#db8a76"));
             return;
         }
 
-        PlayerCountColor = "#fff";
+        PlayerCountColor = Brushes.White;
     }
 
     private void UpdatePing(int ping)
     {
         Ping = $"Ping: {ping} ms";
-        PingColor = new HslColor(1, Math.Max(0, 130 - ping / 2), 0.58, 0.66).ToRgb().ToString();
+        PingColor = new SolidColorBrush(new HslColor(1, Math.Max(0, 130 - ping / 2), 0.58, 0.66).ToRgb());
     }
 
     public async Task WarmCacheAsync()

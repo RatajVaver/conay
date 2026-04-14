@@ -13,6 +13,8 @@ public partial class MainView : Window
     public MainView()
     {
         InitializeComponent();
+        TransparencyLevelHint =
+            [WindowTransparencyLevel.AcrylicBlur, WindowTransparencyLevel.Blur, WindowTransparencyLevel.None];
         WeakReferenceMessenger.Default.Register<ScrollToTopMessage>(this, ScrollToTop);
     }
 

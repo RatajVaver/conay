@@ -16,7 +16,7 @@
         <Style Selector="TextBox.filterSearch:pointerover /template/ Border">
             <Setter Property="BorderBrush" Value="#555" />
         </Style>
-        <Style Selector="TextBox.filterSearch:focus /template/ Border">
+        <Style Selector="TextBox.filterSearch:focus-within /template/ Border">
             <Setter Property="BorderBrush" Value="#777" />
         </Style>
         <Style Selector="Slider.compact">
@@ -34,7 +34,7 @@
                 <TextBox Grid.Column="0"
                          Classes="filterSearch"
                          Text="{Binding SearchText}"
-                         Watermark="Search"
+                         PlaceholderText="Search"
                          Width="180"
                          BorderThickness="1"
                          VerticalAlignment="Center"

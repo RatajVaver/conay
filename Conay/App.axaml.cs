@@ -5,7 +5,6 @@ using AsyncImageLoader;
 using AsyncImageLoader.Loaders;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Data.Core.Plugins;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
 using Conay.Data;
@@ -29,7 +28,7 @@ public class App : Application
         AppContext.SetSwitch("System.Net.DisableIPv6", true);
 
         AvaloniaXamlLoader.Load(this);
-        DataTemplates.Add(new ViewLocator());
+        //DataTemplates.Add(new ViewLocator());
 
         AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
         TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
@@ -70,8 +69,6 @@ public class App : Application
     private void InitializeApplication(IClassicDesktopStyleApplicationLifetime desktop,
         SplashScreenView splashScreen)
     {
-        BindingPlugins.DataValidators.RemoveAt(0);
-
         string logsDirectory = Path.Combine(AppContext.BaseDirectory, "logs");
         string cacheDirectory = Path.Combine(AppContext.BaseDirectory, "cache");
 

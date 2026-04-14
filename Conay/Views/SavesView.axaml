@@ -57,7 +57,7 @@
                 <TextBlock FontSize="13" Foreground="#eee" Text="{Binding NamePanelTitle}" />
                 <Grid ColumnDefinitions="*, Auto, Auto" ColumnSpacing="8">
                     <TextBox Grid.Column="0" Text="{Binding NewSaveName, Mode=TwoWay}"
-                             Watermark="Enter a name.." />
+                             PlaceholderText="Enter a name.." />
                     <Button Grid.Column="1" Command="{Binding ConfirmSaveCurrentCommand}">
                         <StackPanel Orientation="Horizontal">
                             <Label Classes="icon" Content="&#xe248;"></Label>

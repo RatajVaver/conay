@@ -13,19 +13,19 @@
             <Label Grid.Row="0" Grid.Column="0" VerticalAlignment="Center">File Name*</Label>
             <TextBox Grid.Row="0" Grid.Column="1" x:Name="FileNameBox"
                      Text="{Binding FileName, Mode=TwoWay}"
-                     Watermark="e.g. myserver (lowercase alphanumeric)" />
+                     PlaceholderText="e.g. myserver (lowercase alphanumeric)" />
 
             <Label Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" Margin="0 8 0 0">Server Name</Label>
             <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding Name, Mode=TwoWay}"
-                     Watermark="optional" Margin="0 8 0 0" />
+                     PlaceholderText="optional" Margin="0 8 0 0" />
 
             <Label Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" Margin="0 8 0 0">Server IP</Label>
             <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding Ip, Mode=TwoWay}"
-                     Watermark="optional" Margin="0 8 0 0" />
+                     PlaceholderText="optional" Margin="0 8 0 0" />
 
             <Label Grid.Row="3" Grid.Column="0" VerticalAlignment="Center" Margin="0 8 0 0">Password</Label>
             <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding Password, Mode=TwoWay}"
-                     Watermark="optional" Margin="0 8 0 0" />
+                     PlaceholderText="optional" Margin="0 8 0 0" />
         </Grid>
 
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10">

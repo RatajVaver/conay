@@ -10,11 +10,11 @@
         Width="700" Height="300"
         Background="Black"
         WindowStartupLocation="CenterScreen"
-        SystemDecorations="None"
+        WindowDecorations="None"
         Topmost="True">
     <Border>
         <Border.Background>
-            <ImageBrush Source="{Binding GetRandomImage, Mode=OneTime}" Stretch="UniformToFill" />
+            <ImageBrush Source="{CompiledBinding GetRandomImage, Mode=OneTime}" Stretch="UniformToFill" />
         </Border.Background>
         <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
             <TextBlock Text="Launching Conay" FontSize="28" TextAlignment="Center" Margin="8">

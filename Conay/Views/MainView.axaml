@@ -9,7 +9,6 @@
         xmlns:vm="clr-namespace:Conay.ViewModels"
         x:DataType="vm:MainViewModel"
         Title="Conay"
-        TransparencyLevelHint="AcrylicBlur"
         Background="Transparent"
         ExtendClientAreaToDecorationsHint="True"
         WindowStartupLocation="CenterScreen">

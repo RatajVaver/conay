@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Conay.Data;
 using Conay.Factories;
 using Conay.Utils;
+using Avalonia.Input;
 using Microsoft.Extensions.Logging;
 
 namespace Conay.Services;
@@ -88,7 +89,9 @@ public class LaunchWorker(
 
             if (launcherConfig.Data.Clipboard && !string.IsNullOrEmpty(state.Ip))
             {
-                _ = Clipboard.Get()?.SetTextAsync(state.Ip);
+                DataTransfer clipData = new();
+                clipData.Add(DataTransferItem.CreateText(state.Ip));
+                _ = Clipboard.Get()?.SetDataAsync(clipData);
             }
 
             _launching = false;
@@ -111,7 +114,9 @@ public class LaunchWorker(
 
         if (launcherConfig.Data.Clipboard && !string.IsNullOrEmpty(state.Ip))
         {
-            _ = Clipboard.Get()?.SetTextAsync(state.Ip);
+            DataTransfer clipData = new();
+            clipData.Add(DataTransferItem.CreateText(state.Ip));
+            _ = Clipboard.Get()?.SetDataAsync(clipData);
         }
 
         for (int i = 20; i > 1; i--)
