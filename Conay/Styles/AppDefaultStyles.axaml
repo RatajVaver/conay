@@ -229,6 +229,10 @@
         <Setter Property="IsVisible" Value="False" />
     </Style>
 
+    <Style Selector="WindowDrawnDecorations /template/ Panel#PART_TitleTextPanel > TextBlock">
+        <Setter Property="IsVisible" Value="False" />
+    </Style>
+
     <Style Selector="Button#PART_CloseButton:pointerover /template/ ContentPresenter">
         <Setter Property="Background" Value="#7a1717"></Setter>
     </Style>

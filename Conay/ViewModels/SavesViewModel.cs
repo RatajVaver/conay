@@ -13,8 +13,6 @@ using Conay.Services;
 using Conay.Utils;
 using Conay.ViewModels.Parts;
 using Conay.Views;
-using MsBox.Avalonia;
-using MsBox.Avalonia.Enums;
 
 namespace Conay.ViewModels;
 
@@ -127,8 +125,7 @@ public partial class SavesViewModel : PageViewModel
     {
         if (Process.GetProcessesByName("ConanSandbox").Length > 0)
         {
-            _ = MessageBoxManager.GetMessageBoxStandard("Conay",
-                "Cannot swap saves while Conan Exiles is running. Close the game first.").ShowAsync();
+            MessageBox.ShowInfo("Cannot swap saves while Conan Exiles is running. Close the game first.");
             return;
         }
 
@@ -205,11 +202,7 @@ public partial class SavesViewModel : PageViewModel
     {
         ShowActionPanel = false;
 
-        ButtonResult result = await MessageBoxManager.GetMessageBoxStandard("Conay",
-            "Are you sure you want to discard the current save? This cannot be undone.",
-            ButtonEnum.YesNo).ShowAsync();
-
-        if (result != ButtonResult.Yes)
+        if (!await MessageBox.Confirm("Are you sure you want to discard the current save? This cannot be undone."))
         {
             _pendingLoadSlug = null;
             return;
@@ -297,11 +290,8 @@ public partial class SavesViewModel : PageViewModel
 
     private async Task OnDeleteRequestedAsync(SaveItemViewModel item)
     {
-        ButtonResult result = await MessageBoxManager.GetMessageBoxStandard("Conay",
-            $"Are you sure you want to delete \"{item.Name}\"? This cannot be undone.",
-            ButtonEnum.YesNo).ShowAsync();
-
-        if (result != ButtonResult.Yes) return;
+        if (!await MessageBox.Confirm($"Are you sure you want to delete \"{item.Name}\"? This cannot be undone."))
+            return;
 
         _saveManager.DeleteSave(item.Slug);
         Refresh();

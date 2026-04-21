@@ -11,8 +11,7 @@ using Conay.Factories;
 using Conay.Services;
 using Conay.ViewModels.Parts;
 using Conay.Views;
-using MsBox.Avalonia;
-using MsBox.Avalonia.Enums;
+using Conay.Utils;
 
 namespace Conay.ViewModels;
 
@@ -68,11 +67,8 @@ public partial class PresetsViewModel : PageViewModel
 
     private async Task DeletePresetAsync(ServerPresetViewModel preset)
     {
-        ButtonResult result = await MessageBoxManager.GetMessageBoxStandard("Conay",
-            $"Are you sure you want to delete \"{preset.Name}\"? This cannot be undone.",
-            ButtonEnum.YesNo).ShowAsync();
-
-        if (result != ButtonResult.Yes) return;
+        if (!await MessageBox.Confirm($"Are you sure you want to delete \"{preset.Name}\"? This cannot be undone."))
+            return;
 
         _localPresets.DeletePreset(preset.File);
         _presetFactory.Invalidate(preset.File);

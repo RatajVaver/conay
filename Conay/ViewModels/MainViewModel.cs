@@ -14,9 +14,6 @@ using Conay.Utils;
 using Conay.ViewModels.Parts;
 using Conay.Views;
 using Microsoft.Extensions.Logging;
-using MsBox.Avalonia;
-using MsBox.Avalonia.Base;
-using MsBox.Avalonia.Enums;
 
 namespace Conay.ViewModels;
 
@@ -206,12 +203,7 @@ public partial class MainViewModel : ViewModelBase
 
         StatusText = "New Conay update available!";
 
-        IMsBox<ButtonResult> box = MessageBoxManager
-            .GetMessageBoxStandard("Conay",
-                "There's a new update available for Conay!\nWould you like to download it now?", ButtonEnum.YesNo);
-        ButtonResult result = await box.ShowAsync();
-
-        if (result.Equals(ButtonResult.Yes))
+        if (await MessageBox.Confirm("There's a new update available for Conay!\nWould you like to download it now?"))
         {
             await _selfUpdater.DownloadInstaller();
         }

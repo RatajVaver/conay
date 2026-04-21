@@ -7,8 +7,6 @@ using CommunityToolkit.Mvvm.Input;
 using Conay.Data;
 using Conay.Services;
 using Conay.Utils;
-using MsBox.Avalonia;
-using MsBox.Avalonia.Enums;
 
 namespace Conay.ViewModels.Parts;
 

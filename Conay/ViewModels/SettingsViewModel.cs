@@ -3,9 +3,6 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Conay.Services;
 using Conay.Utils;
-using MsBox.Avalonia;
-using MsBox.Avalonia.Base;
-using MsBox.Avalonia.Enums;
 
 namespace Conay.ViewModels;
 
@@ -139,19 +136,13 @@ public partial class SettingsViewModel : PageViewModel
             _config.Data.DisableCinematic = value;
             _ = _config.ScheduleConfigSave();
 
-            IMsBox<ButtonResult> box = MessageBoxManager
-                .GetMessageBoxStandard("Conay",
-                    value
-                        ? "Cinematic intro has been disabled!\n\nYou will now see silent black screen when loading into the game."
-                        : "Cinematic intro has been enabled!\n\n\"What will you do, exile?\" is back.");
-            _ = box.ShowAsync();
+            MessageBox.ShowInfo(value
+                ? "Cinematic intro has been disabled!\n\nYou will now see silent black screen when loading into the game."
+                : "Cinematic intro has been enabled!\n\n\"What will you do, exile?\" is back.");
         }
         else
         {
-            IMsBox<ButtonResult> box = MessageBoxManager
-                .GetMessageBoxStandard("Conay",
-                    "Failed to save the config! Make sure you have write permissions to the game's folder.");
-            _ = box.ShowAsync();
+            MessageBox.ShowInfo("Failed to save the config! Make sure you have write permissions to the game's folder.");
         }
     }
 
@@ -165,19 +156,13 @@ public partial class SettingsViewModel : PageViewModel
             _config.Data.ImmersiveMode = value;
             _ = _config.ScheduleConfigSave();
 
-            IMsBox<ButtonResult> box = MessageBoxManager
-                .GetMessageBoxStandard("Conay",
-                    value
-                        ? "Immersive mode has been enabled!\n\nRecommended changes were saved into the game settings."
-                        : "Immersive mode has been disabled!\n\nAffected settings have been restored to default values.");
-            _ = box.ShowAsync();
+            MessageBox.ShowInfo(value
+                ? "Immersive mode has been enabled!\n\nRecommended changes were saved into the game settings."
+                : "Immersive mode has been disabled!\n\nAffected settings have been restored to default values.");
         }
         else
         {
-            IMsBox<ButtonResult> box = MessageBoxManager
-                .GetMessageBoxStandard("Conay",
-                    "Failed to save the config! Make sure you have write permissions to the game folder.");
-            _ = box.ShowAsync();
+            MessageBox.ShowInfo("Failed to save the config! Make sure you have write permissions to the game folder.");
         }
     }
 
