@@ -137,6 +137,7 @@ public class App : Application
 #endif
         });
 
+        collection.AddSingleton<GameContext>();
         collection.AddSingleton<Steam>();
         collection.AddSingleton<ModList>();
         collection.AddSingleton<Router>();

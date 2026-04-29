@@ -20,7 +20,7 @@ namespace Conay.Services;
 
 public class Steam : IModSource
 {
-    private const uint AppId = 440900;
+    private readonly uint _appId;
 
     private const string WorkshopApiUrl =
         "https://api.steampowered.com/ISteamRemoteStorage/GetPublishedFileDetails/v1/";
@@ -41,11 +41,12 @@ public class Steam : IModSource
     public string AppInstallDir { get; private set; } = string.Empty;
     private string _workshopPath = string.Empty;
 
-    public Steam(ILogger<Steam> logger, HttpService http, NotifyService notifyService)
+    public Steam(ILogger<Steam> logger, HttpService http, NotifyService notifyService, GameContext gameContext)
     {
         _logger = logger;
         _http = http;
         _notifyService = notifyService;
+        _appId = gameContext.AppId;
 
         SteamUGC.OnDownloadItemResult += OnModDownloadResult;
 
@@ -95,7 +96,7 @@ public class Steam : IModSource
 
         try
         {
-            SteamClient.Init(AppId);
+            SteamClient.Init(_appId);
 
             _isInitialized = SteamClient.IsValid;
             _isLoggedIn = SteamClient.IsLoggedOn;
@@ -364,10 +365,10 @@ public class Steam : IModSource
         if (!_isInitialized)
             return;
 
-        _isConanInstalled = SteamApps.IsSubscribed && SteamApps.IsAppInstalled(AppId);
+        _isConanInstalled = SteamApps.IsSubscribed && SteamApps.IsAppInstalled(_appId);
         _steamAccountName = SteamClient.Name;
-        AppInstallDir = SteamApps.AppInstallDir(AppId);
-        _workshopPath = Path.GetFullPath(Path.Combine(AppInstallDir, "../../workshop/content/440900"));
+        AppInstallDir = SteamApps.AppInstallDir(_appId);
+        _workshopPath = Path.GetFullPath(Path.Combine(AppInstallDir, $"../../workshop/content/{_appId}"));
     }
 
     private void LaunchSteam()

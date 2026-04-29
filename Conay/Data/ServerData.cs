@@ -29,9 +29,15 @@ public class ServerData
     [JsonPropertyName("battleye")]
     public bool BattlEye { get; set; }
 
+    [JsonPropertyName("version")]
+    public string? Version { get; set; }
+
     [JsonPropertyName("mods")]
     public List<string> Mods { get; set; } = [];
 
     [JsonIgnore]
     public string? FileName { get; set; }
+
+    [JsonIgnore]
+    public GameVersion GameVersion => GameVersionHelper.FromString(Version);
 }

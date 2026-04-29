@@ -7,4 +7,5 @@ public class LaunchState
     public string Password { get; set; } = string.Empty;
     public bool IsSaveLaunch { get; set; }
     public bool BattlEye { get; set; }
+    public GameVersion GameVersion { get; set; }
 }

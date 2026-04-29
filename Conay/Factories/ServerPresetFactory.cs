@@ -5,7 +5,7 @@ using Conay.ViewModels.Parts;
 
 namespace Conay.Factories;
 
-public class ServerPresetFactory(Router router, LauncherConfig launcherConfig, Steam steam)
+public class ServerPresetFactory(Router router, LauncherConfig launcherConfig, Steam steam, GameContext gameContext)
 {
     private readonly Dictionary<string, ServerPresetViewModel> _serverPresets = new();
 
@@ -14,7 +14,7 @@ public class ServerPresetFactory(Router router, LauncherConfig launcherConfig, S
         if (_serverPresets.TryGetValue(serverInfo.File, out ServerPresetViewModel? preset))
             return preset;
 
-        preset = new ServerPresetViewModel(router, steam, launcherConfig, serverInfo);
+        preset = new ServerPresetViewModel(router, steam, launcherConfig, gameContext, serverInfo);
         _serverPresets[serverInfo.File] = preset;
 
         return preset;
