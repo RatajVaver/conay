@@ -20,8 +20,6 @@ namespace Conay.Services;
 
 public class Steam : IModSource
 {
-    private readonly uint _appId;
-
     private const string WorkshopApiUrl =
         "https://api.steampowered.com/ISteamRemoteStorage/GetPublishedFileDetails/v1/";
 
@@ -41,12 +39,11 @@ public class Steam : IModSource
     public string AppInstallDir { get; private set; } = string.Empty;
     private string _workshopPath = string.Empty;
 
-    public Steam(ILogger<Steam> logger, HttpService http, NotifyService notifyService, GameContext gameContext)
+    public Steam(ILogger<Steam> logger, HttpService http, NotifyService notifyService)
     {
         _logger = logger;
         _http = http;
         _notifyService = notifyService;
-        _appId = gameContext.AppId;
 
         SteamUGC.OnDownloadItemResult += OnModDownloadResult;
 
@@ -96,7 +93,7 @@ public class Steam : IModSource
 
         try
         {
-            SteamClient.Init(_appId);
+            SteamClient.Init(GameVersionHelper.AppId);
 
             _isInitialized = SteamClient.IsValid;
             _isLoggedIn = SteamClient.IsLoggedOn;
@@ -365,10 +362,14 @@ public class Steam : IModSource
         if (!_isInitialized)
             return;
 
-        _isConanInstalled = SteamApps.IsSubscribed && SteamApps.IsAppInstalled(_appId);
+        _isConanInstalled = SteamApps.IsSubscribed && SteamApps.IsAppInstalled(GameVersionHelper.AppId);
         _steamAccountName = SteamClient.Name;
-        AppInstallDir = SteamApps.AppInstallDir(_appId);
-        _workshopPath = Path.GetFullPath(Path.Combine(AppInstallDir, $"../../workshop/content/{_appId}"));
+        AppInstallDir = SteamApps.AppInstallDir(GameVersionHelper.AppId);
+        _workshopPath = Path.GetFullPath(Path.Combine(AppInstallDir, $"../../workshop/content/{GameVersionHelper.AppId}"));
+
+        string? betaName = SteamApps.CurrentBetaName;
+        GameVersionHelper.Current = GameVersionHelper.FromSteamBranch(betaName);
+        _logger.LogDebug("Steam branch: {Branch} -> {Version}", betaName ?? "public", GameVersionHelper.Current);
     }
 
     private void LaunchSteam()

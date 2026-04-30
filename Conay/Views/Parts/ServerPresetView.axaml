@@ -44,6 +44,12 @@
                 </StackPanel>
                 <StackPanel Orientation="Horizontal">
                     <Label Content="{Binding IpAddress, Mode=OneWay}"></Label>
+                    <Label Classes="badge legacy" Content="&#xE1EC;"
+                           IsVisible="{Binding IsLegacy, Mode=OneWay}" ToolTip.Tip="Legacy">
+                    </Label>
+                    <Label Classes="badge enhanced" Content="&#xE8F4;"
+                           IsVisible="{Binding IsEnhanced, Mode=OneWay}" ToolTip.Tip="Enhanced">
+                    </Label>
                     <Label Classes="badge" Content="&#xe2da;"
                            IsVisible="{Binding !IsModded, Mode=OneWay}" ToolTip.Tip="Vanilla (no mods)">
                     </Label>

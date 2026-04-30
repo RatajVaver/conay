@@ -39,5 +39,5 @@ public class ServerData
     public string? FileName { get; set; }
 
     [JsonIgnore]
-    public GameVersion GameVersion => GameVersionHelper.FromString(Version);
+    public GameVersion GameVersion => GameVersionHelper.FromPresetVersion(Version);
 }

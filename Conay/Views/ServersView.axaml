@@ -49,6 +49,13 @@
                         <Label Content="&#xe390;" />
                     </Button>
                     <Button Classes="tagFilter"
+                            Classes.tagInclude="{Binding EnhancedFilterIsInclude}"
+                            Classes.tagExclude="{Binding EnhancedFilterIsExclude}"
+                            Command="{Binding ToggleEnhancedFilterCommand}"
+                            ToolTip.Tip="Enhanced">
+                        <Label Content="&#xE8F4;" />
+                    </Button>
+                    <Button Classes="tagFilter"
                             Classes.tagInclude="{Binding RoleplayFilterIsInclude}"
                             Classes.tagExclude="{Binding RoleplayFilterIsExclude}"
                             Command="{Binding ToggleRoleplayFilterCommand}"

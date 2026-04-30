@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Media;
@@ -16,7 +15,6 @@ public partial class ServerPresetViewModel : ViewModelBase, ILazyLoad
     private readonly Router _router;
     private readonly Steam _steam;
     private readonly LauncherConfig _launcherConfig;
-    private readonly GameContext _gameContext;
     private readonly IPresetService _provider;
 
     [ObservableProperty]
@@ -48,6 +46,11 @@ public partial class ServerPresetViewModel : ViewModelBase, ILazyLoad
     private bool _isFavorite;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsLegacy))]
+    [NotifyPropertyChangedFor(nameof(IsEnhanced))]
+    private string? _version;
+
+    [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsRoleplay))]
     [NotifyPropertyChangedFor(nameof(IsMechPvP))]
     [NotifyPropertyChangedFor(nameof(IsDicePvP))]
@@ -76,6 +79,9 @@ public partial class ServerPresetViewModel : ViewModelBase, ILazyLoad
 
     [ObservableProperty]
     private bool _refreshInProgress;
+
+    public bool IsLegacy => GameVersionHelper.FromPresetVersion(Version) == GameVersion.Legacy;
+    public bool IsEnhanced => GameVersionHelper.FromPresetVersion(Version) == GameVersion.Enhanced;
 
     public bool ShowIcon => !string.IsNullOrEmpty(Icon)
                             && _launcherConfig.Data is { DisplayIcons: true, OfflineMode: false };
@@ -111,13 +117,12 @@ public partial class ServerPresetViewModel : ViewModelBase, ILazyLoad
     private readonly ServerInfo _serverInfo;
     private ServerData? _preset;
 
-    public ServerPresetViewModel(Router router, Steam steam, LauncherConfig launcherConfig, GameContext gameContext, ServerInfo serverInfo)
+    public ServerPresetViewModel(Router router, Steam steam, LauncherConfig launcherConfig, ServerInfo serverInfo)
     {
         _serverInfo = serverInfo;
         _router = router;
         _steam = steam;
         _launcherConfig = launcherConfig;
-        _gameContext = gameContext;
         _provider = serverInfo.Provider!;
 
         Name = serverInfo.Name;
@@ -191,6 +196,7 @@ public partial class ServerPresetViewModel : ViewModelBase, ILazyLoad
             IpAddress = preset.Ip;
             Discord = preset.Discord;
             Website = preset.Website;
+            Version = preset.Version;
             Tags = preset.Tags;
             BattleEye = preset.BattlEye;
             ModsCount = preset.Mods.Count;
@@ -251,37 +257,20 @@ public partial class ServerPresetViewModel : ViewModelBase, ILazyLoad
     [RelayCommand]
     private async Task LaunchServerPreset()
     {
-        if (_preset != null && _preset.GameVersion != _gameContext.Version)
+        if (_preset != null && _preset.GameVersion != GameVersionHelper.Current)
         {
-            string targetName = GameVersionHelper.ToDisplayName(_preset.GameVersion);
+            string required = GameVersionHelper.ToDisplayName(_preset.GameVersion);
+            string current = GameVersionHelper.ToDisplayName(GameVersionHelper.Current);
             bool confirmed = await MessageBox.Confirm(
-                $"This server requires Conan Exiles {targetName}.\nRestart Conay in {targetName} mode?");
+                $"This server requires Conan Exiles {required}, but you're currently on {current}.\n\nYou can switch branches in Steam → Library → Conan Exiles → Properties → Game Versions & Betas.\n\nLaunch anyway?");
 
             if (!confirmed) return;
-
-            RestartWithVersion(_preset.GameVersion);
-            return;
         }
 
         _router.BeforeLaunch(Name);
         await _steam.WaitForSteam();
         _provider.SaveModlistFromPreset(File);
         _router.ReadyForLaunch(_preset);
-    }
-
-    private void RestartWithVersion(GameVersion version)
-    {
-        string? exePath = Environment.ProcessPath;
-        if (string.IsNullOrEmpty(exePath)) return;
-
-        Process.Start(new ProcessStartInfo
-        {
-            FileName = exePath,
-            Arguments = $"--game {GameVersionHelper.ToArg(version)} --server {File}",
-            UseShellExecute = true
-        });
-
-        Environment.Exit(0);
     }
 
     [RelayCommand]

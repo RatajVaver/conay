@@ -132,7 +132,6 @@ public class LaunchWorker(
     {
         string exe = state.BattlEye ? "ConanSandbox_BE.exe" : "ConanSandbox.exe";
         string exePath = Path.GetFullPath(Path.Combine(steam.AppInstallDir, $"ConanSandbox/Binaries/Win64/{exe}"));
-        uint appId = GameVersionHelper.GetAppId(state.GameVersion);
 
         if (File.Exists(exePath))
         {
@@ -148,12 +147,12 @@ public class LaunchWorker(
             catch (Exception ex)
             {
                 logger.LogError(ex, "Failed to launch the game directly (falling back to Steam protocol)!");
-                Protocol.Open($"steam://run/{appId}/");
+                Protocol.Open($"steam://run/{GameVersionHelper.AppId}/");
             }
         }
         else
         {
-            Protocol.Open($"steam://run/{appId}/");
+            Protocol.Open($"steam://run/{GameVersionHelper.AppId}/");
         }
     }
 

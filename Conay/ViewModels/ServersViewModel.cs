@@ -42,6 +42,11 @@ public partial class ServersViewModel : PageViewModel
     private TagFilterState _moddedFilter = TagFilterState.None;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(EnhancedFilterIsInclude))]
+    [NotifyPropertyChangedFor(nameof(EnhancedFilterIsExclude))]
+    private TagFilterState _enhancedFilter = TagFilterState.None;
+
+    [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(RoleplayFilterIsInclude))]
     [NotifyPropertyChangedFor(nameof(RoleplayFilterIsExclude))]
     private TagFilterState _roleplayFilter = TagFilterState.None;
@@ -79,6 +84,8 @@ public partial class ServersViewModel : PageViewModel
 
     public bool ModdedFilterIsInclude => ModdedFilter == TagFilterState.Include;
     public bool ModdedFilterIsExclude => ModdedFilter == TagFilterState.Exclude;
+    public bool EnhancedFilterIsInclude => EnhancedFilter == TagFilterState.Include;
+    public bool EnhancedFilterIsExclude => EnhancedFilter == TagFilterState.Exclude;
     public bool RoleplayFilterIsInclude => RoleplayFilter == TagFilterState.Include;
     public bool RoleplayFilterIsExclude => RoleplayFilter == TagFilterState.Exclude;
     public bool MechPvpFilterIsInclude => MechPvpFilter == TagFilterState.Include;
@@ -106,6 +113,7 @@ public partial class ServersViewModel : PageViewModel
     partial void OnSearchTextChanged(string value) => ApplyFilters();
     partial void OnFilterModeAndChanged(bool value) => _ = ApplyFiltersWithLoad();
     partial void OnModdedFilterChanged(TagFilterState value) => _ = ApplyFiltersWithLoad();
+    partial void OnEnhancedFilterChanged(TagFilterState value) => _ = ApplyFiltersWithLoad();
     partial void OnRoleplayFilterChanged(TagFilterState value) => _ = ApplyFiltersWithLoad();
     partial void OnMechPvpFilterChanged(TagFilterState value) => _ = ApplyFiltersWithLoad();
     partial void OnDicePvpFilterChanged(TagFilterState value) => _ = ApplyFiltersWithLoad();
@@ -148,6 +156,9 @@ public partial class ServersViewModel : PageViewModel
 
     [RelayCommand]
     private void ToggleModdedFilter() => ModdedFilter = Cycle(ModdedFilter);
+
+    [RelayCommand]
+    private void ToggleEnhancedFilter() => EnhancedFilter = Cycle(EnhancedFilter);
 
     [RelayCommand]
     private void ToggleRoleplayFilter() => RoleplayFilter = Cycle(RoleplayFilter);
@@ -239,6 +250,7 @@ public partial class ServersViewModel : PageViewModel
 
     private bool AnyDataFilterActive =>
         ModdedFilter != TagFilterState.None ||
+        EnhancedFilter != TagFilterState.None ||
         RoleplayFilter != TagFilterState.None ||
         MechPvpFilter != TagFilterState.None ||
         DicePvpFilter != TagFilterState.None ||
@@ -251,6 +263,7 @@ public partial class ServersViewModel : PageViewModel
     private void OnPresetPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
         if (e.PropertyName is not (nameof(ServerPresetViewModel.IsModded)
+            or nameof(ServerPresetViewModel.IsEnhanced)
             or nameof(ServerPresetViewModel.IsRoleplay)
             or nameof(ServerPresetViewModel.IsMechPvP)
             or nameof(ServerPresetViewModel.IsDicePvP)
@@ -318,6 +331,7 @@ public partial class ServersViewModel : PageViewModel
         (bool hasTag, TagFilterState filter)[] tagChecks =
         [
             (preset.IsModded, ModdedFilter),
+            (preset.IsEnhanced, EnhancedFilter),
             (preset.IsRoleplay, RoleplayFilter),
             (preset.IsMechPvP, MechPvpFilter),
             (preset.IsDicePvP, DicePvpFilter),

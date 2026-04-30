@@ -208,6 +208,14 @@
         <Setter Property="Foreground" Value="#e3bb4d"></Setter>
     </Style>
 
+    <Style Selector="Label.legacy">
+        <Setter Property="Foreground" Value="#c8a05a"></Setter>
+    </Style>
+
+    <Style Selector="Label.enhanced">
+        <Setter Property="Foreground" Value="#d796f2"></Setter>
+    </Style>
+
     <Style Selector="Label.spinner">
         <Setter Property="Foreground" Value="#666"></Setter>
         <Setter Property="FontSize" Value="18"></Setter>
