@@ -112,7 +112,7 @@ public class App : Application
             ImageLoader.AsyncImageLoader = new DiskCachedWebImageLoader(cacheDirectory + Path.DirectorySeparatorChar);
         }
 
-        desktop.MainWindow = new MainView
+        desktop.MainWindow = new MainView(launcherConfig)
         {
             DataContext = services.GetRequiredService<MainViewModel>()
         };

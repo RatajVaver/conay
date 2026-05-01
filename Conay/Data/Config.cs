@@ -58,4 +58,7 @@ public class Config
 
     [JsonPropertyName("favorites")]
     public List<string> Favorites { get; set; } = [];
+
+    [JsonPropertyName("altBorders")]
+    public bool AlternativeBorders { get; set; }
 }

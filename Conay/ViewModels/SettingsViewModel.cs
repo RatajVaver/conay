@@ -1,10 +1,14 @@
 ﻿using System;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
+using CommunityToolkit.Mvvm.Messaging.Messages;
 using Conay.Services;
 using Conay.Utils;
 
 namespace Conay.ViewModels;
+
+public class AlternativeBordersChangedMessage(bool value) : ValueChangedMessage<bool>(value);
 
 public partial class SettingsViewModel : PageViewModel
 {
@@ -56,6 +60,9 @@ public partial class SettingsViewModel : PageViewModel
     [ObservableProperty]
     private bool _backupTotCustom;
 
+    [ObservableProperty]
+    private bool _alternativeBorders;
+
     private readonly string[] _tabs = ["launch", "favorite", "servers", "presets", "saves"];
 
     public SettingsViewModel(LauncherConfig config, GameConfig gameConfig)
@@ -77,6 +84,7 @@ public partial class SettingsViewModel : PageViewModel
         UseCache = config.Data.UseCache;
         QueryServers = config.Data.QueryServers;
         BackupTotCustom = config.Data.BackupTotCustom;
+        AlternativeBorders = config.Data.AlternativeBorders;
 
         int tabIndex = Array.IndexOf(_tabs, config.Data.DefaultTab);
         if (tabIndex == -1) tabIndex = 2;
@@ -192,6 +200,12 @@ public partial class SettingsViewModel : PageViewModel
     partial void OnBackupTotCustomChanged(bool value) =>
         UpdateConfig(_config.Data.BackupTotCustom, value,
             v => _config.Data.BackupTotCustom = v);
+
+    partial void OnAlternativeBordersChanged(bool value)
+    {
+        UpdateConfig(_config.Data.AlternativeBorders, value, v => _config.Data.AlternativeBorders = v);
+        WeakReferenceMessenger.Default.Send(new AlternativeBordersChangedMessage(value));
+    }
 
     partial void OnKeepHistoryChanged(bool value)
     {

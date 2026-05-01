@@ -233,18 +233,6 @@
         </Style.Animations>
     </Style>
 
-    <Style Selector="Button#PART_FullScreenButton /template/ ContentPresenter">
-        <Setter Property="IsVisible" Value="False" />
-    </Style>
-
-    <Style Selector="WindowDrawnDecorations /template/ Panel#PART_TitleTextPanel > TextBlock">
-        <Setter Property="IsVisible" Value="False" />
-    </Style>
-
-    <Style Selector="Button#PART_CloseButton:pointerover /template/ ContentPresenter">
-        <Setter Property="Background" Value="#7a1717"></Setter>
-    </Style>
-
     <Style Selector="ScrollBar:vertical">
         <Setter Property="Width" Value="10"></Setter>
     </Style>
@@ -252,7 +240,7 @@
     <Style Selector="Button.tagFilter">
         <Setter Property="Background" Value="Transparent"></Setter>
         <Setter Property="Foreground" Value="#444"></Setter>
-        <Setter Property="Padding" Value="6 2"></Setter>
+        <Setter Property="Padding" Value="6 4"></Setter>
         <Setter Property="Margin" Value="0"></Setter>
         <Setter Property="MinHeight" Value="0"></Setter>
     </Style>
@@ -283,11 +271,42 @@
     </Style>
 
     <Style Selector="Button.tagFilter Label">
-        <Setter Property="FontSize" Value="18"></Setter>
+        <Setter Property="FontSize" Value="20"></Setter>
         <Setter Property="FontFamily" Value="{DynamicResource Phosphor}"></Setter>
         <Setter Property="VerticalAlignment" Value="Center"></Setter>
         <Setter Property="Padding" Value="0"></Setter>
         <Setter Property="Margin" Value="0"></Setter>
+    </Style>
+
+    <Style Selector="Button.winBtn">
+        <Setter Property="Background" Value="Transparent"></Setter>
+        <Setter Property="Foreground" Value="#fcfcfc"></Setter>
+        <Setter Property="BorderThickness" Value="0"></Setter>
+        <Setter Property="Padding" Value="0"></Setter>
+        <Setter Property="HorizontalContentAlignment" Value="Center"></Setter>
+        <Setter Property="VerticalContentAlignment" Value="Center"></Setter>
+        <Setter Property="CornerRadius" Value="0"></Setter>
+    </Style>
+
+    <Style Selector="Button.winBtn TextBlock.winIcon">
+        <Setter Property="FontFamily" Value="{DynamicResource Phosphor}"></Setter>
+        <Setter Property="FontSize" Value="14"></Setter>
+        <Setter Property="VerticalAlignment" Value="Center"></Setter>
+        <Setter Property="TextAlignment" Value="Center"></Setter>
+        <Setter Property="Margin" Value="0,1,0,0"></Setter>
+    </Style>
+
+    <Style Selector="Button.winCloseBtn TextBlock.winIcon">
+        <Setter Property="FontSize" Value="18"></Setter>
+        <Setter Property="Margin" Value="0"></Setter>
+    </Style>
+
+    <Style Selector="Button.winBtn:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="#333333"></Setter>
+    </Style>
+
+    <Style Selector="Button.winCloseBtn:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="#c42b1c"></Setter>
     </Style>
 
     <Style Selector="Button.modeToggle">

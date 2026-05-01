@@ -19,29 +19,37 @@
                 </StackPanel>
             </Border>
             <StackPanel Grid.Column="1" Orientation="Vertical">
-                <StackPanel Orientation="Horizontal">
-                    <Label Content="{Binding Name, Mode=OneWay}" FontSize="22"></Label>
-                    <Button Classes="favorite" IsVisible="{Binding !IsFavorite, Mode=OneWay}"
-                            ToolTip.Tip="Add to Favorites"
-                            Command="{Binding FavoriteServerCommand}">
-                        <Label Content="&#xe2aa;"></Label>
-                    </Button>
-                    <Button Classes="unfavorite" IsVisible="{Binding IsFavorite, Mode=OneWay}"
-                            ToolTip.Tip="Remove from Favorites"
-                            Command="{Binding UnfavoriteServerCommand}">
-                        <Label Content="&#xe2aa;"></Label>
-                    </Button>
-                    <Button Classes="discord" IsVisible="{Binding ShowDiscord, Mode=OneWay}"
-                            ToolTip.Tip="{Binding Discord, Mode=OneWay}"
-                            Command="{Binding OpenDiscordLinkCommand}">
-                        <Label Content="&#xe61a;"></Label>
-                    </Button>
-                    <Button Classes="link" IsVisible="{Binding ShowWebsite, Mode=OneWay}"
-                            ToolTip.Tip="{Binding Website, Mode=OneWay}"
-                            Command="{Binding OpenWebsiteCommand}">
-                        <Label Content="&#xe2e2;"></Label>
-                    </Button>
-                </StackPanel>
+                <Border ClipToBounds="True" Background="Transparent">
+                    <Border.OpacityMask>
+                        <LinearGradientBrush StartPoint="80%,0%" EndPoint="100%,0%">
+                            <GradientStop Color="Black" Offset="0" />
+                            <GradientStop Color="Transparent" Offset="1" />
+                        </LinearGradientBrush>
+                    </Border.OpacityMask>
+                    <StackPanel Orientation="Horizontal">
+                        <Label Content="{Binding Name, Mode=OneWay}" FontSize="22"></Label>
+                        <Button Classes="favorite" IsVisible="{Binding !IsFavorite, Mode=OneWay}"
+                                ToolTip.Tip="Add to Favorites"
+                                Command="{Binding FavoriteServerCommand}">
+                            <Label Content="&#xe2aa;"></Label>
+                        </Button>
+                        <Button Classes="unfavorite" IsVisible="{Binding IsFavorite, Mode=OneWay}"
+                                ToolTip.Tip="Remove from Favorites"
+                                Command="{Binding UnfavoriteServerCommand}">
+                            <Label Content="&#xe2aa;"></Label>
+                        </Button>
+                        <Button Classes="discord" IsVisible="{Binding ShowDiscord, Mode=OneWay}"
+                                ToolTip.Tip="{Binding Discord, Mode=OneWay}"
+                                Command="{Binding OpenDiscordLinkCommand}">
+                            <Label Content="&#xe61a;"></Label>
+                        </Button>
+                        <Button Classes="link" IsVisible="{Binding ShowWebsite, Mode=OneWay}"
+                                ToolTip.Tip="{Binding Website, Mode=OneWay}"
+                                Command="{Binding OpenWebsiteCommand}">
+                            <Label Content="&#xe2e2;"></Label>
+                        </Button>
+                    </StackPanel>
+                </Border>
                 <StackPanel Orientation="Horizontal">
                     <Label Content="{Binding IpAddress, Mode=OneWay}"></Label>
                     <Label Classes="badge legacy" Content="&#xE1EC;"

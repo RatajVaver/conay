@@ -38,6 +38,10 @@
                           Content="Copy IP to clipboard on launch"
                           ToolTip.Tip="IP address of the selected server will be copied into your clipboard so that you can easily Ctrl+V it into the Direct Connect window later.">
                 </CheckBox>
+                <CheckBox IsChecked="{Binding AlternativeBorders, Mode=TwoWay}"
+                          Content="Alternative window style"
+                          ToolTip.Tip="Swaps the window border style between the Windows native and a custom version.">
+                </CheckBox>
                 <StackPanel Orientation="Horizontal">
                     <Label Content="Default tab:" VerticalAlignment="Center"></Label>
                     <ComboBox SelectedIndex="{Binding DefaultTabIndex, Mode=TwoWay}" MaxDropDownHeight="100" Margin="5"

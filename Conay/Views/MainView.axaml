@@ -10,6 +10,7 @@
         x:DataType="vm:MainViewModel"
         Title="Conay"
         Background="Transparent"
+        WindowDecorations="BorderOnly"
         ExtendClientAreaToDecorationsHint="True"
         WindowStartupLocation="CenterScreen">
 
@@ -18,11 +19,14 @@
     </Design.DataContext>
 
     <Grid RowDefinitions="Auto, *, Auto">
-        <Border Grid.Row="0" Background="{DynamicResource TitleBarBackground}" IsHitTestVisible="False">
-            <DockPanel Height="30">
-                <Border Padding="5" DockPanel.Dock="Left">
+        <Border Grid.Row="0" Background="{DynamicResource TitleBarBackground}" PointerPressed="TitleBar_PointerPressed">
+            <DockPanel Height="31">
+                <Border Padding="6 5 12 5" DockPanel.Dock="Left">
                     <Image Source="/Assets/Images/icon.png" Width="20" Height="20" />
                 </Border>
+                <Button Classes="winBtn winCloseBtn" DockPanel.Dock="Right" Width="46" Height="31" Click="CloseWindow_Click"><TextBlock Classes="winIcon" Text="&#xE4F6;" /></Button>
+                <Button Classes="winBtn" DockPanel.Dock="Right" Width="46" Height="31" Click="MaximizeWindow_Click"><TextBlock Classes="winIcon" Text="&#xE45E;" /></Button>
+                <Button Classes="winBtn" DockPanel.Dock="Right" Width="46" Height="31" Click="MinimizeWindow_Click"><TextBlock Classes="winIcon" Text="&#xE32A;" /></Button>
                 <TextBlock Text="Conay" VerticalAlignment="Center" HorizontalAlignment="Left" />
             </DockPanel>
         </Border>

@@ -80,8 +80,12 @@ public partial class ServerPresetViewModel : ViewModelBase, ILazyLoad
     [ObservableProperty]
     private bool _refreshInProgress;
 
-    public bool IsLegacy => GameVersionHelper.FromPresetVersion(Version) == GameVersion.Legacy;
-    public bool IsEnhanced => GameVersionHelper.FromPresetVersion(Version) == GameVersion.Enhanced;
+    private GameVersion EffectiveGameVersion => string.IsNullOrEmpty(Version) && _provider.GetProviderName() == "local"
+        ? GameVersionHelper.Current
+        : GameVersionHelper.FromPresetVersion(Version);
+
+    public bool IsLegacy => EffectiveGameVersion == GameVersion.Legacy;
+    public bool IsEnhanced => EffectiveGameVersion == GameVersion.Enhanced;
 
     public bool ShowIcon => !string.IsNullOrEmpty(Icon)
                             && _launcherConfig.Data is { DisplayIcons: true, OfflineMode: false };
@@ -257,7 +261,7 @@ public partial class ServerPresetViewModel : ViewModelBase, ILazyLoad
     [RelayCommand]
     private async Task LaunchServerPreset()
     {
-        if (_preset != null && _preset.GameVersion != GameVersionHelper.Current)
+        if (_preset != null && EffectiveGameVersion != GameVersionHelper.Current)
         {
             string required = GameVersionHelper.ToDisplayName(_preset.GameVersion);
             string current = GameVersionHelper.ToDisplayName(GameVersionHelper.Current);
