@@ -20,7 +20,7 @@ public class Router(LaunchState launchState, LauncherConfig launcherConfig)
     public void ShowEditPreset(ServerData preset) => OnShowEditPreset?.Invoke(preset);
     public void ShowPresets() => OnShowPresets?.Invoke();
 
-    public void ReadyForLaunch(ServerData? preset, bool isSaveLaunch = false)
+    public void ReadyForLaunch(ServerData? preset, bool isSaveLaunch = false, GameVersion? version = null)
     {
         if (preset?.FileName != null)
         {
@@ -29,8 +29,10 @@ public class Router(LaunchState launchState, LauncherConfig launcherConfig)
 
         launchState.Name = preset?.Name ?? string.Empty;
         launchState.Ip = preset?.Ip ?? string.Empty;
+        launchState.Password = preset?.Password ?? string.Empty;
         launchState.IsSaveLaunch = isSaveLaunch;
         launchState.BattlEye = preset?.BattlEye ?? false;
+        launchState.Version = version ?? GameVersionHelper.Current;
         ShowLaunchForPreset?.Invoke(preset);
     }
 }

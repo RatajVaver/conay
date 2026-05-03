@@ -1,0 +1,146 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:Conay.ViewModels"
+        x:DataType="vm:DualInstallWizardViewModel"
+        x:Class="Conay.Views.DualInstallWizardView"
+        Title="Dual Install Setup"
+        Width="580"
+        SizeToContent="Height"
+        CanResize="False"
+        WindowStartupLocation="CenterOwner"
+        WindowDecorations="None"
+        Background="#111">
+    <Grid RowDefinitions="Auto, *">
+        <Border Grid.Row="0" Background="{DynamicResource TitleBarBackground}" PointerPressed="TitleBar_PointerPressed">
+            <DockPanel Height="31">
+                <Button Classes="winBtn winCloseBtn" DockPanel.Dock="Right" Width="46" Height="31" Click="CloseWizard">
+                    <TextBlock Classes="winIcon" Text="&#xE4F6;" />
+                </Button>
+                <TextBlock Text="Dual Install Setup" VerticalAlignment="Center" Margin="10 0 0 0" FontSize="13" />
+            </DockPanel>
+        </Border>
+        <Border Grid.Row="1" Padding="24">
+            <StackPanel Spacing="16">
+                <StackPanel IsVisible="{Binding IsStep0}" Spacing="12">
+                    <StackPanel IsVisible="{Binding IsConayInsideGameDir}" Spacing="12">
+                        <TextBlock FontSize="18" FontWeight="Bold" Text="Move Conay first!" />
+                        <TextBlock TextWrapping="Wrap" Foreground="#aaa" FontSize="13">
+                            Conay is running from inside the Conan Exiles install folder.
+                            Dual install cannot continue and requires Conay to live outside of the game folder.
+                        </TextBlock>
+                        <TextBlock TextWrapping="Wrap" FontSize="13">
+                            Please move the Conay folder to a different location
+                            (e.g. <Run FontWeight="Bold" Text="C:\Conay" />) and relaunch.
+                        </TextBlock>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0 8 0 0">
+                            <Button Classes="dialog" Click="CloseWizard">Close</Button>
+                        </StackPanel>
+                    </StackPanel>
+                    <StackPanel IsVisible="{Binding IsGameRunning}" Spacing="12">
+                        <TextBlock FontSize="18" FontWeight="Bold" Text="Conan Exiles is running!" />
+                        <TextBlock TextWrapping="Wrap" Foreground="#aaa" FontSize="13">
+                            Conan Exiles is currently open. Dual install cannot continue while the game is running.
+                        </TextBlock>
+                        <TextBlock TextWrapping="Wrap" FontSize="13">
+                            Please close the game, then reopen this wizard.
+                        </TextBlock>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0 8 0 0">
+                            <Button Classes="dialog" Click="CloseWizard">Close</Button>
+                        </StackPanel>
+                    </StackPanel>
+                    <StackPanel IsVisible="{Binding IsGameUpdating}" Spacing="12">
+                        <TextBlock FontSize="18" FontWeight="Bold" Text="Steam update in progress!" />
+                        <TextBlock TextWrapping="Wrap" Foreground="#aaa" FontSize="13">
+                            Conan Exiles is currently downloading or updating on Steam.
+                            Dual install cannot continue while Steam is writing files into the folder.
+                        </TextBlock>
+                        <TextBlock TextWrapping="Wrap" FontSize="13">
+                            Please wait for all Steam downloads to finish, then reopen this wizard.
+                        </TextBlock>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0 8 0 0">
+                            <Button Classes="dialog" Click="CloseWizard">Close</Button>
+                        </StackPanel>
+                    </StackPanel>
+                    <StackPanel IsVisible="{Binding IsAlreadyActive}" Spacing="12">
+                        <TextBlock FontSize="18" FontWeight="Bold" Text="Dual install is active!" />
+                        <Grid ColumnDefinitions="Auto, *" RowDefinitions="Auto, Auto">
+                            <TextBlock Grid.Row="0" Grid.Column="0" Foreground="#888" FontSize="12" Margin="0 0 8 4">Enhanced:</TextBlock>
+                            <TextBlock Grid.Row="0" Grid.Column="1" FontSize="12" TextTrimming="CharacterEllipsis"
+                                       Text="{Binding EnhancedPath}" />
+                            <TextBlock Grid.Row="1" Grid.Column="0" Foreground="#888" FontSize="12" Margin="0 0 8 0">Legacy:</TextBlock>
+                            <TextBlock Grid.Row="1" Grid.Column="1" FontSize="12" TextTrimming="CharacterEllipsis"
+                                       Text="{Binding LegacyPath}" />
+                        </Grid>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0 8 0 0">
+                            <Button Classes="dialog" Click="CloseWizard">Close</Button>
+                        </StackPanel>
+                    </StackPanel>
+                    <StackPanel IsVisible="{Binding IsReadyForInstall}" Spacing="12">
+                        <TextBlock FontSize="18" FontWeight="Bold" Text="What does it do?" />
+                        <TextBlock TextWrapping="Wrap" Foreground="#aaa" FontSize="13">
+                            This wizard will help you set up both Enhanced and Legacy versions of Conan Exiles,
+                            so Conay can launch the correct one automatically based on selected server.
+                        </TextBlock>
+                        <TextBlock TextWrapping="Wrap" Foreground="#aaa" FontSize="13">
+                            Your current install is detected as
+                            <Run FontWeight="Bold" Foreground="#fcfcfc" Text="{Binding CurrentVersion}" />.
+                            The wizard will rename your current game folder, then you will have to download the
+                            <Run FontWeight="Bold" Foreground="#fcfcfc" Text="{Binding OtherVersion}" /> version via Steam.
+                        </TextBlock>
+                        <Border IsVisible="{Binding IsEnhancedCurrent}"
+                                Background="#2a1a00" BorderBrush="#6b4200" BorderThickness="1" CornerRadius="4" Padding="10 8">
+                            <TextBlock TextWrapping="Wrap" Foreground="#e09c2b" FontSize="12">
+                                <Run FontWeight="Bold">Recommended:</Run> Switch to the Legacy branch in Steam first before running this wizard.
+                                Enhanced is the main branch that receives updates and should stay in the default install location.
+                                If you continue now, you may need to do some manual changes to your game directories later to keep your game updated.
+                            </TextBlock>
+                        </Border>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8" Margin="0 8 0 0">
+                            <Button Classes="dialog" Command="{Binding StartCommand}">Start</Button>
+                        </StackPanel>
+                    </StackPanel>
+                </StackPanel>
+
+                <StackPanel IsVisible="{Binding IsStep1}" Spacing="12">
+                    <TextBlock FontSize="18" FontWeight="Bold" Text="Rename current install" />
+                    <Grid ColumnDefinitions="Auto, *" RowDefinitions="Auto, Auto">
+                        <TextBlock Grid.Row="0" Grid.Column="0" Foreground="#888" FontSize="12" Margin="0 0 8 4">From:</TextBlock>
+                        <TextBlock Grid.Row="0" Grid.Column="1" FontSize="12" TextTrimming="CharacterEllipsis"
+                                   Text="{Binding SourcePath}" />
+                        <TextBlock Grid.Row="1" Grid.Column="0" Foreground="#888" FontSize="12" Margin="0 0 8 0">To:</TextBlock>
+                        <TextBlock Grid.Row="1" Grid.Column="1" FontSize="12" TextTrimming="CharacterEllipsis"
+                                   Text="{Binding DestPath}" />
+                    </Grid>
+                    <TextBlock TextWrapping="Wrap" Foreground="#e09c2b" FontSize="12"
+                               IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                               Text="{Binding ErrorMessage}" />
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8" Margin="0 8 0 0">
+                        <Button Classes="dialog" Command="{Binding RenameFolderCommand}">Rename Folder</Button>
+                    </StackPanel>
+                </StackPanel>
+
+                <StackPanel IsVisible="{Binding IsStep2}" Spacing="12">
+                    <TextBlock FontSize="18" FontWeight="Bold" Text="Almost done!" />
+                    <TextBlock TextWrapping="Wrap" Foreground="#aaa" FontSize="13">
+                        Your <Run FontWeight="Bold" Foreground="#fcfcfc" Text="{Binding CurrentVersion}" /> install has been renamed successfully.
+                    </TextBlock>
+                    <TextBlock TextWrapping="Wrap" FontSize="13">
+                        Now follow these steps carefully:<LineBreak/>
+                        1. Switch the game to the
+                        <Run FontWeight="Bold" Text="{Binding OtherVersion}" /> branch under:
+                        Conan Exiles → Properties → Game Versions &amp; Betas.<LineBreak/>
+                        3. Swap to the Installed Files tab and click on Verify integrity of the game files.<LineBreak/>
+                        4. Close Conay and wait for the
+                        <Run FontWeight="Bold" Text="{Binding OtherVersion}" /> version to install.
+                    </TextBlock>
+                    <TextBlock TextWrapping="Wrap" FontSize="13">
+                        Next time you launch Conay, dual install mode will activate automatically.
+                    </TextBlock>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0 8 0 16">
+                        <Button Classes="dialog" Click="CloseWizard">Close</Button>
+                    </StackPanel>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>

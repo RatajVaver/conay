@@ -78,10 +78,13 @@ public class LaunchWorker(
             await ratajmods.CheckModUpdates(externalMods.ToArray());
         }
 
+        if (steam.DualInstallMode)
+            modList.SaveModListToInstallDir(steam.GetInstallDirForVersion(state.Version));
+
         if (launcherConfig.Data.LaunchGame)
         {
-            await RunGame();
-            Environment.Exit(0);
+            if (await RunGame())
+                Environment.Exit(0);
         }
         else
         {
@@ -98,18 +101,25 @@ public class LaunchWorker(
         }
     }
 
-    private async Task RunGame()
+    private async Task<bool> RunGame()
     {
         notifyService.UpdateStatus(this, "Launching the game..");
 
+        bool launched;
         if (launcherConfig.Data.DirectConnect && !string.IsNullOrEmpty(state.Ip))
         {
-            gameConfig.SetLastConnected(state.Ip, state.Password);
-            LaunchConan("-continuesession");
+            gameConfig.SetLastConnected(state.Ip, state.Password, steam.GetInstallDirForVersion(state.Version));
+            launched = LaunchConan("-continuesession");
         }
         else
         {
-            LaunchConan();
+            launched = LaunchConan();
+        }
+
+        if (!launched)
+        {
+            _launching = false;
+            return false;
         }
 
         if (launcherConfig.Data.Clipboard && !string.IsNullOrEmpty(state.Ip))
@@ -126,12 +136,14 @@ public class LaunchWorker(
         }
 
         notifyService.UpdateStatus(this, "Launching the game..");
+        return true;
     }
 
-    private void LaunchConan(string? args = null)
+    private bool LaunchConan(string? args = null)
     {
+        string installDir = steam.GetInstallDirForVersion(state.Version);
         string exe = state.BattlEye ? "ConanSandbox_BE.exe" : "ConanSandbox.exe";
-        string exePath = Path.GetFullPath(Path.Combine(steam.AppInstallDir, $"ConanSandbox/Binaries/Win64/{exe}"));
+        string exePath = Path.GetFullPath(Path.Combine(installDir, $"ConanSandbox/Binaries/Win64/{exe}"));
 
         if (File.Exists(exePath))
         {
@@ -143,23 +155,38 @@ public class LaunchWorker(
                     Arguments = args,
                     UseShellExecute = true
                 });
+                return true;
             }
             catch (Exception ex)
             {
                 logger.LogError(ex, "Failed to launch the game directly (falling back to Steam protocol)!");
-                Protocol.Open($"steam://run/{GameVersionHelper.AppId}/");
+                if (!steam.DualInstallMode || state.Version == GameVersionHelper.Current)
+                {
+                    Protocol.Open($"steam://run/{GameVersionHelper.AppId}/");
+                    return true;
+                }
+
+                notifyService.UpdateStatus(this, "Failed to launch the game!");
+                return false;
             }
         }
-        else
+
+        if (!steam.DualInstallMode || state.Version == GameVersionHelper.Current)
         {
             Protocol.Open($"steam://run/{GameVersionHelper.AppId}/");
+            return true;
         }
+
+        string versionName = GameVersionHelper.ToDisplayName(state.Version);
+        notifyService.UpdateStatus(this, $"{versionName} executable not found! Check your installation.");
+        return false;
     }
 
     private void BackupTotCustom()
     {
+        string installDir = steam.GetInstallDirForVersion(state.Version);
         string sourceDir = Path.GetFullPath(
-            Path.Combine(steam.AppInstallDir, "ConanSandbox/Saved/SaveGames/TotCustom"));
+            Path.Combine(installDir, "ConanSandbox/Saved/SaveGames/TotCustom"));
 
         if (!Directory.Exists(sourceDir))
         {

@@ -17,37 +17,28 @@ public partial class ServerPresetViewModel : ViewModelBase, ILazyLoad
     private readonly LauncherConfig _launcherConfig;
     private readonly IPresetService _provider;
 
-    [ObservableProperty]
-    private string _name = string.Empty;
+    [ObservableProperty] private string _name = string.Empty;
 
-    [ObservableProperty]
-    private string _ipAddress = "Loading..";
+    [ObservableProperty] private string _ipAddress = "Loading..";
 
-    [ObservableProperty]
-    private string _players = string.Empty;
+    [ObservableProperty] private string _players = string.Empty;
 
-    [ObservableProperty]
-    private string _map = string.Empty;
+    [ObservableProperty] private string _map = string.Empty;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(ShowIcon))]
     [NotifyPropertyChangedFor(nameof(ShowDefaultIcon))]
     private string? _icon;
 
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(ShowDiscord))]
+    [ObservableProperty] [NotifyPropertyChangedFor(nameof(ShowDiscord))]
     private string? _discord;
 
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(ShowWebsite))]
+    [ObservableProperty] [NotifyPropertyChangedFor(nameof(ShowWebsite))]
     private string? _website;
 
-    [ObservableProperty]
-    private bool _isFavorite;
+    [ObservableProperty] private bool _isFavorite;
 
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(IsLegacy))]
-    [NotifyPropertyChangedFor(nameof(IsEnhanced))]
+    [ObservableProperty] [NotifyPropertyChangedFor(nameof(IsLegacy))] [NotifyPropertyChangedFor(nameof(IsEnhanced))]
     private string? _version;
 
     [ObservableProperty]
@@ -60,25 +51,18 @@ public partial class ServerPresetViewModel : ViewModelBase, ILazyLoad
     [NotifyPropertyChangedFor(nameof(ProvidedByCommunity))]
     private string[]? _tags;
 
-    [ObservableProperty]
-    private bool _battleEye;
+    [ObservableProperty] private bool _battleEye;
 
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(IsModded))]
-    [NotifyPropertyChangedFor(nameof(ModdedTooltip))]
+    [ObservableProperty] [NotifyPropertyChangedFor(nameof(IsModded))] [NotifyPropertyChangedFor(nameof(ModdedTooltip))]
     private int _modsCount;
 
-    [ObservableProperty]
-    private IBrush _playerCountColor = Brushes.White;
+    [ObservableProperty] private IBrush _playerCountColor = Brushes.White;
 
-    [ObservableProperty]
-    private IBrush _pingColor = Brushes.White;
+    [ObservableProperty] private IBrush _pingColor = Brushes.White;
 
-    [ObservableProperty]
-    private string _ping = "Ping: N/A";
+    [ObservableProperty] private string _ping = "Ping: N/A";
 
-    [ObservableProperty]
-    private bool _refreshInProgress;
+    [ObservableProperty] private bool _refreshInProgress;
 
     private GameVersion EffectiveGameVersion => string.IsNullOrEmpty(Version) && _provider.GetProviderName() == "local"
         ? GameVersionHelper.Current
@@ -115,8 +99,7 @@ public partial class ServerPresetViewModel : ViewModelBase, ILazyLoad
     private int? _queryPort;
     private int _failedQueries;
 
-    [ObservableProperty]
-    private int _mods;
+    [ObservableProperty] private int _mods;
 
     private readonly ServerInfo _serverInfo;
     private ServerData? _preset;
@@ -261,12 +244,14 @@ public partial class ServerPresetViewModel : ViewModelBase, ILazyLoad
     [RelayCommand]
     private async Task LaunchServerPreset()
     {
-        if (_preset != null && EffectiveGameVersion != GameVersionHelper.Current)
+        if (_preset != null && !_steam.DualInstallMode && EffectiveGameVersion != GameVersionHelper.Current)
         {
             string required = GameVersionHelper.ToDisplayName(_preset.GameVersion);
             string current = GameVersionHelper.ToDisplayName(GameVersionHelper.Current);
             bool confirmed = await MessageBox.Confirm(
-                $"This server requires Conan Exiles {required}, but you're currently on {current}.\n\nYou can switch branches in Steam → Library → Conan Exiles → Properties → Game Versions & Betas.\n\nLaunch anyway?");
+                $"This server requires Conan Exiles {required}, but you're currently on {current}.\n\n" +
+                $"You can switch branches in Steam → Library → Conan Exiles → Properties → Game Versions & Betas.\n\n" +
+                $"If you want to play both Legacy and Enhanced, you may also set up a dual install in the Settings tab of Conay.\n\nLaunch anyway?");
 
             if (!confirmed) return;
         }
@@ -274,7 +259,7 @@ public partial class ServerPresetViewModel : ViewModelBase, ILazyLoad
         _router.BeforeLaunch(Name);
         await _steam.WaitForSteam();
         _provider.SaveModlistFromPreset(File);
-        _router.ReadyForLaunch(_preset);
+        _router.ReadyForLaunch(_preset, version: EffectiveGameVersion);
     }
 
     [RelayCommand]

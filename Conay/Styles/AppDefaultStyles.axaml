@@ -233,6 +233,19 @@
         </Style.Animations>
     </Style>
 
+    <Style Selector="Button.dialog">
+        <Setter Property="Background" Value="#222"></Setter>
+        <Setter Property="Padding" Value="16 8"></Setter>
+        <Setter Property="FontSize" Value="12"></Setter>
+        <Setter Property="MinWidth" Value="80"></Setter>
+        <Setter Property="HorizontalContentAlignment" Value="Center"></Setter>
+        <Setter Property="VerticalContentAlignment" Value="Center"></Setter>
+    </Style>
+
+    <Style Selector="Button.dialog:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="#333"></Setter>
+    </Style>
+
     <Style Selector="ScrollBar:vertical">
         <Setter Property="Width" Value="10"></Setter>
     </Style>

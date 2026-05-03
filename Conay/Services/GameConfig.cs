@@ -1,7 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Conay.Data;
 using Microsoft.Extensions.Logging;
 
 namespace Conay.Services;
@@ -11,52 +12,39 @@ public class GameConfig
     private readonly ILogger<GameConfig> _logger;
     private readonly Steam _steam;
 
-    private string? _defaultConfigPath;
-    private string? _savedConfigPath;
-    private string? _savedEnginePath;
-
     public GameConfig(Steam steam, ILogger<GameConfig> logger)
     {
         _logger = logger;
         _steam = steam;
-
-        RefreshPaths();
-    }
-
-    private void RefreshPaths()
-    {
-        if (_steam.AppInstallDir == string.Empty) return;
-
-        _defaultConfigPath =
-            Path.GetFullPath(Path.Combine(_steam.AppInstallDir,
-                "ConanSandbox/Config/DefaultGame.ini"));
-        _savedConfigPath =
-            Path.GetFullPath(Path.Combine(_steam.AppInstallDir,
-                "ConanSandbox/Saved/Config/WindowsNoEditor/Game.ini"));
-        _savedEnginePath =
-            Path.GetFullPath(Path.Combine(_steam.AppInstallDir,
-                "ConanSandbox/Saved/Config/WindowsNoEditor/Engine.ini"));
     }
 
     public bool ToggleCinematicIntro(bool disable = true)
     {
-        RefreshPaths();
-        if (_defaultConfigPath == null) return false;
-        if (!File.Exists(_defaultConfigPath)) return false;
+        if (_steam.DualInstallMode)
+        {
+            bool s1 = ToggleCinematicIntroAt(disable, _steam.GetInstallDirForVersion(GameVersion.Enhanced));
+            bool s2 = ToggleCinematicIntroAt(disable, _steam.GetInstallDirForVersion(GameVersion.Legacy));
+            return s1 || s2;
+        }
+        return ToggleCinematicIntroAt(disable, _steam.AppInstallDir);
+    }
+
+    private bool ToggleCinematicIntroAt(bool disable, string installDir)
+    {
+        if (string.IsNullOrEmpty(installDir)) return false;
+        string path = Path.GetFullPath(Path.Combine(installDir, "ConanSandbox/Config/DefaultGame.ini"));
+        if (!File.Exists(path)) return false;
 
         try
         {
-            string[] lines = File.ReadAllLines(_defaultConfigPath);
+            string[] lines = File.ReadAllLines(path);
             for (int i = 0; i < lines.Length; i++)
             {
                 string line = lines[i];
                 if (line.StartsWith($"{(disable ? '+' : '-')}StartupMovies=") && line.Length > 18)
-                {
                     lines[i] = line.Replace(disable ? '+' : '-', disable ? '-' : '+');
-                }
             }
-
-            File.WriteAllLines(_defaultConfigPath, lines);
+            File.WriteAllLines(path, lines);
         }
         catch (Exception ex)
         {
@@ -68,33 +56,40 @@ public class GameConfig
 
     public bool ToggleImmersiveMode(bool enable = true)
     {
-        RefreshPaths();
-        if (_savedConfigPath == null) return false;
-        if (_savedEnginePath == null) return false;
-        if (!File.Exists(_savedConfigPath)) return false;
-        if (!File.Exists(_savedEnginePath)) return false;
+        if (_steam.DualInstallMode)
+        {
+            bool s1 = ToggleImmersiveModeAt(enable, _steam.GetInstallDirForVersion(GameVersion.Enhanced));
+            bool s2 = ToggleImmersiveModeAt(enable, _steam.GetInstallDirForVersion(GameVersion.Legacy));
+            return s1 || s2;
+        }
+        return ToggleImmersiveModeAt(enable, _steam.AppInstallDir);
+    }
+
+    private bool ToggleImmersiveModeAt(bool enable, string installDir)
+    {
+        if (string.IsNullOrEmpty(installDir)) return false;
+        string gamePath = Path.GetFullPath(Path.Combine(installDir,
+            "ConanSandbox/Saved/Config/WindowsNoEditor/Game.ini"));
+        string enginePath = Path.GetFullPath(Path.Combine(installDir,
+            "ConanSandbox/Saved/Config/WindowsNoEditor/Engine.ini"));
+
+        if (!File.Exists(gamePath)) return false;
+        if (!File.Exists(enginePath)) return false;
 
         try
         {
-            string[] lines = File.ReadAllLines(_savedConfigPath);
+            string[] lines = File.ReadAllLines(gamePath);
             for (int i = 0; i < lines.Length; i++)
             {
                 string line = lines[i];
                 if (line.StartsWith("VisibleSheathedWeapons="))
-                {
                     lines[i] = "VisibleSheathedWeapons=" + (enable ? 2 : 0);
-                }
                 else if (line.StartsWith("showContextualControls="))
-                {
                     lines[i] = "showContextualControls=" + (enable ? "False" : "True");
-                }
                 else if (line.StartsWith("ShowJourneyStepsUI="))
-                {
                     lines[i] = "ShowJourneyStepsUI=" + (enable ? "False" : "True");
-                }
             }
-
-            File.WriteAllLines(_savedConfigPath, lines);
+            File.WriteAllLines(gamePath, lines);
         }
         catch (Exception ex)
         {
@@ -104,8 +99,7 @@ public class GameConfig
 
         try
         {
-            string[] lines = File.ReadAllLines(_savedEnginePath);
-
+            string[] lines = File.ReadAllLines(enginePath);
             bool lineFound = false;
             for (int i = 0; i < lines.Length; i++)
             {
@@ -126,7 +120,7 @@ public class GameConfig
                 lines = temp.ToArray();
             }
 
-            File.WriteAllLines(_savedEnginePath, lines);
+            File.WriteAllLines(enginePath, lines);
         }
         catch (Exception ex)
         {
@@ -137,33 +131,28 @@ public class GameConfig
         return true;
     }
 
-    public bool SetLastConnected(string ip, string password)
+    public bool SetLastConnected(string ip, string password, string? installDir = null)
     {
-        RefreshPaths();
-        if (_savedConfigPath == null) return false;
-        if (!File.Exists(_savedConfigPath)) return false;
+        string dir = installDir ?? _steam.AppInstallDir;
+        if (string.IsNullOrEmpty(dir)) return false;
+        string savedConfigPath = Path.GetFullPath(Path.Combine(dir,
+            "ConanSandbox/Saved/Config/WindowsNoEditor/Game.ini"));
+        if (!File.Exists(savedConfigPath)) return false;
 
         try
         {
-            string[] lines = File.ReadAllLines(_savedConfigPath);
+            string[] lines = File.ReadAllLines(savedConfigPath);
             for (int i = 0; i < lines.Length; i++)
             {
                 string line = lines[i];
                 if (line.StartsWith("LastConnected=") && ip != "singleplayer")
-                {
                     lines[i] = "LastConnected=" + ip;
-                }
                 else if (line.StartsWith("LastPassword=") && password != string.Empty)
-                {
                     lines[i] = "LastPassword=" + password;
-                }
                 else if (line.StartsWith("StartedListenServerSession="))
-                {
                     lines[i] = "StartedListenServerSession=" + (ip == "singleplayer" ? "True" : "False");
-                }
             }
-
-            File.WriteAllLines(_savedConfigPath, lines);
+            File.WriteAllLines(savedConfigPath, lines);
         }
         catch (Exception ex)
         {
@@ -176,24 +165,21 @@ public class GameConfig
 
     public string GetLastConnected()
     {
-        RefreshPaths();
-        if (_savedConfigPath == null || !File.Exists(_savedConfigPath)) return string.Empty;
+        if (string.IsNullOrEmpty(_steam.AppInstallDir)) return string.Empty;
+        string savedConfigPath = Path.GetFullPath(Path.Combine(_steam.AppInstallDir,
+            "ConanSandbox/Saved/Config/WindowsNoEditor/Game.ini"));
+        if (!File.Exists(savedConfigPath)) return string.Empty;
 
         string ip = string.Empty;
-
         try
         {
-            string[] lines = File.ReadAllLines(_savedConfigPath);
+            string[] lines = File.ReadAllLines(savedConfigPath);
             foreach (string line in lines)
             {
                 if (line.StartsWith("LastConnected="))
-                {
                     ip = line.Replace("LastConnected=", "");
-                }
                 else if (line.StartsWith("StartedListenServerSession=True"))
-                {
                     return "singleplayer";
-                }
             }
         }
         catch (Exception ex)

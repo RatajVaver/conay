@@ -194,6 +194,37 @@ public class ModList
         return _modListPath;
     }
 
+    public void SaveModListToInstallDir(string installDir)
+    {
+        RefreshPaths();
+        if (_workshopPath == null) return;
+
+        string modListPath = Path.GetFullPath(Path.Combine(installDir, "ConanSandbox/Mods/modlist.txt"));
+        string? modsDirectory = Path.GetDirectoryName(modListPath);
+        if (modsDirectory == null) return;
+
+        string localModsPath = Path.GetFullPath(Path.Combine(installDir, "ConanSandbox/Mods"));
+
+        string[] mods = _currentMods.ToArray();
+        for (int i = 0; i < mods.Length; i++)
+        {
+            string modIdOrFolder = mods[i].Split('/')[0];
+            string fullPath = ulong.TryParse(modIdOrFolder, out _)
+                ? Path.GetFullPath(Path.Combine(_workshopPath, mods[i]))
+                : Path.GetFullPath(Path.Combine(localModsPath, mods[i]));
+            mods[i] = Path.GetRelativePath(modsDirectory, fullPath);
+        }
+
+        if (!Directory.Exists(modsDirectory))
+        {
+            try { Directory.CreateDirectory(modsDirectory); }
+            catch (Exception ex) { _logger.LogError(ex, "Failed to create Mods directory for {Dir}!", installDir); return; }
+        }
+
+        try { File.WriteAllLines(modListPath, mods, Encoding.UTF8); }
+        catch (Exception ex) { _logger.LogError(ex, "Failed to save modlist to {Dir}!", installDir); }
+    }
+
     public List<string> ReloadCurrentModList()
     {
         _modlistParsed = false;

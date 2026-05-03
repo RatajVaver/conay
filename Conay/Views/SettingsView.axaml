@@ -85,6 +85,18 @@
                           Content="Back up TotCustom saves on launch"
                           ToolTip.Tip="Before launching the game, Conay will zip the TotCustom save folder and store up to 3 rotating backups in the Conay/backups folder.">
                 </CheckBox>
+                <Label Content="Installation" Margin="0 20 0 0"></Label>
+                <Button Command="{Binding OpenDualInstallWizardCommand}"
+                        ToolTip.Tip="Set up both Enhanced and Legacy versions side by side so Conay can launch the correct one automatically when selecting a server.">
+                    <StackPanel Orientation="Horizontal">
+                        <Label Classes="icon" Content="&#xe596;"></Label>
+                        <Label Classes="text" Content="Dual Install Setup"></Label>
+                    </StackPanel>
+                </Button>
+                <TextBlock IsVisible="{Binding DualInstallActive}" Foreground="#6db86d" FontSize="12" Margin="2 4 0 0"
+                           Text="Dual install is active" />
+                <TextBlock IsVisible="{Binding DualInstallNotActive}" Foreground="#666" FontSize="12" Margin="2 4 0 0"
+                           Text="Not configured" />
             </StackPanel>
         </Grid>
         <TextBlock Foreground="#999" FontSize="13" LineHeight="18" TextWrapping="Wrap">

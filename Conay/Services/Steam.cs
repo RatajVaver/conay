@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -38,6 +39,15 @@ public class Steam : IModSource
 
     public string AppInstallDir { get; private set; } = string.Empty;
     private string _workshopPath = string.Empty;
+
+    public bool DualInstallMode { get; private set; }
+    private string EnhancedInstallDir { get; set; } = string.Empty;
+    private string LegacyInstallDir { get; set; } = string.Empty;
+
+    public string GetInstallDirForVersion(GameVersion version) =>
+        version == GameVersion.Enhanced
+            ? (string.IsNullOrEmpty(EnhancedInstallDir) ? AppInstallDir : EnhancedInstallDir)
+            : (string.IsNullOrEmpty(LegacyInstallDir) ? AppInstallDir : LegacyInstallDir);
 
     public Steam(ILogger<Steam> logger, HttpService http, NotifyService notifyService)
     {
@@ -365,11 +375,66 @@ public class Steam : IModSource
         _isConanInstalled = SteamApps.IsSubscribed && SteamApps.IsAppInstalled(GameVersionHelper.AppId);
         _steamAccountName = SteamClient.Name;
         AppInstallDir = SteamApps.AppInstallDir(GameVersionHelper.AppId);
-        _workshopPath = Path.GetFullPath(Path.Combine(AppInstallDir, $"../../workshop/content/{GameVersionHelper.AppId}"));
+        _workshopPath =
+            Path.GetFullPath(Path.Combine(AppInstallDir, $"../../workshop/content/{GameVersionHelper.AppId}"));
 
         string? betaName = SteamApps.CurrentBetaName;
         GameVersionHelper.Current = GameVersionHelper.FromSteamBranch(betaName);
         _logger.LogDebug("Steam branch: {Branch} -> {Version}", betaName ?? "public", GameVersionHelper.Current);
+
+        DetectDualInstall();
+    }
+
+    public bool IsGameDownloading
+    {
+        get
+        {
+            if (string.IsNullOrEmpty(AppInstallDir)) return false;
+            string acfPath = Path.GetFullPath(
+                Path.Combine(AppInstallDir, $"../../appmanifest_{GameVersionHelper.AppId}.acf"));
+            if (!File.Exists(acfPath)) return false;
+            try
+            {
+                foreach (string line in File.ReadAllLines(acfPath))
+                {
+                    string trimmed = line.TrimStart();
+                    if (!trimmed.StartsWith("\"StateFlags\"")) continue;
+                    string[] parts = trimmed.Split('"');
+                    if (parts.Length >= 4 && int.TryParse(parts[3], out int flags))
+                        return (flags & (256 | 1024 | 1048576 | 2097152 | 4194304)) != 0;
+                }
+            }
+            catch { }
+            return false;
+        }
+    }
+
+    public bool IsGameRunning =>
+        Process.GetProcessesByName("ConanSandbox").Length > 0 ||
+        Process.GetProcessesByName("ConanSandbox_BE").Length > 0;
+
+    private void DetectDualInstall()
+    {
+        if (string.IsNullOrEmpty(AppInstallDir)) return;
+
+        string common = Path.GetFullPath(Path.Combine(AppInstallDir, ".."));
+        const string exeRel = "ConanSandbox/Binaries/Win64/ConanSandbox.exe";
+
+        string eDir = Path.Combine(common, "Conan Exiles Enhanced");
+        string lDir = Path.Combine(common, "Conan Exiles Legacy");
+
+        EnhancedInstallDir = File.Exists(Path.Combine(eDir, exeRel)) ? eDir : string.Empty;
+        LegacyInstallDir = File.Exists(Path.Combine(lDir, exeRel)) ? lDir : string.Empty;
+
+        if (GameVersionHelper.Current == GameVersion.Enhanced && string.IsNullOrEmpty(EnhancedInstallDir))
+            EnhancedInstallDir = AppInstallDir;
+        else if (GameVersionHelper.Current == GameVersion.Legacy && string.IsNullOrEmpty(LegacyInstallDir))
+            LegacyInstallDir = AppInstallDir;
+
+        DualInstallMode = !string.IsNullOrEmpty(EnhancedInstallDir) && !string.IsNullOrEmpty(LegacyInstallDir);
+        if (DualInstallMode)
+            _logger.LogDebug("Dual install mode active. Enhanced: {E}, Legacy: {L}", EnhancedInstallDir,
+                LegacyInstallDir);
     }
 
     private void LaunchSteam()

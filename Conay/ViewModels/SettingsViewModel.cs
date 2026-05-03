@@ -14,6 +14,7 @@ public partial class SettingsViewModel : PageViewModel
 {
     private readonly LauncherConfig _config;
     private readonly GameConfig _gameConfig;
+    private readonly Steam _steam;
 
     [ObservableProperty]
     private bool _checkUpdates = true;
@@ -65,10 +66,11 @@ public partial class SettingsViewModel : PageViewModel
 
     private readonly string[] _tabs = ["launch", "favorite", "servers", "presets", "saves"];
 
-    public SettingsViewModel(LauncherConfig config, GameConfig gameConfig)
+    public SettingsViewModel(LauncherConfig config, GameConfig gameConfig, Steam steam)
     {
         _config = config;
         _gameConfig = gameConfig;
+        _steam = steam;
 
         CheckUpdates = config.Data.CheckUpdates;
         UpdateSubscribedModsOnLaunch = config.Data.UpdateSubscribedModsOnLaunch;
@@ -145,12 +147,15 @@ public partial class SettingsViewModel : PageViewModel
             _ = _config.ScheduleConfigSave();
 
             MessageBox.ShowInfo(value
-                ? "Cinematic intro has been disabled!\n\nYou will now see silent black screen when loading into the game."
-                : "Cinematic intro has been enabled!\n\n\"What will you do, exile?\" is back.");
+                ? "Cinematic intro has been disabled!\n\n" +
+                  "You will now see silent black screen when loading into the game."
+                : "Cinematic intro has been enabled!\n\n" +
+                  "\"What will you do, exile?\" is back.");
         }
         else
         {
-            MessageBox.ShowInfo("Failed to save the config! Make sure you have write permissions to the game's folder.");
+            MessageBox.ShowInfo(
+                "Failed to save the config! Make sure you have write permissions to the game's folder.");
         }
     }
 
@@ -218,6 +223,35 @@ public partial class SettingsViewModel : PageViewModel
         }
 
         _ = _config.ScheduleConfigSave();
+    }
+
+    public bool DualInstallActive => _steam.DualInstallMode;
+    public bool DualInstallNotActive => !_steam.DualInstallMode;
+
+    [RelayCommand]
+    private async System.Threading.Tasks.Task OpenDualInstallWizard()
+    {
+        if (!_steam.DualInstallMode && string.IsNullOrEmpty(_steam.AppInstallDir))
+        {
+            MessageBox.ShowInfo("Steam is not connected yet.\n\nPlease wait for Steam to load and try again.");
+            return;
+        }
+
+        Views.DualInstallWizardView wizard = new()
+        {
+            DataContext = new DualInstallWizardViewModel(_steam)
+        };
+
+        Avalonia.Controls.Window? owner = (Avalonia.Application.Current?.ApplicationLifetime
+            as Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime)?.MainWindow;
+
+        if (owner != null)
+        {
+            await wizard.ShowDialog(owner);
+            return;
+        }
+
+        wizard.Show();
     }
 
     [RelayCommand]
