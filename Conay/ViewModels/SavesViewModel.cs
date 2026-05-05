@@ -162,7 +162,7 @@ public partial class SavesViewModel : PageViewModel
     {
         string path = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "saves"));
         Directory.CreateDirectory(path);
-        Process.Start("explorer.exe", path);
+        Protocol.OpenFolder(path);
     }
 
     [RelayCommand(CanExecute = nameof(CanNewSave))]

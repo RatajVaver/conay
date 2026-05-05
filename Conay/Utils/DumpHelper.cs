@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 
 namespace Conay.Utils;
 
@@ -19,15 +20,10 @@ public static class DumpHelper
 
     public static void FilePermWarn()
     {
-        ThrowError("Conay cannot save or modify files because it is currently located in" +
-                   " a protected directory that requires administrator privileges.\n\n" +
-                   "If your installation is located in Program Files, please move Conay" +
-                   " to another location. Do not move the game itself, just the launcher.");
-    }
-
-    private static void ThrowError(string message)
-    {
-        MessageBox(IntPtr.Zero, message, "Conay", 0x00000010);
+        ShowError("Conay cannot save or modify files because it is currently located in" +
+                  " a protected directory that requires administrator privileges.\n\n" +
+                  "If your installation is located in Program Files, please move Conay" +
+                  " to another location. Do not move the game itself, just the launcher.");
     }
 
     public static void ThrowError(Exception? ex)
@@ -36,6 +32,7 @@ public static class DumpHelper
     }
 
     [DllImport("dbghelp.dll")]
+    [SupportedOSPlatform("windows")]
     private static extern bool MiniDumpWriteDump(IntPtr hProcess,
         int processId,
         IntPtr hFile,
@@ -45,6 +42,7 @@ public static class DumpHelper
         IntPtr callbackParam);
 
     [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+    [SupportedOSPlatform("windows")]
     private static extern int MessageBox(IntPtr hWnd, string text, string caption, uint type);
 
     private static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
@@ -80,44 +78,54 @@ public static class DumpHelper
             // ignored
         }
 
-        try
+        if (OperatingSystem.IsWindows())
         {
-            using FileStream fs = new(dumpFile, FileMode.Create);
-            using Process process = Process.GetCurrentProcess();
+            try
+            {
+                using FileStream fs = new(dumpFile, FileMode.Create);
+                using Process process = Process.GetCurrentProcess();
 
-            MiniDumpWriteDump(process.Handle,
-                process.Id,
-                fs.SafeFileHandle.DangerousGetHandle(),
-                0,
-                IntPtr.Zero,
-                IntPtr.Zero,
-                IntPtr.Zero);
+                MiniDumpWriteDump(process.Handle,
+                    process.Id,
+                    fs.SafeFileHandle.DangerousGetHandle(),
+                    0,
+                    IntPtr.Zero,
+                    IntPtr.Zero,
+                    IntPtr.Zero);
 
-            dumpCreated = true;
+                dumpCreated = true;
+            }
+            catch
+            {
+                // ignored
+            }
         }
-        catch
-        {
-            // ignored
-        }
+
+        string details = $"Application crashed - please report this issue!\n\nDetails: {ex?.Message}";
 
         if (dumpCreated)
         {
-            MessageBox(IntPtr.Zero,
-                $"Application crashed - please report this issue!\n\nDetails: {ex?.Message}\n\nDump created at:\n{Path.GetFullPath(dumpFile)}",
-                "Conay",
-                0x00000010);
+            ShowError($"{details}\n\nDump created at:\n{Path.GetFullPath(dumpFile)}");
         }
         else if (logsWritten)
         {
-            MessageBox(IntPtr.Zero,
-                $"Application crashed - please report this issue!\n\nDetails: {ex?.Message}\n\nLogs saved at:\n{Path.GetFullPath(logFile)}",
-                "Conay", 0x00000010);
+            ShowError($"{details}\n\nLogs saved at:\n{Path.GetFullPath(logFile)}");
         }
         else
         {
-            MessageBox(IntPtr.Zero,
-                $"Application crashed - please report this issue!\n\nDetails: {ex?.Message}\n\nFailed to write logs!",
-                "Conay", 0x00000010);
+            ShowError($"{details}\n\nFailed to write logs!");
+        }
+    }
+
+    private static void ShowError(string message)
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            MessageBox(IntPtr.Zero, message, "Conay", 0x00000010);
+        }
+        else
+        {
+            Console.Error.WriteLine(message);
         }
     }
 }

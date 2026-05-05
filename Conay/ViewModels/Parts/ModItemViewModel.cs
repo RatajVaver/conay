@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -135,6 +134,6 @@ public partial class ModItemViewModel : ViewModelBase, ILazyLoad
         string path = Path.GetFullPath(Path.Combine(_steam.AppInstallDir, "ConanSandbox/Mods", _localFolder));
 
         if (Directory.Exists(path))
-            Process.Start("explorer.exe", path);
+            Protocol.OpenFolder(path);
     }
 }

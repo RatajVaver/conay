@@ -141,8 +141,13 @@ public class LaunchWorker(
 
     private bool LaunchConan(string? args = null)
     {
+        if (!OperatingSystem.IsWindows())
+            return LaunchViaSteamUri(args);
+
         string installDir = steam.GetInstallDirForVersion(state.Version);
-        string exe = state.BattlEye ? "ConanSandbox_BE.exe" : "ConanSandbox.exe";
+        string exe = state.BattlEye
+            ? "ConanSandbox_BE.exe"
+            : (state.Version == GameVersion.Enhanced ? "ConanSandbox-Win64-Shipping.exe" : "ConanSandbox.exe");
         string exePath = Path.GetFullPath(Path.Combine(installDir, $"ConanSandbox/Binaries/Win64/{exe}"));
 
         if (File.Exists(exePath))
@@ -161,10 +166,7 @@ public class LaunchWorker(
             {
                 logger.LogError(ex, "Failed to launch the game directly (falling back to Steam protocol)!");
                 if (!steam.DualInstallMode || state.Version == GameVersionHelper.Current)
-                {
-                    Protocol.Open($"steam://run/{GameVersionHelper.AppId}/");
-                    return true;
-                }
+                    return LaunchViaSteamUri(args);
 
                 notifyService.UpdateStatus(this, "Failed to launch the game!");
                 return false;
@@ -172,14 +174,20 @@ public class LaunchWorker(
         }
 
         if (!steam.DualInstallMode || state.Version == GameVersionHelper.Current)
-        {
-            Protocol.Open($"steam://run/{GameVersionHelper.AppId}/");
-            return true;
-        }
+            return LaunchViaSteamUri(args);
 
         string versionName = GameVersionHelper.ToDisplayName(state.Version);
         notifyService.UpdateStatus(this, $"{versionName} executable not found! Check your installation.");
         return false;
+    }
+
+    private static bool LaunchViaSteamUri(string? args = null)
+    {
+        string uri = args is not null
+            ? $"steam://run/{GameVersionHelper.AppId}//{args}/"
+            : $"steam://run/{GameVersionHelper.AppId}/";
+        Protocol.Open(uri);
+        return true;
     }
 
     private void BackupTotCustom()

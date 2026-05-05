@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using System.Reflection;
+﻿using System.Reflection;
 
 namespace Conay.Utils;
 
@@ -7,9 +6,10 @@ public static class Meta
 {
     public static string GetVersion()
     {
-        string filePath = Process.GetCurrentProcess().MainModule?.FileName!;
-        string version = FileVersionInfo.GetVersionInfo(filePath).ProductVersion!;
-        return version;
+        return Assembly.GetEntryAssembly()
+            ?.GetCustomAttribute<AssemblyInformationalVersionAttribute>()
+            ?.InformationalVersion
+            ?? string.Empty;
     }
 
     public static string GetAssemblyVersion()

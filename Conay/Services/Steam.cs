@@ -115,8 +115,9 @@ public class Steam : IModSource
 
             _notifyService.UpdateStatus(this, "Connected!");
         }
-        catch
+        catch (Exception ex)
         {
+            _logger.LogError(ex, "Failed to initialize Steam!");
             _isInitialized = false;
             _isLoggedIn = false;
         }
@@ -404,7 +405,10 @@ public class Steam : IModSource
                         return (flags & (256 | 1024 | 1048576 | 2097152 | 4194304)) != 0;
                 }
             }
-            catch { }
+            catch
+            {
+            }
+
             return false;
         }
     }

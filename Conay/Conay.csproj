@@ -1,10 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <OutputType>WinExe</OutputType>
+        <OutputType Condition="!$(RuntimeIdentifier.StartsWith('linux'))">WinExe</OutputType>
+        <OutputType Condition="$(RuntimeIdentifier.StartsWith('linux'))">Exe</OutputType>
         <TargetFramework>net9.0</TargetFramework>
         <Nullable>enable</Nullable>
         <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
-        <ApplicationManifest>app.manifest</ApplicationManifest>
+        <ApplicationManifest Condition="!$(RuntimeIdentifier.StartsWith('linux'))">app.manifest</ApplicationManifest>
         <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
         <ApplicationIcon>Assets\Images\icon.ico</ApplicationIcon>
         <IsPackable>false</IsPackable>
@@ -15,7 +16,7 @@
         <RepositoryUrl>https://github.com/RatajVaver/conay</RepositoryUrl>
         <AssemblyVersion>0.2.5</AssemblyVersion>
         <FileVersion>0.2.5</FileVersion>
-        <Version>0.2.5-pre</Version>
+        <Version>0.2.5</Version>
         <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
     </PropertyGroup>
 
@@ -32,9 +33,18 @@
         <PackageReference Include="SteamQuery.NET" Version="2.0.2"/>
     </ItemGroup>
 
-    <ItemGroup>
+    <ItemGroup Condition="!$(RuntimeIdentifier.StartsWith('linux'))">
         <Content Include="lib\steam_api64.dll">
             <Link>steam_api64.dll</Link>
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+    </ItemGroup>
+    <ItemGroup Condition="$(RuntimeIdentifier.StartsWith('linux'))">
+        <Content Include="lib/libsteam_api.so">
+            <Link>libsteam_api.so</Link>
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+        <Content Include="steam_appid.txt">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </Content>
     </ItemGroup>

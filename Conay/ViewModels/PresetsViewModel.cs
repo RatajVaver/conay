@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Input;
@@ -85,6 +84,6 @@ public partial class PresetsViewModel : PageViewModel
         string appDirectory = AppContext.BaseDirectory;
         string directoryPath = Path.GetFullPath(Path.Combine(appDirectory, "servers"));
 
-        Process.Start("explorer.exe", directoryPath);
+        Protocol.OpenFolder(directoryPath);
     }
 }
