@@ -16,7 +16,7 @@ public class ModList
 
     private string? _modListPath;
     private string? _serverModListPath;
-    private string? _workshopPath;
+    public string? WorkshopPath;
     public string? LocalModsPath;
     private readonly List<string> _currentMods = [];
     private bool _modlistParsed;
@@ -37,7 +37,7 @@ public class ModList
 
         _modListPath = Path.GetFullPath(Path.Combine(_steam.AppInstallDir, "ConanSandbox/Mods/modlist.txt"));
         _serverModListPath = Path.GetFullPath(Path.Combine(_steam.AppInstallDir, "ConanSandbox/servermodlist.txt"));
-        _workshopPath = Path.GetFullPath(Path.Combine(_steam.AppInstallDir, "../../workshop/content/440900"));
+        WorkshopPath = Path.GetFullPath(Path.Combine(_steam.AppInstallDir, "../../workshop/content/440900"));
         LocalModsPath = Path.GetFullPath(Path.Combine(_steam.AppInstallDir, "ConanSandbox/Mods"));
     }
 
@@ -120,7 +120,7 @@ public class ModList
     public void SaveModList(string[] mods)
     {
         RefreshPaths();
-        if (_workshopPath == null || _modListPath == null || LocalModsPath == null) return;
+        if (WorkshopPath == null || _modListPath == null || LocalModsPath == null) return;
 
         _currentMods.Clear();
 
@@ -138,7 +138,7 @@ public class ModList
             string modIdOrFolder = mods[i].Split('/')[0];
             if (ulong.TryParse(modIdOrFolder, out _))
             {
-                string fullPath = Path.GetFullPath(Path.Combine(_workshopPath, mods[i]));
+                string fullPath = Path.GetFullPath(Path.Combine(WorkshopPath, mods[i]));
                 mods[i] = Path.GetRelativePath(modsDirectory, fullPath);
             }
             else
@@ -197,7 +197,7 @@ public class ModList
     public void SaveModListToInstallDir(string installDir)
     {
         RefreshPaths();
-        if (_workshopPath == null) return;
+        if (WorkshopPath == null) return;
 
         string modListPath = Path.GetFullPath(Path.Combine(installDir, "ConanSandbox/Mods/modlist.txt"));
         string? modsDirectory = Path.GetDirectoryName(modListPath);
@@ -210,7 +210,7 @@ public class ModList
         {
             string modIdOrFolder = mods[i].Split('/')[0];
             string fullPath = ulong.TryParse(modIdOrFolder, out _)
-                ? Path.GetFullPath(Path.Combine(_workshopPath, mods[i]))
+                ? Path.GetFullPath(Path.Combine(WorkshopPath, mods[i]))
                 : Path.GetFullPath(Path.Combine(localModsPath, mods[i]));
             mods[i] = Path.GetRelativePath(modsDirectory, fullPath);
         }

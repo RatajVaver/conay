@@ -93,6 +93,15 @@
         <Setter Property="Background" Value="Transparent"></Setter>
     </Style>
 
+    <Style Selector="Button.compact">
+        <Setter Property="Padding" Value="8 4"></Setter>
+        <Setter Property="FontSize" Value="14"></Setter>
+    </Style>
+
+    <Style Selector="Button.compact Label.icon">
+        <Setter Property="FontSize" Value="18"></Setter>
+    </Style>
+
     <Style Selector="Button.muted">
         <Setter Property="Background" Value="Transparent"></Setter>
         <Setter Property="Foreground" Value="#555"></Setter>

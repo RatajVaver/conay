@@ -28,28 +28,43 @@
                      PlaceholderText="optional" Margin="0 8 0 0" />
 
             <Label Grid.Row="4" Grid.Column="0" VerticalAlignment="Center" Margin="0 8 0 0">Game Version</Label>
-            <StackPanel Grid.Row="4" Grid.Column="1" Orientation="Horizontal" Spacing="16" Margin="0 8 0 0" VerticalAlignment="Center">
-                <RadioButton IsChecked="{Binding IsEnhancedSelected, Mode=TwoWay}" GroupName="GameVersion" Content="Enhanced" />
-                <RadioButton IsChecked="{Binding IsLegacySelected, Mode=TwoWay}" GroupName="GameVersion" Content="Legacy" />
-            </StackPanel>
+            <Grid Grid.Row="4" Grid.Column="1" ColumnDefinitions="*, Auto" Margin="0 8 0 0">
+                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="16" VerticalAlignment="Center">
+                    <RadioButton IsChecked="{Binding IsEnhancedSelected, Mode=TwoWay}" GroupName="GameVersion" Content="Enhanced" />
+                    <RadioButton IsChecked="{Binding IsLegacySelected, Mode=TwoWay}" GroupName="GameVersion" Content="Legacy" />
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10">
+                    <Button Command="{Binding CancelCommand}">
+                        <StackPanel Orientation="Horizontal">
+                            <Label Classes="icon" Content="&#xe4f6;" />
+                            <Label Classes="text" Content="Cancel" />
+                        </StackPanel>
+                    </Button>
+                    <Button Command="{Binding SaveCommand}">
+                        <StackPanel Orientation="Horizontal">
+                            <Label Classes="icon" Content="&#xe248;" />
+                            <Label Classes="text" Content="Save" />
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </Grid>
         </Grid>
 
-        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10">
-            <Button Command="{Binding CancelCommand}">
+        <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center" Margin="0 20 0 0">
+            <Label Content="{Binding ModsLabel}" Foreground="#777" VerticalAlignment="Center" />
+            <Button Classes="compact" Command="{Binding CopyFromCurrentModlistCommand}">
                 <StackPanel Orientation="Horizontal">
-                    <Label Classes="icon" Content="&#xe4f6;" />
-                    <Label Classes="text" Content="Cancel" />
+                    <Label Classes="icon" Content="&#xe1ca;" />
+                    <Label Classes="text" Content="Copy from current modlist" />
                 </StackPanel>
             </Button>
-            <Button Command="{Binding SaveCommand}">
+            <Button Classes="compact" Command="{Binding AddModCommand}">
                 <StackPanel Orientation="Horizontal">
-                    <Label Classes="icon" Content="&#xe248;" />
-                    <Label Classes="text" Content="Save" />
+                    <Label Classes="icon" Content="&#xe3d4;" />
+                    <Label Classes="text" Content="Add mod" />
                 </StackPanel>
             </Button>
         </StackPanel>
-
-        <Label Content="{Binding ModsLabel}" Foreground="#777" />
         <ItemsControl ItemsSource="{Binding Mods}">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>

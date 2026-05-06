@@ -29,19 +29,29 @@
                     <Label Foreground="#999" FontSize="12" Content="{Binding Updated, Mode=OneWay}"></Label>
                 </StackPanel>
             </StackPanel>
-            <StackPanel Grid.Column="2" VerticalAlignment="Center">
-                <Button Classes="small" Command="{Binding OpenWorkshopPageCommand}"
-                        IsVisible="{Binding IsWorkshopMod, Mode=OneWay}" ToolTip.Tip="Visit Steam Workshop page">
-                    <StackPanel Orientation="Horizontal">
+            <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Spacing="2">
+                <StackPanel Orientation="Vertical" IsVisible="{Binding IsReorderable, Mode=OneWay}">
+                    <Button Classes="small" Command="{Binding MoveUpCommand}" ToolTip.Tip="Move up">
+                        <Label Classes="icon" Content="&#xe08e;"></Label>
+                    </Button>
+                    <Button Classes="small" Command="{Binding MoveDownCommand}" ToolTip.Tip="Move down">
+                        <Label Classes="icon" Content="&#xe03e;"></Label>
+                    </Button>
+                </StackPanel>
+                <StackPanel Orientation="Vertical">
+                    <Button Classes="small" Command="{Binding RemoveCommand}"
+                            IsVisible="{Binding IsRemovable, Mode=OneWay}" ToolTip.Tip="Remove from list">
+                        <Label Classes="icon" Content="&#xe4f6;"></Label>
+                    </Button>
+                    <Button Classes="small" Command="{Binding OpenWorkshopPageCommand}"
+                            IsVisible="{Binding IsWorkshopMod, Mode=OneWay}" ToolTip.Tip="Visit Steam Workshop page">
                         <Label Classes="icon" Content="&#xe2e2;"></Label>
-                    </StackPanel>
-                </Button>
-                <Button Classes="small" Command="{Binding OpenLocalFolderCommand}"
-                        IsVisible="{Binding !IsWorkshopMod, Mode=OneWay}" ToolTip.Tip="Open folder">
-                    <StackPanel Orientation="Horizontal">
+                    </Button>
+                    <Button Classes="small" Command="{Binding OpenLocalFolderCommand}"
+                            IsVisible="{Binding !IsWorkshopMod, Mode=OneWay}" ToolTip.Tip="Open folder">
                         <Label Classes="icon" Content="&#xe256;"></Label>
-                    </StackPanel>
-                </Button>
+                    </Button>
+                </StackPanel>
             </StackPanel>
         </Grid>
     </Border>

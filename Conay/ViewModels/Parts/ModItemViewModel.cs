@@ -117,6 +117,22 @@ public partial class ModItemViewModel : ViewModelBase, ILazyLoad
         }
     }
 
+    public Action? OnMoveUp { get; set; }
+    public Action? OnMoveDown { get; set; }
+    public Action? OnRemove { get; set; }
+
+    public bool IsReorderable => OnMoveUp != null;
+    public bool IsRemovable => OnRemove != null;
+
+    [RelayCommand]
+    private void MoveUp() => OnMoveUp?.Invoke();
+
+    [RelayCommand]
+    private void MoveDown() => OnMoveDown?.Invoke();
+
+    [RelayCommand]
+    private void Remove() => OnRemove?.Invoke();
+
     [RelayCommand]
     private void OpenWorkshopPage()
     {
