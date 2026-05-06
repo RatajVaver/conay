@@ -26,6 +26,8 @@ Follow the instructions in the installation wizard, or unpack the files manually
 
 Need assistance with installation? Join my [Discord](https://discord.gg/3WJNxCTn8m).
 
+If you want to run the native Linux build, make sure to put `conay.desktop` in `$XDG_DATA_HOME/applications` and `conay.png` in `$XDG_DATA_HOME/icons`.
+
 ## Updating
 
 To update to a new version of Conay, simply install it again, files will be overwritten.
@@ -42,7 +44,9 @@ If your server is not on the list, you can either ask the server staff to add it
 
 If you are using older version of Conay, or want to dive into advanced usage with CLI, please follow the instructions included with older installations.
 
-If you are using **Linux**, Conay works only through Valve's Proton (make sure to force it to use the same version as the game).
+If you are using **Linux**, Conay works through Valve's Proton (make sure to force it to use the same version as the game).
+
+There is also a native version. Please refer to the installation instructions above for more details.
 
 ## Bug reports
 
