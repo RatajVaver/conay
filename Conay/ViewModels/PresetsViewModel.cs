@@ -25,7 +25,8 @@ public partial class PresetsViewModel : PageViewModel
 
     public ObservableCollection<ServerPresetViewModel> Presets { get; } = [];
 
-    public PresetsViewModel(ServerPresetFactory presetFactory, ServerList serverList, LocalPresets localPresets, Router router)
+    public PresetsViewModel(ServerPresetFactory presetFactory, ServerList serverList, LocalPresets localPresets,
+        Router router)
     {
         _presetFactory = presetFactory;
         _serverList = serverList;
@@ -84,6 +85,7 @@ public partial class PresetsViewModel : PageViewModel
         string appDirectory = AppContext.BaseDirectory;
         string directoryPath = Path.GetFullPath(Path.Combine(appDirectory, "servers"));
 
+        Directory.CreateDirectory(directoryPath);
         Protocol.OpenFolder(directoryPath);
     }
 }

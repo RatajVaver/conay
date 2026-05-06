@@ -15,7 +15,8 @@ public partial class DualInstallWizardViewModel(Steam steam) : ObservableObject
     [NotifyPropertyChangedFor(nameof(IsStep2))]
     private int _step;
 
-    [ObservableProperty] private string _errorMessage = string.Empty;
+    [ObservableProperty]
+    private string _errorMessage = string.Empty;
 
     public string CustomLegacyDir => steam.CustomLegacyDir;
     public bool HasCustomLegacyDir => !string.IsNullOrEmpty(steam.CustomLegacyDir);
@@ -27,8 +28,12 @@ public partial class DualInstallWizardViewModel(Steam steam) : ObservableObject
     public bool IsAlreadyActive => steam.DualInstallMode;
     public bool IsConayInsideGameDir => !steam.DualInstallMode && CheckConayInsideInstall();
     public bool IsGameRunning => !steam.DualInstallMode && !CheckConayInsideInstall() && steam.IsGameRunning;
-    public bool IsGameUpdating => !steam.DualInstallMode && !CheckConayInsideInstall() && !steam.IsGameRunning && steam.IsGameDownloading;
-    public bool IsReadyForInstall => !steam.DualInstallMode && !CheckConayInsideInstall() && !steam.IsGameRunning && !steam.IsGameDownloading;
+
+    public bool IsGameUpdating => !steam.DualInstallMode && !CheckConayInsideInstall() && !steam.IsGameRunning &&
+                                  steam.IsGameDownloading;
+
+    public bool IsReadyForInstall => !steam.DualInstallMode && !CheckConayInsideInstall() && !steam.IsGameRunning &&
+                                     !steam.IsGameDownloading;
 
     private bool CheckConayInsideInstall()
     {
@@ -65,6 +70,7 @@ public partial class DualInstallWizardViewModel(Steam steam) : ObservableObject
             Step = 2;
             return;
         }
+
         Step = 1;
     }
 
@@ -106,18 +112,43 @@ public partial class DualInstallWizardViewModel(Steam steam) : ObservableObject
         try
         {
             Directory.Move(SourcePath, DestPath);
-
-            string steamApps = Path.GetFullPath(Path.Combine(SourcePath, "../.."));
-            string acf = Path.Combine(steamApps, $"appmanifest_{GameVersionHelper.AppId}.acf");
-            if (File.Exists(acf))
-                File.Move(acf, acf + ".bak", overwrite: true);
-
-            Step = 2;
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            ErrorMessage = $"Failed to rename folder: {ex.Message}" +
+                           "\nA file inside the folder may be locked by Steam or another process." +
+                           "\nTry renaming the folder manually and relaunch Conay.";
+            return;
+        }
+        catch (IOException ex)
+        {
+            ErrorMessage = $"Failed to rename folder: {ex.Message}" +
+                           "\nA file inside the folder may be in use by Steam or another process." +
+                           "\nTry renaming the folder manually and relaunch Conay.";
+            return;
         }
         catch (Exception ex)
         {
             ErrorMessage = $"Failed to rename folder: {ex.Message}" +
-                           $"\nTry relaunching Conay as an administrator.";
+                           "\nTry renaming the folder manually and relaunch Conay.";
+            return;
         }
+
+        string steamApps = Path.GetFullPath(Path.Combine(SourcePath, "../.."));
+        string acf = Path.Combine(steamApps, $"appmanifest_{GameVersionHelper.AppId}.acf");
+        if (File.Exists(acf))
+        {
+            try
+            {
+                File.Move(acf, acf + ".bak", overwrite: true);
+            }
+            catch (Exception ex)
+            {
+                ErrorMessage = $"Failed to move manifest file ({Path.GetFileName(acf)}): {ex.Message}" +
+                               "\nYou can continue but might have to restart Steam.";
+            }
+        }
+
+        Step = 2;
     }
 }
