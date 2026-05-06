@@ -27,7 +27,7 @@ public partial class MainView : Window
     {
     }
 
-    public MainView(LauncherConfig config) : this(IsProton ^ config.Data.AlternativeBorders)
+    public MainView(LauncherConfig config) : this((IsProton || OperatingSystem.IsLinux()) ^ config.Data.AlternativeBorders)
     {
     }
 

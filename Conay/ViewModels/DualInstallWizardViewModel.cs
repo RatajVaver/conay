@@ -17,6 +17,9 @@ public partial class DualInstallWizardViewModel(Steam steam) : ObservableObject
 
     [ObservableProperty] private string _errorMessage = string.Empty;
 
+    public string CustomLegacyDir => steam.CustomLegacyDir;
+    public bool HasCustomLegacyDir => !string.IsNullOrEmpty(steam.CustomLegacyDir);
+
     public bool IsStep0 => Step == 0;
     public bool IsStep1 => Step == 1;
     public bool IsStep2 => Step == 2;
@@ -57,6 +60,11 @@ public partial class DualInstallWizardViewModel(Steam steam) : ObservableObject
     private void Start()
     {
         if (CheckConayInsideInstall() || steam.IsGameRunning || steam.IsGameDownloading) return;
+        if (!string.IsNullOrEmpty(DestPath) && Directory.Exists(DestPath))
+        {
+            Step = 2;
+            return;
+        }
         Step = 1;
     }
 
@@ -91,7 +99,7 @@ public partial class DualInstallWizardViewModel(Steam steam) : ObservableObject
 
         if (Directory.Exists(DestPath))
         {
-            ErrorMessage = $"Destination already exists:\n{DestPath}";
+            Step = 2;
             return;
         }
 

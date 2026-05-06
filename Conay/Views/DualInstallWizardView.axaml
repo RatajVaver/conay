@@ -95,6 +95,11 @@
                                 If you continue now, you may need to do some manual changes to your game directories later to keep your game updated.
                             </TextBlock>
                         </Border>
+                        <StackPanel IsVisible="{Binding HasCustomLegacyDir}" Spacing="4">
+                            <TextBlock FontSize="12" Foreground="#666">Custom Legacy path set:</TextBlock>
+                            <TextBlock FontSize="12" Foreground="#888" TextTrimming="CharacterEllipsis"
+                                       Text="{Binding CustomLegacyDir}" ToolTip.Tip="{Binding CustomLegacyDir}" />
+                        </StackPanel>
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8" Margin="0 8 0 0">
                             <Button Classes="dialog" Command="{Binding StartCommand}">Start</Button>
                         </StackPanel>

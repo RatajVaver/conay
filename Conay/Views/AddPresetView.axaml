@@ -7,9 +7,9 @@
              xmlns:vm="clr-namespace:Conay.ViewModels"
              x:DataType="vm:AddPresetViewModel">
     <StackPanel Orientation="Vertical" Spacing="12">
-        <Label FontSize="20">New preset</Label>
+        <Label FontSize="20" Content="{Binding Title}" />
 
-        <Grid ColumnDefinitions="140, *" RowDefinitions="Auto, Auto, Auto, Auto">
+        <Grid ColumnDefinitions="140, *" RowDefinitions="Auto, Auto, Auto, Auto, Auto">
             <Label Grid.Row="0" Grid.Column="0" VerticalAlignment="Center">File Name*</Label>
             <TextBox Grid.Row="0" Grid.Column="1" x:Name="FileNameBox"
                      Text="{Binding FileName, Mode=TwoWay}"
@@ -26,6 +26,12 @@
             <Label Grid.Row="3" Grid.Column="0" VerticalAlignment="Center" Margin="0 8 0 0">Password</Label>
             <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding Password, Mode=TwoWay}"
                      PlaceholderText="optional" Margin="0 8 0 0" />
+
+            <Label Grid.Row="4" Grid.Column="0" VerticalAlignment="Center" Margin="0 8 0 0">Game Version</Label>
+            <StackPanel Grid.Row="4" Grid.Column="1" Orientation="Horizontal" Spacing="16" Margin="0 8 0 0" VerticalAlignment="Center">
+                <RadioButton IsChecked="{Binding IsEnhancedSelected, Mode=TwoWay}" GroupName="GameVersion" Content="Enhanced" />
+                <RadioButton IsChecked="{Binding IsLegacySelected, Mode=TwoWay}" GroupName="GameVersion" Content="Legacy" />
+            </StackPanel>
         </Grid>
 
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10">

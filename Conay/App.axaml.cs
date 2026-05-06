@@ -89,6 +89,10 @@ public class App : Application
         _logger = services.GetRequiredService<ILogger<App>>();
 
         LauncherConfig launcherConfig = services.GetRequiredService<LauncherConfig>();
+
+        if (!string.IsNullOrEmpty(launcherConfig.Data.CustomLegacyDir))
+            services.GetRequiredService<Steam>().SetCustomLegacyDir(launcherConfig.Data.CustomLegacyDir);
+
         if (launcherConfig.Data.UseCache)
         {
             if (Directory.Exists(cacheDirectory))

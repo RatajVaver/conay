@@ -225,6 +225,13 @@ public class ModList
         catch (Exception ex) { _logger.LogError(ex, "Failed to save modlist to {Dir}!", installDir); }
     }
 
+    public void LoadFromInstallDir(string installDir)
+    {
+        string modListPath = Path.GetFullPath(Path.Combine(installDir, "ConanSandbox/Mods/modlist.txt"));
+        if (File.Exists(modListPath))
+            LoadModListFromFile(modListPath);
+    }
+
     public List<string> ReloadCurrentModList()
     {
         _modlistParsed = false;

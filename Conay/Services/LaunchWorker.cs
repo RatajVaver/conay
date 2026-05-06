@@ -9,6 +9,7 @@ using Conay.Factories;
 using Conay.Utils;
 using Avalonia.Input;
 using Microsoft.Extensions.Logging;
+using Steamworks;
 
 namespace Conay.Services;
 
@@ -44,6 +45,8 @@ public class LaunchWorker(
             BackupTotCustom();
         }
 
+        launcherConfig.SaveLastLaunchedVersion(state.Version);
+
         List<string> mods = modList.GetCurrentModList();
         List<ulong> steamMods = [];
         List<string> externalMods = [];
@@ -62,6 +65,8 @@ public class LaunchWorker(
             }
         }
 
+        List<string> incompatibleMods = [];
+
         if (steamMods.Count > 0)
         {
             if (launcherConfig.Data.AutomaticallySubscribe)
@@ -69,13 +74,28 @@ public class LaunchWorker(
                 await steam.SubscribeToMods(steamMods.ToArray());
             }
 
-            await steam.CheckModUpdates(steamMods.ToArray());
+            incompatibleMods = await steam.CheckModUpdates(steamMods.ToArray(), state.Version);
         }
 
         if (externalMods.Count > 0)
         {
             WebSync ratajmods = (WebSync)modSourceFactory.Get("ratajmods");
             await ratajmods.CheckModUpdates(externalMods.ToArray());
+        }
+
+        if (incompatibleMods.Count > 0)
+        {
+            string versionName = GameVersionHelper.ToDisplayName(state.Version);
+            string otherVersion = state.Version == GameVersion.Enhanced ? "Legacy" : "Enhanced";
+            string list = string.Join("\n", incompatibleMods.ConvertAll(m => $"• {m}"));
+            bool proceed = await MessageBox.Confirm(
+                $"You are trying to launch the game with mods tagged for the {otherVersion} version of the game." +
+                $"These mods will not work correctly with {versionName}:\n{list}\n\nLaunch anyway?");
+            if (!proceed)
+            {
+                _launching = false;
+                return;
+            }
         }
 
         if (steam.DualInstallMode)
@@ -129,7 +149,8 @@ public class LaunchWorker(
             _ = Clipboard.Get()?.SetDataAsync(clipData);
         }
 
-        for (int i = 20; i > 1; i--)
+        int countdown = OperatingSystem.IsWindows() ? (state.Version == GameVersion.Enhanced ? 10 : 20) : 3;
+        for (int i = countdown; i > 1; i--)
         {
             notifyService.UpdateStatus(this, $"Launching the game (this window will close in {i} seconds)..");
             await Task.Delay(TimeSpan.FromSeconds(1));
@@ -181,11 +202,38 @@ public class LaunchWorker(
         return false;
     }
 
-    private static bool LaunchViaSteamUri(string? args = null)
+    private bool LaunchViaSteamUri(string? args = null)
     {
         string uri = args is not null
             ? $"steam://run/{GameVersionHelper.AppId}//{args}/"
             : $"steam://run/{GameVersionHelper.AppId}/";
+
+        if (OperatingSystem.IsLinux())
+        {
+            string scriptPath = Path.Combine(AppContext.BaseDirectory, "launch.sh");
+            File.WriteAllText(scriptPath,
+                $"#!/bin/bash\nsleep 5\n" +
+                $"if command -v steam >/dev/null 2>&1; then nohup steam \"{uri}\" >/dev/null 2>&1 &\n" +
+                $"else xdg-open \"{uri}\"\nfi\nrm -f \"$0\"\n");
+            try
+            {
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = "bash",
+                    Arguments = scriptPath,
+                    UseShellExecute = false,
+                    CreateNoWindow = true
+                });
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Failed to launch Steam URI via script!");
+                Protocol.Open(uri);
+            }
+
+            return true;
+        }
+
         Protocol.Open(uri);
         return true;
     }

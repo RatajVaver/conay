@@ -43,6 +43,13 @@ public class Steam : IModSource
     public bool DualInstallMode { get; private set; }
     private string EnhancedInstallDir { get; set; } = string.Empty;
     private string LegacyInstallDir { get; set; } = string.Empty;
+    public string CustomLegacyDir { get; private set; } = string.Empty;
+
+    public void SetCustomLegacyDir(string? path)
+    {
+        CustomLegacyDir = path ?? string.Empty;
+        DetectDualInstall();
+    }
 
     public string GetInstallDirForVersion(GameVersion version) =>
         version == GameVersion.Enhanced
@@ -231,10 +238,13 @@ public class Steam : IModSource
         return needUpdate;
     }
 
-    public async Task CheckModUpdates(ulong[] modIds)
+    public async Task<List<string>> CheckModUpdates(ulong[] modIds, GameVersion version = GameVersion.Enhanced)
     {
         _notifyService.UpdateStatus(this, "Checking mod updates..");
         await WaitForSteam();
+
+        string incompatibleTag = version == GameVersion.Enhanced ? "legacy" : "enhanced";
+        List<string> incompatible = [];
 
         List<ulong>? mods = await GetModsInNeedOfUpdate(modIds);
         if (mods == null)
@@ -246,8 +256,10 @@ public class Steam : IModSource
 
                 _notifyService.UpdateStatus(this, $"Checking mod updates ({mod.Value.Title})..");
 
-                DateTime localLastUpdated = ModList.GetModFileLastUpdate(_workshopPath, mod.Value.Id.Value);
+                if (mod.Value.Tags?.Any(t => t.Equals(incompatibleTag, StringComparison.OrdinalIgnoreCase)) == true)
+                    incompatible.Add(mod.Value.Title);
 
+                DateTime localLastUpdated = ModList.GetModFileLastUpdate(_workshopPath, mod.Value.Id.Value);
                 if (!mod.Value.NeedsUpdate && mod.Value.Updated < localLastUpdated) continue;
 
                 _logger.LogDebug("Needs update: {Mod}", mod.Value.Title);
@@ -260,6 +272,9 @@ public class Steam : IModSource
             {
                 Item? mod = await Item.GetAsync(modId, 180);
                 if (mod == null) continue;
+
+                if (mod.Value.Tags?.Any(t => t.Equals(incompatibleTag, StringComparison.OrdinalIgnoreCase)) == true)
+                    incompatible.Add(mod.Value.Title);
 
                 _logger.LogDebug("Needs update: {Mod}", mod.Value.Title);
                 QueueModUpdate(mod.Value);
@@ -281,6 +296,8 @@ public class Steam : IModSource
         }
 
         _notifyService.UpdateStatus(this, "Steam mods are up to date!");
+
+        return incompatible;
     }
 
     private void QueueModUpdate(Item mod)
@@ -428,7 +445,11 @@ public class Steam : IModSource
         string lDir = Path.Combine(common, "Conan Exiles Legacy");
 
         EnhancedInstallDir = File.Exists(Path.Combine(eDir, exeRel)) ? eDir : string.Empty;
-        LegacyInstallDir = File.Exists(Path.Combine(lDir, exeRel)) ? lDir : string.Empty;
+
+        if (!string.IsNullOrEmpty(CustomLegacyDir) && Directory.Exists(CustomLegacyDir))
+            LegacyInstallDir = CustomLegacyDir;
+        else
+            LegacyInstallDir = File.Exists(Path.Combine(lDir, exeRel)) ? lDir : string.Empty;
 
         if (GameVersionHelper.Current == GameVersion.Enhanced && string.IsNullOrEmpty(EnhancedInstallDir))
             EnhancedInstallDir = AppInstallDir;
@@ -444,6 +465,27 @@ public class Steam : IModSource
     private void LaunchSteam()
     {
         _notifyService.UpdateStatus(this, "Launching Steam..");
+
+        if (OperatingSystem.IsLinux())
+        {
+            try
+            {
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = "bash",
+                    Arguments = "-c \"nohup steam -silent >/dev/null 2>&1 &\"",
+                    UseShellExecute = false,
+                    CreateNoWindow = true
+                });
+                return;
+            }
+            catch
+            {
+                Protocol.Open("steam://");
+                return;
+            }
+        }
+
         Protocol.Open("steam://-/\" -silent");
     }
 

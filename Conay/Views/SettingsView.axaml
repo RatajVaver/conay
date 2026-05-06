@@ -2,12 +2,12 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             mc:Ignorable="d" d:DesignWidth="550" d:DesignHeight="550"
+             mc:Ignorable="d" d:DesignWidth="850" d:DesignHeight="550"
              x:Class="Conay.Views.SettingsView"
              xmlns:vm="clr-namespace:Conay.ViewModels"
              x:DataType="vm:SettingsViewModel">
     <StackPanel Orientation="Vertical">
-        <Grid ColumnDefinitions="Auto, Auto" Margin="0 0 0 50">
+        <Grid ColumnDefinitions="Auto, Auto" Margin="0 0 0 30">
             <StackPanel Grid.Column="0" Margin="0 0 40 0">
                 <Label Content="Launcher Settings"></Label>
                 <CheckBox IsChecked="{Binding LaunchGame, Mode=TwoWay}"
@@ -85,7 +85,11 @@
                           Content="Back up TotCustom saves on launch"
                           ToolTip.Tip="Before launching the game, Conay will zip the TotCustom save folder and store up to 3 rotating backups in the Conay/backups folder.">
                 </CheckBox>
-                <Label Content="Installation" Margin="0 20 0 0"></Label>
+            </StackPanel>
+        </Grid>
+        <StackPanel Margin="0 0 0 30">
+            <Label Content="Installation"></Label>
+            <StackPanel Orientation="Horizontal" Spacing="20">
                 <Button Command="{Binding OpenDualInstallWizardCommand}"
                         ToolTip.Tip="Set up both Enhanced and Legacy versions side by side so Conay can launch the correct one automatically when selecting a server.">
                     <StackPanel Orientation="Horizontal">
@@ -93,12 +97,28 @@
                         <Label Classes="text" Content="Dual Install Setup"></Label>
                     </StackPanel>
                 </Button>
-                <TextBlock IsVisible="{Binding DualInstallActive}" Foreground="#6db86d" FontSize="12" Margin="2 4 0 0"
-                           Text="Dual install is active" />
-                <TextBlock IsVisible="{Binding DualInstallNotActive}" Foreground="#666" FontSize="12" Margin="2 4 0 0"
-                           Text="Not configured" />
+                <StackPanel VerticalAlignment="Center" Spacing="8">
+                    <TextBlock FontSize="11" Foreground="#666"
+                               ToolTip.Tip="You might want to set a path to Legacy version of the game manually, if you want it installed on a different drive than Enhanced edition.">
+                        Manual Legacy path:
+                    </TextBlock>
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <TextBlock IsVisible="{Binding HasCustomLegacyDir}" VerticalAlignment="Center"
+                                   FontSize="11" Foreground="#bbb" TextTrimming="CharacterEllipsis" MaxWidth="120"
+                                   Text="{Binding CustomLegacyDir}" ToolTip.Tip="{Binding CustomLegacyDir}" />
+                        <Button Command="{Binding BrowseLegacyDirCommand}" Padding="8 3" FontSize="11">Browse</Button>
+                        <Button Command="{Binding ClearLegacyDirCommand}" IsVisible="{Binding HasCustomLegacyDir}"
+                                Padding="8 3" FontSize="11">
+                            Clear
+                        </Button>
+                    </StackPanel>
+                </StackPanel>
             </StackPanel>
-        </Grid>
+            <TextBlock IsVisible="{Binding DualInstallActive}" Foreground="#6db86d" FontSize="12" Margin="2 4 0 0"
+                       Text="Dual install is active" />
+            <TextBlock IsVisible="{Binding DualInstallNotActive}" Foreground="#666" FontSize="12" Margin="2 4 0 0"
+                       Text="Not configured" />
+        </StackPanel>
         <TextBlock Foreground="#999" FontSize="13" LineHeight="18" TextWrapping="Wrap">
             Conay is free and open source software maintained by a solo developer.
             Monthly donations help me cover costs associated with running ratajmods.net and adjacent projects.

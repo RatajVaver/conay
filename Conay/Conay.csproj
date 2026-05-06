@@ -16,7 +16,7 @@
         <RepositoryUrl>https://github.com/RatajVaver/conay</RepositoryUrl>
         <AssemblyVersion>0.2.5</AssemblyVersion>
         <FileVersion>0.2.5</FileVersion>
-        <Version>0.2.5</Version>
+        <Version>0.2.6-pre</Version>
         <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
     </PropertyGroup>
 
@@ -48,9 +48,14 @@
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </Content>
     </ItemGroup>
-    <ItemGroup>
+    <ItemGroup Condition="!$(RuntimeIdentifier.StartsWith('linux'))">
         <Reference Include="Facepunch.Steamworks.Win64">
             <HintPath>lib\Facepunch.Steamworks.Win64.dll</HintPath>
+        </Reference>
+    </ItemGroup>
+    <ItemGroup Condition="$(RuntimeIdentifier.StartsWith('linux'))">
+        <Reference Include="Facepunch.Steamworks.Posix">
+            <HintPath>lib/Facepunch.Steamworks.Posix.dll</HintPath>
         </Reference>
     </ItemGroup>
 

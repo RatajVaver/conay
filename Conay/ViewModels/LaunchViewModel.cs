@@ -21,6 +21,7 @@ public partial class LaunchViewModel : PageViewModel
     private readonly LaunchState _launchState;
     private readonly LaunchWorker _launchWorker;
     private readonly ModItemFactory _modItemFactory;
+    private readonly LauncherConfig _launcherConfig;
 
     [ObservableProperty]
     private string _title = string.Empty;
@@ -38,14 +39,27 @@ public partial class LaunchViewModel : PageViewModel
 
     public ObservableCollection<ModItemViewModel> Mods { get; } = [];
 
+    [ObservableProperty]
+    private bool _showVersionSelector;
+
     public LaunchViewModel(Steam steam, ModList modList, LaunchState launchState, LaunchWorker launchWorker,
-        ModItemFactory modItemFactory)
+        ModItemFactory modItemFactory, LauncherConfig launcherConfig)
     {
         _steam = steam;
         _modList = modList;
         _launchState = launchState;
         _launchWorker = launchWorker;
         _modItemFactory = modItemFactory;
+        _launcherConfig = launcherConfig;
+
+        if (steam.DualInstallMode && string.IsNullOrEmpty(launchState.Name))
+        {
+            GameVersion? lastVersion = launcherConfig.Data.LastLaunchedVersion;
+            if (lastVersion.HasValue)
+                ApplyVersion(lastVersion.Value);
+            else
+                ShowVersionSelector = true;
+        }
 
         _ = LoadModlist();
         LoadLaunchData();
@@ -70,6 +84,34 @@ public partial class LaunchViewModel : PageViewModel
     {
         Title = !string.IsNullOrEmpty(_launchState.Name) ? _launchState.Name : "Last played modlist";
         Subtitle = _launchState.IsSaveLaunch ? "Loaded game save" : _launchState.Ip;
+    }
+
+    private void ApplyVersion(GameVersion version)
+    {
+        _launchState.Version = version;
+        _modList.LoadFromInstallDir(_steam.GetInstallDirForVersion(version));
+    }
+
+    [RelayCommand]
+    private void SelectEnhanced()
+    {
+        ApplyVersion(GameVersion.Enhanced);
+        ShowVersionSelector = false;
+        Mods.Clear();
+        ModsLoaded = "Currently loaded mods:";
+        _ = LoadModlist();
+        LoadLaunchData();
+    }
+
+    [RelayCommand]
+    private void SelectLegacy()
+    {
+        ApplyVersion(GameVersion.Legacy);
+        ShowVersionSelector = false;
+        Mods.Clear();
+        ModsLoaded = "Currently loaded mods:";
+        _ = LoadModlist();
+        LoadLaunchData();
     }
 
     [RelayCommand]

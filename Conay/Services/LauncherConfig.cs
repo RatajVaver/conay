@@ -61,6 +61,12 @@ public class LauncherConfig
         _ = ScheduleConfigSave();
     }
 
+    public void SaveLastLaunchedVersion(GameVersion version)
+    {
+        Data.LastLaunchedVersion = version;
+        SaveConfig();
+    }
+
     public void SaveIntoHistory(string fileName)
     {
         if (!Data.KeepHistory) return;

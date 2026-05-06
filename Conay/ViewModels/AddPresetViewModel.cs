@@ -38,6 +38,25 @@ public partial class AddPresetViewModel : PageViewModel
     [ObservableProperty]
     private string _modsLabel = string.Empty;
 
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsEnhancedSelected), nameof(IsLegacySelected))]
+    private GameVersion _selectedVersion = GameVersion.Enhanced;
+
+    public bool IsEnhancedSelected
+    {
+        get => SelectedVersion == GameVersion.Enhanced;
+        set { if (value) SelectedVersion = GameVersion.Enhanced; }
+    }
+
+    public bool IsLegacySelected
+    {
+        get => SelectedVersion == GameVersion.Legacy;
+        set { if (value) SelectedVersion = GameVersion.Legacy; }
+    }
+
+    [ObservableProperty]
+    private string _title = "New preset";
+
     public ObservableCollection<ModItemViewModel> Mods { get; } = [];
 
     public AddPresetViewModel(LocalPresets localPresets, ServerList serverList, ServerPresetFactory serverPresetFactory,
@@ -69,6 +88,8 @@ public partial class AddPresetViewModel : PageViewModel
         Name = preset.Name;
         Ip = preset.Ip;
         Password = preset.Password ?? string.Empty;
+        SelectedVersion = preset.GameVersion;
+        Title = "Edit preset";
 
         Mods.Clear();
         foreach (string mod in preset.Mods)
@@ -86,6 +107,7 @@ public partial class AddPresetViewModel : PageViewModel
             Name = string.IsNullOrWhiteSpace(Name) ? fileName : Name.Trim(),
             Ip = Ip.Trim(),
             Password = string.IsNullOrWhiteSpace(Password) ? null : Password.Trim(),
+            Version = SelectedVersion == GameVersion.Enhanced ? "enhanced" : "legacy",
             Mods = [.. Mods.Select(m => m.ModPath)]
         };
         _localPresets.SavePreset(fileName, data);

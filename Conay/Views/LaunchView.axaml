@@ -8,12 +8,19 @@
              x:DataType="vm:LaunchViewModel">
     <Grid RowDefinitions="Auto, *">
         <Grid Grid.Row="0" ColumnDefinitions="*, Auto">
-            <StackPanel Grid.Column="0" Orientation="Vertical">
+            <StackPanel Grid.Column="0" Orientation="Vertical" IsVisible="{Binding !ShowVersionSelector}">
                 <Label FontSize="15" Content="{Binding Title}"></Label>
                 <Label Foreground="#ccc" FontSize="12" Content="{Binding Subtitle}"></Label>
             </StackPanel>
+            <StackPanel Grid.Column="0" Orientation="Vertical" IsVisible="{Binding ShowVersionSelector}" Spacing="8" VerticalAlignment="Center">
+                <Label FontSize="13" Content="Select version to launch:"></Label>
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <Button Classes="dialog" Command="{Binding SelectEnhancedCommand}">Enhanced</Button>
+                    <Button Classes="dialog" Command="{Binding SelectLegacyCommand}">Legacy</Button>
+                </StackPanel>
+            </StackPanel>
             <Button Grid.Column="1" Classes="play" Command="{Binding LaunchCommand}"
-                    IsEnabled="{Binding !Launching}">
+                    IsEnabled="{Binding !Launching}" IsVisible="{Binding !ShowVersionSelector}">
                 <Label Content="&#xe3d0;"></Label>
             </Button>
         </Grid>

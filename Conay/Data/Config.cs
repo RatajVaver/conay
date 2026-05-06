@@ -61,4 +61,10 @@ public class Config
 
     [JsonPropertyName("altBorders")]
     public bool AlternativeBorders { get; set; }
+
+    [JsonPropertyName("customLegacyDir")]
+    public string? CustomLegacyDir { get; set; }
+
+    [JsonPropertyName("lastVersion")]
+    public GameVersion? LastLaunchedVersion { get; set; }
 }

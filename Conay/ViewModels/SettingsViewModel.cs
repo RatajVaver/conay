@@ -1,4 +1,9 @@
 ﻿using System;
+using System.Threading.Tasks;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Platform.Storage;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
@@ -64,6 +69,12 @@ public partial class SettingsViewModel : PageViewModel
     [ObservableProperty]
     private bool _alternativeBorders;
 
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasCustomLegacyDir))]
+    private string _customLegacyDir = string.Empty;
+
+    public bool HasCustomLegacyDir => !string.IsNullOrEmpty(CustomLegacyDir);
+
     private readonly string[] _tabs = ["launch", "favorite", "servers", "presets", "saves"];
 
     public SettingsViewModel(LauncherConfig config, GameConfig gameConfig, Steam steam)
@@ -87,6 +98,7 @@ public partial class SettingsViewModel : PageViewModel
         QueryServers = config.Data.QueryServers;
         BackupTotCustom = config.Data.BackupTotCustom;
         AlternativeBorders = config.Data.AlternativeBorders;
+        CustomLegacyDir = config.Data.CustomLegacyDir ?? string.Empty;
 
         int tabIndex = Array.IndexOf(_tabs, config.Data.DefaultTab);
         if (tabIndex == -1) tabIndex = 2;
@@ -229,7 +241,41 @@ public partial class SettingsViewModel : PageViewModel
     public bool DualInstallNotActive => !_steam.DualInstallMode;
 
     [RelayCommand]
-    private async System.Threading.Tasks.Task OpenDualInstallWizard()
+    private async Task BrowseLegacyDir()
+    {
+        string? path = await BrowseForFolder();
+        if (path == null) return;
+        CustomLegacyDir = path;
+        _config.Data.CustomLegacyDir = path;
+        _ = _config.ScheduleConfigSave();
+        _steam.SetCustomLegacyDir(path);
+        OnPropertyChanged(nameof(DualInstallActive));
+        OnPropertyChanged(nameof(DualInstallNotActive));
+    }
+
+    [RelayCommand]
+    private void ClearLegacyDir()
+    {
+        CustomLegacyDir = string.Empty;
+        _config.Data.CustomLegacyDir = null;
+        _ = _config.ScheduleConfigSave();
+        _steam.SetCustomLegacyDir(null);
+        OnPropertyChanged(nameof(DualInstallActive));
+        OnPropertyChanged(nameof(DualInstallNotActive));
+    }
+
+    private static async Task<string?> BrowseForFolder()
+    {
+        Window? window = (Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow;
+        if (window == null) return null;
+        TopLevel? topLevel = TopLevel.GetTopLevel(window);
+        if (topLevel == null) return null;
+        var folders = await topLevel.StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions { AllowMultiple = false });
+        return folders.Count > 0 ? folders[0].TryGetLocalPath() : null;
+    }
+
+    [RelayCommand]
+    private async Task OpenDualInstallWizard()
     {
         if (!_steam.DualInstallMode && string.IsNullOrEmpty(_steam.AppInstallDir))
         {
