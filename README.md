@@ -26,13 +26,19 @@ Follow the instructions in the installation wizard, or unpack the files manually
 
 Need assistance with installation? Join my [Discord](https://discord.gg/3WJNxCTn8m).
 
-If you want to run the native Linux build, make sure to put `conay.desktop` in `$XDG_DATA_HOME/applications` and `conay.png` in `$XDG_DATA_HOME/icons`.
-
 ## Updating
 
 To update to a new version of Conay, simply install it again, files will be overwritten.
 
 Since version 0.1.0 there is also an updater included to download the new installer for you.
+
+## Linux
+
+Conay supports Linux with a native build, or you can also use the Windows build with Valve's Proton.
+
+To create shortcut for the native build, move `conay.desktop` into `$XDG_DATA_HOME/applications` and `conay.png` into `$XDG_DATA_HOME/icons`.
+
+If you want to use Proton, make sure to force it to use the same version of Proton as the game in Steam properties.
 
 ## Usage
 
@@ -43,10 +49,6 @@ Having a desktop shortcut is strongly recommended for ease of use.
 If your server is not on the list, you can either ask the server staff to add it to Conay for everyone, or you can connect to it as usual before pressing `Add preset` on the `Presets` tab in Conay, which will save it locally for you only.
 
 If you are using older version of Conay, or want to dive into advanced usage with CLI, please follow the instructions included with older installations.
-
-If you are using **Linux**, Conay works through Valve's Proton (make sure to force it to use the same version as the game).
-
-There is also a native version. Please refer to the installation instructions above for more details.
 
 ## Bug reports
 

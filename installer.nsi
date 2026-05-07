@@ -1,7 +1,7 @@
 !define APP_NAME "Conay"
 !define COMP_NAME "RatajVaver"
 !define WEB_SITE "https://github.com/RatajVaver/conay"
-!define VERSION "0.2.5.0"
+!define VERSION "0.2.6.0"
 !define COPYRIGHT "RatajVaver"
 !define DESCRIPTION "Conan Exiles Mod Launcher"
 !define INSTALLER_NAME "dist\ConayInstaller.exe"
@@ -9,7 +9,7 @@
 !define INSTALL_TYPE "SetShellVarContext current"
 !define MUI_ICON "assets\icon.ico"
 !define MUI_WELCOMEFINISHPAGE_BITMAP "assets\header.bmp"
-!define MUI_WELCOMEPAGE_TEXT "Conay is an open-source project made for the lovely Conan Exiles community, this launcher will always be free. Enjoy!\n\nIf you need assistance, feel free to join my Discord at: discord.gg/3WJNxCTn8m"
+!define MUI_WELCOMEPAGE_TEXT "Conay is an open-source project made for the lovely Conan Exiles community, this launcher will always be free. Enjoy!\n\nIf you need assistance, feel free to join my Discord at:\ndiscord.gg/3WJNxCTn8m\n\nYou can find more about Conay and my other projects at:\nratajmods.net"
 
 VIProductVersion "${VERSION}"
 VIAddVersionKey "ProductName" "${APP_NAME}"

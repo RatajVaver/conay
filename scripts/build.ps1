@@ -15,6 +15,8 @@ Compress-Archive -Path .\Conay -DestinationPath .\Conay.zip -Force
 # Linux package
 New-Item -ItemType Directory -Force -Path ConayLinux | Out-Null
 Copy-Item ..\Conay\bin\Release\net9.0\linux-x64\publish\* .\ConayLinux\
+Copy-Item ..\assets\conay.desktop .\ConayLinux\conay.desktop
+Copy-Item ..\assets\icon.png .\ConayLinux\conay.png
 tar -czf conay-linux.tar.gz -C ConayLinux .
 
 # Installer
