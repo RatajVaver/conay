@@ -71,7 +71,8 @@ public class SelfUpdater(ILogger<SelfUpdater> logger, HttpService http, NotifySe
 
         string newestVersion = releaseData.Version;
         bool isPreRelease = currentVersion.Contains('-');
-        return newestVersion != currentVersion && (IsVersionNewer(currentVersion, newestVersion) || (isPreRelease && !IsVersionNewer(newestVersion, currentVersion)));
+        return newestVersion != currentVersion && (IsVersionNewer(currentVersion, newestVersion) ||
+                                                   (isPreRelease && !IsVersionNewer(newestVersion, currentVersion)));
     }
 
     private void ReportProgress(float progress)
@@ -134,8 +135,8 @@ public class SelfUpdater(ILogger<SelfUpdater> logger, HttpService http, NotifySe
         notifyService.UpdateStatus(this, "Downloading Conay update..");
 
         string appDirectory = AppContext.BaseDirectory.TrimEnd(Path.DirectorySeparatorChar);
-        string archivePath = Path.Combine(Path.GetTempPath(), "conay-linux.tar.gz");
-        string scriptPath = Path.Combine(Path.GetTempPath(), "conay-update.sh");
+        string archivePath = Path.Combine(appDirectory, "conay-linux.tar.gz");
+        string scriptPath = Path.Combine(appDirectory, "conay-update.sh");
 
         bool success = await http.Download(LinuxArchiveDownloadUrl, archivePath, new Progress<float>(ReportProgress));
         if (!success)
@@ -145,14 +146,9 @@ public class SelfUpdater(ILogger<SelfUpdater> logger, HttpService http, NotifySe
             return;
         }
 
-        await File.WriteAllTextAsync(scriptPath,
-            $"""
-            #!/bin/bash
-            sleep 5
-            tar -xzf "{archivePath}" -C "{appDirectory}"
-            rm "{archivePath}"
-            rm -- "$0"
-            """);
+        string scriptContent =
+            $"#!/bin/bash\nsleep 5\ntar -xzf \"{archivePath}\" -C \"{appDirectory}\"\nrm \"{archivePath}\"\nrm -- \"$0\"\n";
+        await File.WriteAllTextAsync(scriptPath, scriptContent);
 
         File.SetUnixFileMode(scriptPath,
             UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute |
