@@ -16,6 +16,7 @@ public class ModList
 
     private string? _modListPath;
     private string? _serverModListPath;
+    private string? _modRestartDataPath;
     public string? WorkshopPath;
     public string? LocalModsPath;
     private readonly List<string> _currentMods = [];
@@ -37,6 +38,7 @@ public class ModList
 
         _modListPath = Path.GetFullPath(Path.Combine(_steam.AppInstallDir, "ConanSandbox/Mods/modlist.txt"));
         _serverModListPath = Path.GetFullPath(Path.Combine(_steam.AppInstallDir, "ConanSandbox/servermodlist.txt"));
+        _modRestartDataPath = Path.GetFullPath(Path.Combine(_steam.AppInstallDir, "ConanSandbox/Saved/ModRestartData.json"));
         WorkshopPath = Path.GetFullPath(Path.Combine(_steam.AppInstallDir, "../../workshop/content/440900"));
         LocalModsPath = Path.GetFullPath(Path.Combine(_steam.AppInstallDir, "ConanSandbox/Mods"));
     }
@@ -171,6 +173,18 @@ public class ModList
             return;
         }
 
+        if (_serverModListPath != null && File.Exists(_serverModListPath))
+        {
+            try { File.Delete(_serverModListPath); }
+            catch (Exception ex) { _logger.LogError(ex, "Failed to remove servermodlist.txt!"); }
+        }
+
+        if (_modRestartDataPath != null && File.Exists(_modRestartDataPath))
+        {
+            try { File.Delete(_modRestartDataPath); }
+            catch (Exception ex) { _logger.LogError(ex, "Failed to remove ModRestartData.json!"); }
+        }
+
         _logger.LogDebug("Modlist saved");
     }
 
@@ -222,7 +236,21 @@ public class ModList
         }
 
         try { File.WriteAllLines(modListPath, mods, Encoding.UTF8); }
-        catch (Exception ex) { _logger.LogError(ex, "Failed to save modlist to {Dir}!", installDir); }
+        catch (Exception ex) { _logger.LogError(ex, "Failed to save modlist to {Dir}!", installDir); return; }
+
+        string serverModListPath = Path.GetFullPath(Path.Combine(installDir, "ConanSandbox/servermodlist.txt"));
+        if (File.Exists(serverModListPath))
+        {
+            try { File.Delete(serverModListPath); }
+            catch (Exception ex) { _logger.LogError(ex, "Failed to remove servermodlist.txt for {Dir}!", installDir); }
+        }
+
+        string modRestartDataPath = Path.GetFullPath(Path.Combine(installDir, "ConanSandbox/Saved/ModRestartData.json"));
+        if (File.Exists(modRestartDataPath))
+        {
+            try { File.Delete(modRestartDataPath); }
+            catch (Exception ex) { _logger.LogError(ex, "Failed to remove ModRestartData.json for {Dir}!", installDir); }
+        }
     }
 
     public void LoadFromInstallDir(string installDir)
