@@ -201,7 +201,7 @@ public partial class ServerPresetViewModel : ViewModelBase, ILazyLoad
 
     public async Task GetServerOnlineStatus()
     {
-        if (_queryPort == null) return;
+        if (_queryPort == null || RefreshInProgress) return;
 
         RefreshInProgress = true;
 

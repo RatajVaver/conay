@@ -25,6 +25,8 @@ public partial class AddPresetViewModel : PageViewModel
     private readonly ModList _modList;
     private readonly Router _router;
 
+    private string _originalFileName = string.Empty;
+
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
     private string _fileName = string.Empty;
@@ -87,13 +89,14 @@ public partial class AddPresetViewModel : PageViewModel
     public void LoadCurrentModlist()
     {
         Mods.Clear();
-        foreach (string modPath in _modList.ReloadCurrentModList())
+        foreach (string modPath in _modList.ReloadCurrentModListForVersion(SelectedVersion))
             Mods.Add(CreateMod(modPath));
     }
 
     public void Prefill(ServerData preset)
     {
-        FileName = preset.FileName ?? string.Empty;
+        _originalFileName = preset.FileName ?? string.Empty;
+        FileName = _originalFileName;
         Name = preset.Name;
         Ip = preset.Ip;
         Password = preset.Password ?? string.Empty;
@@ -173,7 +176,15 @@ public partial class AddPresetViewModel : PageViewModel
             Version = SelectedVersion == GameVersion.Enhanced ? "enhanced" : "legacy",
             Mods = [.. Mods.Select(m => m.ModPath)]
         };
+
         _localPresets.SavePreset(fileName, data);
+
+        if (!string.IsNullOrEmpty(_originalFileName) && _originalFileName != fileName)
+        {
+            _localPresets.DeletePreset(_originalFileName);
+            _serverPresetFactory.Invalidate(_originalFileName);
+        }
+
         _serverPresetFactory.Invalidate(fileName);
         await _serverList.RefreshLocalServers();
         _router.ShowPresets();

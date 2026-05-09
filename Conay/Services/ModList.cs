@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Conay.Data;
 using Conay.Utils;
 using Microsoft.Extensions.Logging;
 
@@ -175,14 +176,26 @@ public class ModList
 
         if (_serverModListPath != null && File.Exists(_serverModListPath))
         {
-            try { File.Delete(_serverModListPath); }
-            catch (Exception ex) { _logger.LogError(ex, "Failed to remove servermodlist.txt!"); }
+            try
+            {
+                File.Delete(_serverModListPath);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to remove servermodlist.txt!");
+            }
         }
 
         if (_modRestartDataPath != null && File.Exists(_modRestartDataPath))
         {
-            try { File.Delete(_modRestartDataPath); }
-            catch (Exception ex) { _logger.LogError(ex, "Failed to remove ModRestartData.json!"); }
+            try
+            {
+                File.Delete(_modRestartDataPath);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to remove ModRestartData.json!");
+            }
         }
 
         _logger.LogDebug("Modlist saved");
@@ -231,25 +244,52 @@ public class ModList
 
         if (!Directory.Exists(modsDirectory))
         {
-            try { Directory.CreateDirectory(modsDirectory); }
-            catch (Exception ex) { _logger.LogError(ex, "Failed to create Mods directory for {Dir}!", installDir); return; }
+            try
+            {
+                Directory.CreateDirectory(modsDirectory);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to create Mods directory for {Dir}!", installDir);
+                return;
+            }
         }
 
-        try { File.WriteAllLines(modListPath, mods, Encoding.UTF8); }
-        catch (Exception ex) { _logger.LogError(ex, "Failed to save modlist to {Dir}!", installDir); return; }
+        try
+        {
+            File.WriteAllLines(modListPath, mods, Encoding.UTF8);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to save modlist to {Dir}!", installDir);
+            return;
+        }
 
         string serverModListPath = Path.GetFullPath(Path.Combine(installDir, "ConanSandbox/servermodlist.txt"));
         if (File.Exists(serverModListPath))
         {
-            try { File.Delete(serverModListPath); }
-            catch (Exception ex) { _logger.LogError(ex, "Failed to remove servermodlist.txt for {Dir}!", installDir); }
+            try
+            {
+                File.Delete(serverModListPath);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to remove servermodlist.txt for {Dir}!", installDir);
+            }
         }
 
-        string modRestartDataPath = Path.GetFullPath(Path.Combine(installDir, "ConanSandbox/Saved/ModRestartData.json"));
+        string modRestartDataPath =
+            Path.GetFullPath(Path.Combine(installDir, "ConanSandbox/Saved/ModRestartData.json"));
         if (File.Exists(modRestartDataPath))
         {
-            try { File.Delete(modRestartDataPath); }
-            catch (Exception ex) { _logger.LogError(ex, "Failed to remove ModRestartData.json for {Dir}!", installDir); }
+            try
+            {
+                File.Delete(modRestartDataPath);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to remove ModRestartData.json for {Dir}!", installDir);
+            }
         }
     }
 
@@ -264,6 +304,14 @@ public class ModList
     {
         _modlistParsed = false;
         ParseModList();
+        return _currentMods;
+    }
+
+    public List<string> ReloadCurrentModListForVersion(GameVersion version)
+    {
+        if (!_steam.DualInstallMode) return ReloadCurrentModList();
+        string installDir = _steam.GetInstallDirForVersion(version);
+        LoadFromInstallDir(installDir);
         return _currentMods;
     }
 }

@@ -9,7 +9,6 @@ using Conay.Factories;
 using Conay.Utils;
 using Avalonia.Input;
 using Microsoft.Extensions.Logging;
-using Steamworks;
 
 namespace Conay.Services;
 
@@ -40,83 +39,93 @@ public class LaunchWorker(
 
     private async Task LaunchSequence()
     {
-        if (launcherConfig.Data.BackupTotCustom)
+        try
         {
-            BackupTotCustom();
-        }
-
-        launcherConfig.SaveLastLaunchedVersion(state.Version);
-
-        List<string> mods = modList.GetCurrentModList();
-        List<ulong> steamMods = [];
-        List<string> externalMods = [];
-
-        foreach (string mod in mods)
-        {
-            string[] parts = mod.Split('/');
-            string modIdOrFolder = parts[0];
-            if (ulong.TryParse(modIdOrFolder, out ulong modId))
+            if (launcherConfig.Data.BackupTotCustom)
             {
-                steamMods.Add(modId);
-            }
-            else if (modIdOrFolder == "@ratajmods")
-            {
-                externalMods.Add(Path.GetFileNameWithoutExtension(mod));
-            }
-        }
-
-        List<string> incompatibleMods = [];
-
-        if (steamMods.Count > 0)
-        {
-            if (launcherConfig.Data.AutomaticallySubscribe)
-            {
-                await steam.SubscribeToMods(steamMods.ToArray());
+                BackupTotCustom();
             }
 
-            incompatibleMods = await steam.CheckModUpdates(steamMods.ToArray(), state.Version);
-        }
+            launcherConfig.SaveLastLaunchedVersion(state.Version);
 
-        if (externalMods.Count > 0)
-        {
-            WebSync ratajmods = (WebSync)modSourceFactory.Get("ratajmods");
-            await ratajmods.CheckModUpdates(externalMods.ToArray());
-        }
+            List<string> mods = modList.GetCurrentModList();
+            List<ulong> steamMods = [];
+            List<string> externalMods = [];
 
-        if (incompatibleMods.Count > 0)
-        {
-            string versionName = GameVersionHelper.ToDisplayName(state.Version);
-            string otherVersion = state.Version == GameVersion.Enhanced ? "Legacy" : "Enhanced";
-            string list = string.Join("\n", incompatibleMods.ConvertAll(m => $"• {m}"));
-            bool proceed = await MessageBox.Confirm(
-                $"You are trying to launch the game with mods tagged for the {otherVersion} version of the game." +
-                $"These mods will not work correctly with {versionName}:\n{list}\n\nLaunch anyway?");
-            if (!proceed)
+            foreach (string mod in mods)
             {
-                _launching = false;
-                return;
-            }
-        }
-
-        if (steam.DualInstallMode)
-            modList.SaveModListToInstallDir(steam.GetInstallDirForVersion(state.Version));
-
-        if (launcherConfig.Data.LaunchGame)
-        {
-            if (await RunGame())
-                Environment.Exit(0);
-        }
-        else
-        {
-            notifyService.UpdateStatus(this, "All mods are updated.");
-
-            if (launcherConfig.Data.Clipboard && !string.IsNullOrEmpty(state.Ip))
-            {
-                DataTransfer clipData = new();
-                clipData.Add(DataTransferItem.CreateText(state.Ip));
-                _ = Clipboard.Get()?.SetDataAsync(clipData);
+                string[] parts = mod.Split('/');
+                string modIdOrFolder = parts[0];
+                if (ulong.TryParse(modIdOrFolder, out ulong modId))
+                {
+                    steamMods.Add(modId);
+                }
+                else if (modIdOrFolder == "@ratajmods")
+                {
+                    externalMods.Add(Path.GetFileNameWithoutExtension(mod));
+                }
             }
 
+            List<string> incompatibleMods = [];
+
+            if (steamMods.Count > 0)
+            {
+                if (launcherConfig.Data.AutomaticallySubscribe)
+                {
+                    await steam.SubscribeToMods(steamMods.ToArray());
+                }
+
+                incompatibleMods = await steam.CheckModUpdates(steamMods.ToArray(), state.Version);
+            }
+
+            if (externalMods.Count > 0)
+            {
+                WebSync ratajmods = (WebSync)modSourceFactory.Get("ratajmods");
+                await ratajmods.CheckModUpdates(externalMods.ToArray());
+            }
+
+            if (incompatibleMods.Count > 0)
+            {
+                string versionName = GameVersionHelper.ToDisplayName(state.Version);
+                string otherVersion = state.Version == GameVersion.Enhanced ? "Legacy" : "Enhanced";
+                string list = string.Join("\n", incompatibleMods.ConvertAll(m => $"• {m}"));
+                bool proceed = await MessageBox.Confirm(
+                    $"You are trying to launch the game with mods tagged for the {otherVersion} version of the game." +
+                    $"These mods will not work correctly with {versionName}:\n{list}\n\nLaunch anyway?");
+                if (!proceed)
+                {
+                    _launching = false;
+                    return;
+                }
+            }
+
+            if (steam.DualInstallMode)
+                modList.SaveModListToInstallDir(steam.GetInstallDirForVersion(state.Version));
+
+            if (launcherConfig.Data.LaunchGame)
+            {
+                if (await RunGame())
+                    Environment.Exit(0);
+            }
+            else
+            {
+                notifyService.UpdateStatus(this, "All mods are updated.");
+
+                if (launcherConfig.Data.Clipboard && !string.IsNullOrEmpty(state.Ip))
+                {
+                    DataTransfer clipData = new();
+                    clipData.Add(DataTransferItem.CreateText(state.Ip));
+                    _ = Clipboard.Get()?.SetDataAsync(clipData);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Launch sequence failed!");
+            notifyService.UpdateStatus(this, "Launch failed!");
+        }
+        finally
+        {
             _launching = false;
         }
     }
