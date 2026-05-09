@@ -15,7 +15,11 @@ public class SaveManager(ILogger<SaveManager> logger, Steam steam)
     private readonly JsonSerializerOptions _jsonOptions = new() { WriteIndented = true };
 
     private static string SavesDir => Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "saves"));
-    private string GameSavedDir => Path.GetFullPath(Path.Combine(steam.AppInstallDir, "ConanSandbox/Saved"));
+
+    private string GameSavedDir => Path.GetFullPath(Path.Combine(
+        steam.DualInstallMode ? steam.GetInstallDirForVersion(GameVersion.Legacy) : steam.AppInstallDir,
+        "ConanSandbox/Saved"));
+
     private string MarkerFilePath => Path.Combine(GameSavedDir, MarkerFileName);
 
     public List<FileInfo> GetActiveDbFiles()

@@ -99,9 +99,6 @@ public class LaunchWorker(
                 }
             }
 
-            if (steam.DualInstallMode)
-                modList.SaveModListToInstallDir(steam.GetInstallDirForVersion(state.Version));
-
             if (launcherConfig.Data.LaunchGame)
             {
                 if (await RunGame())

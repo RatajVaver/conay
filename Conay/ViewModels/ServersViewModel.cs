@@ -15,13 +15,6 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace Conay.ViewModels;
 
-public enum TagFilterState
-{
-    None,
-    Include,
-    Exclude
-}
-
 public partial class ServersViewModel : PageViewModel
 {
     private readonly ServerPresetFactory _presetFactory;
@@ -112,14 +105,20 @@ public partial class ServersViewModel : PageViewModel
 
     partial void OnSearchTextChanged(string value) => ApplyFilters();
     partial void OnFilterModeAndChanged(bool value) => _ = ApplyFiltersWithLoad();
-    partial void OnModdedFilterChanged(TagFilterState value) => _ = ApplyFiltersWithLoad();
-    partial void OnEnhancedFilterChanged(TagFilterState value) => _ = ApplyFiltersWithLoad();
-    partial void OnRoleplayFilterChanged(TagFilterState value) => _ = ApplyFiltersWithLoad();
-    partial void OnMechPvpFilterChanged(TagFilterState value) => _ = ApplyFiltersWithLoad();
-    partial void OnDicePvpFilterChanged(TagFilterState value) => _ = ApplyFiltersWithLoad();
-    partial void OnEroticFilterChanged(TagFilterState value) => _ = ApplyFiltersWithLoad();
-    partial void OnBattlEyeFilterChanged(TagFilterState value) => _ = ApplyFiltersWithLoad();
+    partial void OnModdedFilterChanged(TagFilterState value) => OnTagFilterChanged();
+    partial void OnEnhancedFilterChanged(TagFilterState value) => OnTagFilterChanged();
+    partial void OnRoleplayFilterChanged(TagFilterState value) => OnTagFilterChanged();
+    partial void OnMechPvpFilterChanged(TagFilterState value) => OnTagFilterChanged();
+    partial void OnDicePvpFilterChanged(TagFilterState value) => OnTagFilterChanged();
+    partial void OnEroticFilterChanged(TagFilterState value) => OnTagFilterChanged();
+    partial void OnBattlEyeFilterChanged(TagFilterState value) => OnTagFilterChanged();
     partial void OnMinPlayerCountChanged(double value) => _ = ApplyFiltersWithLoad();
+
+    private void OnTagFilterChanged()
+    {
+        RebuildFilterMasks();
+        _ = ApplyFiltersWithLoad();
+    }
 
     private bool _filterLoadInProgress;
 
@@ -191,8 +190,7 @@ public partial class ServersViewModel : PageViewModel
     {
         RefreshServers();
 
-        while (!_serverList.RemoteServersLoaded)
-            await Task.Delay(50);
+        await _serverList.WhenRemoteLoaded;
 
         RefreshServers();
 
@@ -248,27 +246,43 @@ public partial class ServersViewModel : PageViewModel
         ApplyFilters();
     }
 
+    private TagMask _includeMask;
+    private TagMask _excludeMask;
+
+    private void RebuildFilterMasks()
+    {
+        _includeMask = TagMask.None;
+        _excludeMask = TagMask.None;
+
+        ApplyMask(ModdedFilter, TagMask.Modded);
+        ApplyMask(EnhancedFilter, TagMask.Enhanced);
+        ApplyMask(RoleplayFilter, TagMask.Roleplay);
+        ApplyMask(MechPvpFilter, TagMask.MechPvP);
+        ApplyMask(DicePvpFilter, TagMask.DicePvP);
+        ApplyMask(EroticFilter, TagMask.Erotic);
+        ApplyMask(BattlEyeFilter, TagMask.BattleEye);
+    }
+
+    private void ApplyMask(TagFilterState state, TagMask bit)
+    {
+        if (state == TagFilterState.Include)
+        {
+            _includeMask |= bit;
+        }
+        else if (state == TagFilterState.Exclude)
+        {
+            _excludeMask |= bit;
+        }
+    }
+
     private bool AnyDataFilterActive =>
-        ModdedFilter != TagFilterState.None ||
-        EnhancedFilter != TagFilterState.None ||
-        RoleplayFilter != TagFilterState.None ||
-        MechPvpFilter != TagFilterState.None ||
-        DicePvpFilter != TagFilterState.None ||
-        EroticFilter != TagFilterState.None ||
-        BattlEyeFilter != TagFilterState.None ||
-        MinPlayerCount >= 1;
+        _includeMask != TagMask.None || _excludeMask != TagMask.None || MinPlayerCount >= 1;
 
     private CancellationTokenSource? _filterDebounce;
 
     private void OnPresetPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (e.PropertyName is not (nameof(ServerPresetViewModel.IsModded)
-            or nameof(ServerPresetViewModel.IsEnhanced)
-            or nameof(ServerPresetViewModel.IsRoleplay)
-            or nameof(ServerPresetViewModel.IsMechPvP)
-            or nameof(ServerPresetViewModel.IsDicePvP)
-            or nameof(ServerPresetViewModel.IsErotic)
-            or nameof(ServerPresetViewModel.BattleEye)
+        if (e.PropertyName is not (nameof(ServerPresetViewModel.TagBits)
             or nameof(ServerPresetViewModel.Players))) return;
         if (AnyDataFilterActive)
             ScheduleFilterDebounce();
@@ -325,37 +339,16 @@ public partial class ServersViewModel : PageViewModel
             !preset.Name.Contains(SearchText, StringComparison.OrdinalIgnoreCase))
             return false;
 
-        if (MinPlayerCount >= 1 && ParsePlayerCount(preset.Players) < (int)MinPlayerCount)
+        if (MinPlayerCount >= 1 && preset.PlayerCount < (int)MinPlayerCount)
             return false;
 
-        (bool hasTag, TagFilterState filter)[] tagChecks =
-        [
-            (preset.IsModded, ModdedFilter),
-            (preset.IsEnhanced, EnhancedFilter),
-            (preset.IsRoleplay, RoleplayFilter),
-            (preset.IsMechPvP, MechPvpFilter),
-            (preset.IsDicePvP, DicePvpFilter),
-            (preset.IsErotic, EroticFilter),
-            (preset.BattleEye, BattlEyeFilter),
-        ];
+        TagMask tags = preset.TagBits;
 
-        if (tagChecks.Any(t => t is { filter: TagFilterState.Exclude, hasTag: true }))
-            return false;
-
-        (bool hasTag, TagFilterState filter)[] includes =
-            tagChecks.Where(t => t.filter == TagFilterState.Include).ToArray();
-        if (includes.Length == 0)
-            return true;
+        if ((tags & _excludeMask) != TagMask.None) return false;
+        if (_includeMask == TagMask.None) return true;
 
         return FilterModeAnd
-            ? includes.All(t => t.hasTag)
-            : includes.Any(t => t.hasTag);
-    }
-
-    private static int ParsePlayerCount(string players)
-    {
-        if (string.IsNullOrEmpty(players)) return 0;
-        string first = players.TrimStart('~').Trim().Split('/')[0].Trim();
-        return int.TryParse(first, out int count) ? count : 0;
+            ? (tags & _includeMask) == _includeMask
+            : (tags & _includeMask) != TagMask.None;
     }
 }

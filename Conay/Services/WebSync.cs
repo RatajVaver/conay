@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using Conay.Data;
 using Conay.Utils;
@@ -20,30 +21,24 @@ public class WebSync(
     : IModSource
 {
     private readonly List<ExternalModInfo> _updateQueue = [];
-    private List<ExternalModInfo> _mods = [];
-    private bool _loading;
-    private bool _loaded;
+    private Dictionary<string, ExternalModInfo> _mods = [];
+    private readonly TaskCompletionSource _indexLoaded = new();
+    private int _fetchStarted;
 
     private async Task FetchModIndex()
     {
-        _loading = true;
-
-        string json = await http.Get(indexUrl);
-        if (string.IsNullOrEmpty(json))
-        {
-            logger.LogError("Failed to load external mod index!");
-            _loading = false;
-            return;
-        }
-
         try
         {
-            ExternalSourceData? mods = JsonSerializer.Deserialize<ExternalSourceData>(json);
-            if (mods != null)
+            string json = await http.Get(indexUrl);
+            if (string.IsNullOrEmpty(json))
             {
-                _mods = mods.Mods;
-                _loaded = true;
+                logger.LogError("Failed to load external mod index!");
+                return;
             }
+
+            ExternalSourceData? data = JsonSerializer.Deserialize<ExternalSourceData>(json);
+            if (data != null)
+                _mods = data.Mods.ToDictionary(m => m.FileName);
         }
         catch (Exception ex)
         {
@@ -51,26 +46,22 @@ public class WebSync(
         }
         finally
         {
-            _loading = false;
+            _indexLoaded.TrySetResult();
         }
     }
 
     public async Task<ExternalModInfo?> GetModInfo(string fileName)
     {
-        if (_loaded)
-            return _mods.Find(x => x.FileName == fileName);
-
-        if (!_loading)
+        if (!_indexLoaded.Task.IsCompleted)
         {
-            await FetchModIndex();
+            if (Interlocked.Exchange(ref _fetchStarted, 1) == 0)
+                _ = FetchModIndex();
+
+            await _indexLoaded.Task;
         }
 
-        while (_loading)
-        {
-            await Task.Delay(100);
-        }
-
-        return _mods.Find(x => x.FileName == fileName);
+        _mods.TryGetValue(fileName, out ExternalModInfo? mod);
+        return mod;
     }
 
     public async Task CheckModUpdates(string[] modNames)

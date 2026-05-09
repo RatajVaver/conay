@@ -71,10 +71,13 @@ public partial class LaunchViewModel : PageViewModel
     {
         await _steam.WaitForSteam();
 
+        if (string.IsNullOrEmpty(_launchState.Name))
+            _modList.LoadModList(_launchState.Version);
+
         List<string> currentMods = _modList.GetCurrentModList();
         foreach (string modPath in currentMods)
         {
-            Mods.Add(_modItemFactory.Create(modPath));
+            Mods.Add(_modItemFactory.Create(modPath, _launchState.Version));
         }
 
         ModsLoaded = $"Currently loaded mods ({Mods.Count}):";
@@ -89,7 +92,7 @@ public partial class LaunchViewModel : PageViewModel
     private void ApplyVersion(GameVersion version)
     {
         _launchState.Version = version;
-        _modList.LoadFromInstallDir(_steam.GetInstallDirForVersion(version));
+        _modList.LoadModList(version);
     }
 
     [RelayCommand]

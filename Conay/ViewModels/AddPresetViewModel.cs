@@ -79,8 +79,8 @@ public partial class AddPresetViewModel : PageViewModel
         _modItemFactory = modItemFactory;
         _modList = modList;
         _router = router;
-        _ip = gameConfig.GetLastConnected();
         _selectedVersion = launcherConfig.Data.LastLaunchedVersion ?? GameVersion.Enhanced;
+        _ip = gameConfig.GetLastConnected(_selectedVersion);
         Mods.CollectionChanged += (_, _) => OnPropertyChanged(nameof(ModsLabel));
 
         WeakReferenceMessenger.Default.Send(new ScrollToTopMessage());
@@ -110,7 +110,7 @@ public partial class AddPresetViewModel : PageViewModel
 
     private ModItemViewModel CreateMod(string modPath)
     {
-        ModItemViewModel vm = _modItemFactory.Create(modPath);
+        ModItemViewModel vm = _modItemFactory.Create(modPath, SelectedVersion);
         vm.OnMoveUp = () => MoveMod(vm, -1);
         vm.OnMoveDown = () => MoveMod(vm, 1);
         vm.OnRemove = () => Mods.Remove(vm);

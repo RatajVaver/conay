@@ -57,7 +57,7 @@ public class Config
     public List<string> History { get; set; } = [];
 
     [JsonPropertyName("favorites")]
-    public List<string> Favorites { get; set; } = [];
+    public HashSet<string> Favorites { get; set; } = [];
 
     [JsonPropertyName("altBorders")]
     public bool AlternativeBorders { get; set; }

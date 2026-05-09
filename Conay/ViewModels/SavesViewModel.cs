@@ -21,6 +21,7 @@ public partial class SavesViewModel : PageViewModel
     private readonly SaveManager _saveManager;
     private readonly ModList _modList;
     private readonly Router _router;
+    private readonly Steam _steam;
 
     [ObservableProperty]
     private string _currentSaveName = "No save currently loaded";
@@ -54,11 +55,14 @@ public partial class SavesViewModel : PageViewModel
 
     public ObservableCollection<SaveItemViewModel> Saves { get; } = [];
 
-    public SavesViewModel(SaveManager saveManager, ModList modList, Router router)
+    private GameVersion SaveVersion => _steam.DualInstallMode ? GameVersion.Legacy : GameVersionHelper.Current;
+
+    public SavesViewModel(SaveManager saveManager, ModList modList, Router router, Steam steam)
     {
         _saveManager = saveManager;
         _modList = modList;
         _router = router;
+        _steam = steam;
 
         Refresh();
         WeakReferenceMessenger.Default.Send(new ScrollToTopMessage());
@@ -137,7 +141,7 @@ public partial class SavesViewModel : PageViewModel
             ApplyModlist(item.Slug);
             SaveData? same = _saveManager.GetSaveData(item.Slug);
             _router.ReadyForLaunch(new ServerData { Name = same?.Name ?? item.Slug, Ip = string.Empty },
-                isSaveLaunch: true);
+                isSaveLaunch: true, version: SaveVersion);
             return;
         }
 
@@ -274,7 +278,8 @@ public partial class SavesViewModel : PageViewModel
         if (launch)
         {
             SaveData? data = _saveManager.GetSaveData(slug);
-            _router.ReadyForLaunch(new ServerData { Name = data?.Name ?? slug, Ip = string.Empty }, isSaveLaunch: true);
+            _router.ReadyForLaunch(new ServerData { Name = data?.Name ?? slug, Ip = string.Empty },
+                isSaveLaunch: true, version: SaveVersion);
             return;
         }
 
@@ -285,7 +290,7 @@ public partial class SavesViewModel : PageViewModel
     {
         SaveData? data = _saveManager.GetSaveData(slug);
         if (data == null) return;
-        _modList.SaveModList([..data.Modlist]);
+        _modList.SaveModList([..data.Modlist], SaveVersion);
     }
 
     private async Task OnDeleteRequestedAsync(SaveItemViewModel item)

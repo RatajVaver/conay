@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Conay.Data;
 using Conay.Services;
 using Conay.ViewModels.Parts;
 
@@ -6,16 +7,17 @@ namespace Conay.Factories;
 
 public class ModItemFactory(Steam steam, ModSourceFactory modSourceFactory, LauncherConfig launcherConfig)
 {
-    private readonly List<ModItemViewModel> _modItems = [];
+    private readonly Dictionary<string, ModItemViewModel> _modItems = [];
 
-    public ModItemViewModel Create(string modPath)
+    public ModItemViewModel Create(string modPath, GameVersion? version = null)
     {
-        ModItemViewModel? preset = _modItems.Find(x => x.ModPath == modPath);
-        if (preset != null) return preset;
+        if (!_modItems.TryGetValue(modPath, out ModItemViewModel? item))
+        {
+            item = new ModItemViewModel(steam, launcherConfig, modSourceFactory, modPath);
+            _modItems[modPath] = item;
+        }
 
-        preset = new ModItemViewModel(steam, launcherConfig, modSourceFactory, modPath);
-        _modItems.Add(preset);
-
-        return preset;
+        item.Version = version ?? GameVersionHelper.Current;
+        return item;
     }
 }

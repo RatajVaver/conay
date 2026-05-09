@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -9,40 +9,27 @@ using Microsoft.Extensions.Logging;
 
 namespace Conay.Services;
 
-public class ModList
+public class ModList(ILogger<ModList> logger, Steam steam)
 {
-    private readonly ILogger<ModList> _logger;
-    private readonly Steam _steam;
-    private readonly GameConfig _gameConfig;
+    public string? WorkshopPath => steam.AppInstallDir == string.Empty
+        ? null
+        : Path.GetFullPath(Path.Combine(steam.AppInstallDir, "../../workshop/content/440900"));
 
-    private string? _modListPath;
-    private string? _serverModListPath;
-    private string? _modRestartDataPath;
-    public string? WorkshopPath;
-    public string? LocalModsPath;
+    public string? LocalModsPath => steam.AppInstallDir == string.Empty
+        ? null
+        : Path.GetFullPath(Path.Combine(steam.AppInstallDir, "ConanSandbox/Mods"));
+
     private readonly List<string> _currentMods = [];
-    private bool _modlistParsed;
 
-    public ModList(ILogger<ModList> logger, Steam steam, GameConfig gameConfig)
-    {
-        _logger = logger;
-        _steam = steam;
-        _gameConfig = gameConfig;
+    private string GetModListPath(GameVersion version) =>
+        Path.GetFullPath(Path.Combine(steam.GetInstallDirForVersion(version), "ConanSandbox/Mods/modlist.txt"));
 
-        RefreshPaths();
-        ParseModList();
-    }
+    private string GetServerModListPath(GameVersion version) =>
+        Path.GetFullPath(Path.Combine(steam.GetInstallDirForVersion(version), "ConanSandbox/servermodlist.txt"));
 
-    private void RefreshPaths()
-    {
-        if (_steam.AppInstallDir == string.Empty) return;
+    private string GetModRestartDataPath(GameVersion version) =>
+        Path.GetFullPath(Path.Combine(steam.GetInstallDirForVersion(version), "ConanSandbox/Saved/ModRestartData.json"));
 
-        _modListPath = Path.GetFullPath(Path.Combine(_steam.AppInstallDir, "ConanSandbox/Mods/modlist.txt"));
-        _serverModListPath = Path.GetFullPath(Path.Combine(_steam.AppInstallDir, "ConanSandbox/servermodlist.txt"));
-        _modRestartDataPath = Path.GetFullPath(Path.Combine(_steam.AppInstallDir, "ConanSandbox/Saved/ModRestartData.json"));
-        WorkshopPath = Path.GetFullPath(Path.Combine(_steam.AppInstallDir, "../../workshop/content/440900"));
-        LocalModsPath = Path.GetFullPath(Path.Combine(_steam.AppInstallDir, "ConanSandbox/Mods"));
-    }
 
     private void LoadModListFromFile(string path)
     {
@@ -63,32 +50,11 @@ public class ModList
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to parse current modlist!");
+            logger.LogError(ex, "Failed to parse current modlist!");
         }
-
-        _modlistParsed = true;
     }
 
-    private void ParseModList()
-    {
-        RefreshPaths();
-
-        string? modListPath = GetNewerModlistFile();
-        if (modListPath == null || !File.Exists(modListPath))
-            return;
-
-        LoadModListFromFile(modListPath);
-
-        _logger.LogDebug("Currently loaded: {Mods} mods", _currentMods.Count);
-    }
-
-    public List<string> GetCurrentModList()
-    {
-        if (!_modlistParsed)
-            ParseModList();
-
-        return _currentMods;
-    }
+    public List<string> GetCurrentModList() => _currentMods;
 
     public static DateTime GetModFileLastUpdate(string directoryPath, ulong modId)
     {
@@ -111,8 +77,6 @@ public class ModList
 
     public DateTime GetLocalModFileLastUpdate(string directoryPath, string pakName)
     {
-        RefreshPaths();
-
         if (LocalModsPath == null)
             return Epoch.ToDateTime(Epoch.Current);
 
@@ -120,126 +84,31 @@ public class ModList
         return File.Exists(filePath) ? File.GetLastWriteTimeUtc(filePath) : Epoch.UnixEpoch;
     }
 
-    public void SaveModList(string[] mods)
+    public void SaveModList(string[] mods, GameVersion? version = null)
     {
-        RefreshPaths();
-        if (WorkshopPath == null || _modListPath == null || LocalModsPath == null) return;
+        if (WorkshopPath == null) return;
 
-        _currentMods.Clear();
-
-        string? modsDirectory = Path.GetDirectoryName(_modListPath);
+        GameVersion ver = version ?? GameVersionHelper.Current;
+        string installDir = steam.GetInstallDirForVersion(ver);
+        string modListPath = GetModListPath(ver);
+        string localModsPath = Path.GetFullPath(Path.Combine(installDir, "ConanSandbox/Mods"));
+        string? modsDirectory = Path.GetDirectoryName(modListPath);
         if (modsDirectory == null)
         {
-            _logger.LogError("Can't resolve Mods directory!");
+            logger.LogError("Can't resolve Mods directory!");
             return;
         }
 
+        _currentMods.Clear();
+        string[] resolvedMods = new string[mods.Length];
         for (int i = 0; i < mods.Length; i++)
         {
             _currentMods.Add(mods[i]);
-
-            string modIdOrFolder = mods[i].Split('/')[0];
-            if (ulong.TryParse(modIdOrFolder, out _))
-            {
-                string fullPath = Path.GetFullPath(Path.Combine(WorkshopPath, mods[i]));
-                mods[i] = Path.GetRelativePath(modsDirectory, fullPath);
-            }
-            else
-            {
-                string fullPath = Path.GetFullPath(Path.Combine(LocalModsPath, mods[i]));
-                mods[i] = Path.GetRelativePath(modsDirectory, fullPath);
-            }
-        }
-
-        if (!Directory.Exists(modsDirectory))
-        {
-            try
-            {
-                Directory.CreateDirectory(modsDirectory);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to create Mods directory!");
-                return;
-            }
-        }
-
-        try
-        {
-            File.WriteAllLines(_modListPath, mods, Encoding.UTF8);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Failed to save modlist!");
-            return;
-        }
-
-        if (_serverModListPath != null && File.Exists(_serverModListPath))
-        {
-            try
-            {
-                File.Delete(_serverModListPath);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to remove servermodlist.txt!");
-            }
-        }
-
-        if (_modRestartDataPath != null && File.Exists(_modRestartDataPath))
-        {
-            try
-            {
-                File.Delete(_modRestartDataPath);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to remove ModRestartData.json!");
-            }
-        }
-
-        _logger.LogDebug("Modlist saved");
-    }
-
-    private string? GetNewerModlistFile()
-    {
-        DateTime modListLastEdit = Epoch.UnixEpoch;
-        if (_modListPath != null && File.Exists(_modListPath))
-        {
-            modListLastEdit = File.GetLastWriteTimeUtc(_modListPath);
-        }
-
-        if (_serverModListPath == null || !File.Exists(_serverModListPath))
-            return _modListPath;
-
-        DateTime serverModListLastEdit = File.GetLastWriteTimeUtc(_serverModListPath);
-        if (serverModListLastEdit > modListLastEdit)
-        {
-            return _serverModListPath;
-        }
-
-        return _modListPath;
-    }
-
-    public void SaveModListToInstallDir(string installDir)
-    {
-        RefreshPaths();
-        if (WorkshopPath == null) return;
-
-        string modListPath = Path.GetFullPath(Path.Combine(installDir, "ConanSandbox/Mods/modlist.txt"));
-        string? modsDirectory = Path.GetDirectoryName(modListPath);
-        if (modsDirectory == null) return;
-
-        string localModsPath = Path.GetFullPath(Path.Combine(installDir, "ConanSandbox/Mods"));
-
-        string[] mods = _currentMods.ToArray();
-        for (int i = 0; i < mods.Length; i++)
-        {
             string modIdOrFolder = mods[i].Split('/')[0];
             string fullPath = ulong.TryParse(modIdOrFolder, out _)
                 ? Path.GetFullPath(Path.Combine(WorkshopPath, mods[i]))
                 : Path.GetFullPath(Path.Combine(localModsPath, mods[i]));
-            mods[i] = Path.GetRelativePath(modsDirectory, fullPath);
+            resolvedMods[i] = Path.GetRelativePath(modsDirectory, fullPath);
         }
 
         if (!Directory.Exists(modsDirectory))
@@ -250,68 +119,63 @@ public class ModList
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to create Mods directory for {Dir}!", installDir);
+                logger.LogError(ex, "Failed to create Mods directory!");
                 return;
             }
         }
 
         try
         {
-            File.WriteAllLines(modListPath, mods, Encoding.UTF8);
+            File.WriteAllLines(modListPath, resolvedMods, Encoding.UTF8);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to save modlist to {Dir}!", installDir);
+            logger.LogError(ex, "Failed to save modlist!");
             return;
         }
 
-        string serverModListPath = Path.GetFullPath(Path.Combine(installDir, "ConanSandbox/servermodlist.txt"));
-        if (File.Exists(serverModListPath))
-        {
-            try
-            {
-                File.Delete(serverModListPath);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to remove servermodlist.txt for {Dir}!", installDir);
-            }
-        }
+        DeleteIfExists(GetServerModListPath(ver), "servermodlist.txt");
+        DeleteIfExists(GetModRestartDataPath(ver), "ModRestartData.json");
 
-        string modRestartDataPath =
-            Path.GetFullPath(Path.Combine(installDir, "ConanSandbox/Saved/ModRestartData.json"));
-        if (File.Exists(modRestartDataPath))
+        logger.LogDebug("Modlist saved");
+    }
+
+    private void DeleteIfExists(string path, string name)
+    {
+        if (!File.Exists(path)) return;
+        try
         {
-            try
-            {
-                File.Delete(modRestartDataPath);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to remove ModRestartData.json for {Dir}!", installDir);
-            }
+            File.Delete(path);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to remove {Name}!", name);
         }
     }
 
-    public void LoadFromInstallDir(string installDir)
+    public void LoadModList(GameVersion version)
     {
-        string modListPath = Path.GetFullPath(Path.Combine(installDir, "ConanSandbox/Mods/modlist.txt"));
-        if (File.Exists(modListPath))
-            LoadModListFromFile(modListPath);
-    }
+        string modListPath = GetModListPath(version);
+        string serverModListPath = GetServerModListPath(version);
 
-    public List<string> ReloadCurrentModList()
-    {
-        _modlistParsed = false;
-        ParseModList();
-        return _currentMods;
+        bool hasModList = File.Exists(modListPath);
+        bool hasServerModList = File.Exists(serverModListPath);
+
+        if (!hasModList && !hasServerModList) return;
+
+        string pathToLoad = hasModList && hasServerModList
+            ? (File.GetLastWriteTimeUtc(serverModListPath) > File.GetLastWriteTimeUtc(modListPath)
+                ? serverModListPath
+                : modListPath)
+            : (hasServerModList ? serverModListPath : modListPath);
+
+        LoadModListFromFile(pathToLoad);
+        logger.LogDebug("Loaded {Count} mods from {Path}", _currentMods.Count, pathToLoad);
     }
 
     public List<string> ReloadCurrentModListForVersion(GameVersion version)
     {
-        if (!_steam.DualInstallMode) return ReloadCurrentModList();
-        string installDir = _steam.GetInstallDirForVersion(version);
-        LoadFromInstallDir(installDir);
+        LoadModList(steam.DualInstallMode ? version : GameVersionHelper.Current);
         return _currentMods;
     }
 }

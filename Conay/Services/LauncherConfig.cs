@@ -49,15 +49,13 @@ public class LauncherConfig
 
     public void FavoriteServer(string fileName)
     {
-        if (IsServerFavorite(fileName)) return;
-        Data.Favorites.Add(fileName);
+        if (!Data.Favorites.Add(fileName)) return;
         _ = ScheduleConfigSave();
     }
 
     public void UnfavoriteServer(string fileName)
     {
-        if (!IsServerFavorite(fileName)) return;
-        Data.Favorites.Remove(fileName);
+        if (!Data.Favorites.Remove(fileName)) return;
         _ = ScheduleConfigSave();
     }
 

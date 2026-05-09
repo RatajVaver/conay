@@ -14,7 +14,7 @@ public class LocalPresets : IPresetService
 {
     private readonly ModList _modList;
     private readonly ILogger<LocalPresets> _logger;
-    private List<ServerData>? _presetsCache;
+    private Dictionary<string, ServerData>? _presetsCache;
     private readonly string _presetsPath;
 
     public string GetProviderName() => "local";
@@ -28,20 +28,21 @@ public class LocalPresets : IPresetService
         _presetsPath = Path.GetFullPath(Path.Combine(appDirectory, "servers"));
     }
 
-    private List<ServerData> GetLocalPresets()
+    private Dictionary<string, ServerData> GetLocalPresets()
     {
         if (_presetsCache != null)
             return _presetsCache;
 
-        _presetsCache = [
-            new ServerData
+        _presetsCache = new Dictionary<string, ServerData>
+        {
+            ["_vanilla"] = new ServerData
             {
                 Name = "Vanilla (no mods)",
                 Ip = string.Empty,
                 FileName = "_vanilla",
                 Mods = []
             }
-        ];
+        };
 
         if (!Directory.Exists(_presetsPath))
             return _presetsCache;
@@ -54,7 +55,7 @@ public class LocalPresets : IPresetService
                 ServerData? preset = JsonSerializer.Deserialize<ServerData>(json);
                 if (preset == null) continue;
                 preset.FileName = Path.GetFileNameWithoutExtension(filePath);
-                _presetsCache.Add(preset);
+                _presetsCache[preset.FileName] = preset;
             }
             catch (Exception ex)
             {
@@ -69,20 +70,21 @@ public class LocalPresets : IPresetService
 
     public Task<List<ServerInfo>> GetServerList()
     {
-        List<ServerData> presets = GetLocalPresets();
-        List<ServerInfo> servers = [];
-        servers.AddRange(presets.Select(x => new ServerInfo { File = x.FileName ?? string.Empty, Name = x.Name, Provider = this }));
+        Dictionary<string, ServerData> presets = GetLocalPresets();
+        List<ServerInfo> servers = presets.Values
+            .Select(x => new ServerInfo { File = x.FileName ?? string.Empty, Name = x.Name, Provider = this })
+            .ToList();
 
         return Task.FromResult(servers);
     }
 
     public Task<ServerData?> FetchServerData(string fileName)
     {
-        List<ServerData> presets = GetLocalPresets();
-        return Task.FromResult(presets.Find(x => x.FileName == fileName));
+        GetLocalPresets().TryGetValue(fileName, out ServerData? preset);
+        return Task.FromResult(preset);
     }
 
-    public void ClearCache() => _presetsCache = null;
+    private void ClearCache() => _presetsCache = null;
 
     public void SavePreset(string fileName, ServerData data)
     {
@@ -119,11 +121,9 @@ public class LocalPresets : IPresetService
 
     public void SaveModlistFromPreset(string fileName)
     {
-        List<ServerData> presets = GetLocalPresets();
-        ServerData? data = presets.Find(x => x.FileName == fileName);
-        if (data == null)
+        if (!GetLocalPresets().TryGetValue(fileName, out ServerData? data))
             return;
 
-        _modList.SaveModList(data.Mods.ToArray());
+        _modList.SaveModList(data.Mods.ToArray(), data.GameVersion);
     }
 }

@@ -35,11 +35,11 @@ public class FavoriteViewModel : PageViewModel
     {
         RefreshServers();
 
-        while (!_serverList.LocalServersLoaded || !_serverList.RemoteServersLoaded)
-        {
-            await Task.Delay(50);
-            RefreshServers();
-        }
+        await _serverList.WhenLocalLoaded;
+        RefreshServers();
+
+        await _serverList.WhenRemoteLoaded;
+        RefreshServers();
     }
 
     public void RefreshServers()

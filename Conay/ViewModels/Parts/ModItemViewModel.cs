@@ -44,6 +44,8 @@ public partial class ModItemViewModel : ViewModelBase, ILazyLoad
 
     public bool ShowDefaultIcon => string.IsNullOrEmpty(Icon) && _launcherConfig.Data.DisplayIcons;
 
+    public GameVersion Version { get; set; } = GameVersionHelper.Current;
+
     public bool IsLoaded { get; set; }
     public bool IsVisible { get; set; }
 
@@ -145,9 +147,11 @@ public partial class ModItemViewModel : ViewModelBase, ILazyLoad
     [RelayCommand]
     private void OpenLocalFolder()
     {
-        if (IsWorkshopMod || _steam.AppInstallDir == string.Empty) return;
+        if (IsWorkshopMod) return;
+        string installDir = _steam.GetInstallDirForVersion(Version);
+        if (string.IsNullOrEmpty(installDir)) return;
 
-        string path = Path.GetFullPath(Path.Combine(_steam.AppInstallDir, "ConanSandbox/Mods", _localFolder));
+        string path = Path.GetFullPath(Path.Combine(installDir, "ConanSandbox/Mods", _localFolder));
 
         if (Directory.Exists(path))
             Protocol.OpenFolder(path);

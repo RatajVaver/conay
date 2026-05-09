@@ -22,6 +22,7 @@ public partial class ServerPresetViewModel : ViewModelBase, ILazyLoad
     [ObservableProperty] private string _ipAddress = "Loading..";
 
     [ObservableProperty] private string _players = string.Empty;
+    public int PlayerCount { get; private set; }
 
     [ObservableProperty] private string _map = string.Empty;
 
@@ -85,6 +86,27 @@ public partial class ServerPresetViewModel : ViewModelBase, ILazyLoad
     public bool IsMechPvP => Tags?.Contains("mech") ?? false;
     public bool IsDicePvP => Tags?.Contains("dice") ?? false;
     public bool IsErotic => Tags?.Contains("erp") ?? false;
+
+    public TagMask TagBits { get; private set; }
+
+    private void RebuildTagBits()
+    {
+        TagBits =
+            (IsModded   ? TagMask.Modded    : TagMask.None) |
+            (IsEnhanced ? TagMask.Enhanced  : TagMask.None) |
+            (IsRoleplay ? TagMask.Roleplay  : TagMask.None) |
+            (IsMechPvP  ? TagMask.MechPvP   : TagMask.None) |
+            (IsDicePvP  ? TagMask.DicePvP   : TagMask.None) |
+            (IsErotic   ? TagMask.Erotic    : TagMask.None) |
+            (BattleEye  ? TagMask.BattleEye : TagMask.None);
+
+        OnPropertyChanged(nameof(TagBits));
+    }
+
+    partial void OnTagsChanged(string[]? value) => RebuildTagBits();
+    partial void OnVersionChanged(string? value) => RebuildTagBits();
+    partial void OnModsCountChanged(int value) => RebuildTagBits();
+    partial void OnBattleEyeChanged(bool value) => RebuildTagBits();
     public bool HasConaySync => Tags?.Contains("sync") ?? false;
     public bool ProvidedByServerAdmins => !HasConaySync && _provider.GetProviderName() == "ratajmods";
     public bool ProvidedByCommunity => !HasConaySync && _provider.GetProviderName() == "github";
@@ -132,6 +154,7 @@ public partial class ServerPresetViewModel : ViewModelBase, ILazyLoad
 
         if (_serverInfo.Players != null)
         {
+            PlayerCount = _serverInfo.Players.Value;
             Players = _serverInfo.MaxPlayers != null
                 ? $"{_serverInfo.Players} / {_serverInfo.MaxPlayers}"
                 : $"~{_serverInfo.Players}  ";
@@ -166,7 +189,7 @@ public partial class ServerPresetViewModel : ViewModelBase, ILazyLoad
     public async Task WarmCacheAsync()
     {
         if (IsLoaded) return;
-        await Task.Run(() => _provider.FetchServerData(_serverInfo.File));
+        await _provider.FetchServerData(_serverInfo.File);
     }
 
     public async Task LoadDataAsync()
@@ -177,7 +200,7 @@ public partial class ServerPresetViewModel : ViewModelBase, ILazyLoad
 
     private async Task UpdateServerData()
     {
-        ServerData? preset = await Task.Run(() => _provider.FetchServerData(_serverInfo.File));
+        ServerData? preset = await _provider.FetchServerData(_serverInfo.File);
         if (preset != null)
         {
             IpAddress = preset.Ip;
@@ -220,6 +243,7 @@ public partial class ServerPresetViewModel : ViewModelBase, ILazyLoad
             return;
         }
 
+        PlayerCount = result.Players;
         Players = $"{result.Players} / {result.MaxPlayers}";
         Map = result.Map;
 

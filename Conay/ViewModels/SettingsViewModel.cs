@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
@@ -270,13 +271,22 @@ public partial class SettingsViewModel : PageViewModel
         if (window == null) return null;
         TopLevel? topLevel = TopLevel.GetTopLevel(window);
         if (topLevel == null) return null;
-        var folders = await topLevel.StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions { AllowMultiple = false });
+        IReadOnlyList<IStorageFolder> folders =
+            await topLevel.StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions { AllowMultiple = false });
         return folders.Count > 0 ? folders[0].TryGetLocalPath() : null;
     }
 
     [RelayCommand]
     private async Task OpenDualInstallWizard()
     {
+        if (OperatingSystem.IsLinux())
+        {
+            MessageBox.ShowInfo(
+                "Dual install is not supported on the native Linux build.\n\n" +
+                "To run both Legacy and Enhanced on Linux, use the Windows version of Conay via Proton.");
+            return;
+        }
+
         if (!_steam.DualInstallMode && string.IsNullOrEmpty(_steam.AppInstallDir))
         {
             MessageBox.ShowInfo("Steam is not connected yet.\n\nPlease wait for Steam to load and try again.");
@@ -288,9 +298,7 @@ public partial class SettingsViewModel : PageViewModel
             DataContext = new DualInstallWizardViewModel(_steam)
         };
 
-        Avalonia.Controls.Window? owner = (Avalonia.Application.Current?.ApplicationLifetime
-            as Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime)?.MainWindow;
-
+        Window? owner = (Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow;
         if (owner != null)
         {
             await wizard.ShowDialog(owner);

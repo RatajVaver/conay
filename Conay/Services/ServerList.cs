@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Conay.Data;
@@ -11,9 +11,13 @@ public class ServerList
     private readonly PresetSourceFactory _sourceFactory;
     private readonly LauncherConfig _launcherConfig;
     private List<ServerInfo> _servers = [];
+    private Dictionary<string, ServerInfo> _serverIndex = [];
     private readonly HashSet<string> _localRemoteConflicts = [];
-    public bool LocalServersLoaded;
-    public bool RemoteServersLoaded;
+    private readonly TaskCompletionSource _localLoadedTcs = new();
+    private readonly TaskCompletionSource _remoteLoadedTcs = new();
+
+    public Task WhenLocalLoaded => _localLoadedTcs.Task;
+    public Task WhenRemoteLoaded => _remoteLoadedTcs.Task;
 
     public ServerList(PresetSourceFactory sourceFactory, LauncherConfig launcherConfig)
     {
@@ -22,13 +26,26 @@ public class ServerList
         _ = LoadServers();
     }
 
+    private void AddServer(ServerInfo server)
+    {
+        _servers.Add(server);
+        _serverIndex[server.File] = server;
+    }
+
+    private void RebuildIndex()
+    {
+        _serverIndex = _servers.ToDictionary(s => s.File);
+    }
+
     private async Task LoadServers()
     {
         IPresetService localPresets = _sourceFactory.Get("local");
         List<ServerInfo> localServers = await localPresets.GetServerList();
-        _servers.AddRange(localServers);
+        foreach (ServerInfo server in localServers)
+            AddServer(server);
+
         OrderServersByHistory();
-        LocalServersLoaded = true;
+        _localLoadedTcs.SetResult();
 
         if (!_launcherConfig.Data.OfflineMode)
         {
@@ -36,37 +53,48 @@ public class ServerList
                 .Select(origin => _sourceFactory.Get(origin).GetServerList())
                 .ToList();
 
+            HashSet<string> localFiles = _servers
+                .Where(x => x.Provider is LocalPresets)
+                .Select(x => x.File)
+                .ToHashSet();
+            HashSet<string> allFiles = _serverIndex.Keys.ToHashSet();
+
             foreach (List<ServerInfo> remoteServers in await Task.WhenAll(remoteTasks))
             {
                 foreach (ServerInfo server in remoteServers)
                 {
-                    if (_servers.Any(x => x.File == server.File && x.Provider is LocalPresets))
+                    if (localFiles.Contains(server.File))
                         _localRemoteConflicts.Add(server.File);
-                    else if (_servers.All(x => x.File != server.File))
-                        _servers.Add(server);
+                    else if (allFiles.Add(server.File))
+                        AddServer(server);
                 }
             }
 
             OrderServersByHistory();
         }
 
-        RemoteServersLoaded = true;
+        _remoteLoadedTcs.SetResult();
     }
 
     private void OrderServersByHistory()
     {
         if (!_launcherConfig.Data.KeepHistory) return;
 
-        _servers = _servers.OrderBy(x =>
-        {
-            int index = _launcherConfig.Data.History.IndexOf(x.File);
-            return index == -1 ? int.MaxValue : index;
-        }).ToList();
+        Dictionary<string, int> historyRank = _launcherConfig.Data.History
+            .Select((file, i) => (file, i))
+            .ToDictionary(x => x.file, x => x.i);
+
+        _servers = _servers
+            .OrderBy(x => historyRank.TryGetValue(x.File, out int rank) ? rank : int.MaxValue)
+            .ToList();
+
+        RebuildIndex();
     }
 
     public ServerInfo? GetServerInfo(string fileName)
     {
-        return _servers.FirstOrDefault(x => x.File == fileName);
+        _serverIndex.TryGetValue(fileName, out ServerInfo? server);
+        return server;
     }
 
     public async Task<ServerData?> GetServerData(string fileName)
@@ -84,6 +112,7 @@ public class ServerList
         List<ServerInfo> localServers = await localPresets.GetServerList();
         _servers.InsertRange(0, localServers);
         OrderServersByHistory();
+        RebuildIndex();
     }
 
     public List<ServerInfo> GetLocalServers()

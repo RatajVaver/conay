@@ -18,7 +18,7 @@ public class RemotePresets(
     string indexUrl,
     string serversDirectory) : IPresetService
 {
-    private readonly List<ServerData> _presetsCache = [];
+    private readonly Dictionary<string, ServerData> _presetsCache = [];
     private readonly Lock _cacheLock = new();
 
     public string GetProviderName() => name;
@@ -58,8 +58,7 @@ public class RemotePresets(
     {
         lock (_cacheLock)
         {
-            ServerData? cached = _presetsCache.Find(x => x.FileName == fileName);
-            if (cached != null) return cached;
+            if (_presetsCache.TryGetValue(fileName, out ServerData? cached)) return cached;
         }
 
         string json = await http.Get($"{serversDirectory}/{fileName}.json");
@@ -84,18 +83,21 @@ public class RemotePresets(
         if (preset == null) return null;
 
         preset.FileName = fileName;
-        lock (_cacheLock) _presetsCache.Add(preset);
+        lock (_cacheLock) _presetsCache[fileName] = preset;
 
         return preset;
     }
 
     public void SaveModlistFromPreset(string fileName)
     {
-        ServerData? data = _presetsCache.Find(x => x.FileName == fileName);
+        ServerData? data;
+        lock (_cacheLock)
+            _presetsCache.TryGetValue(fileName, out data);
+
         if (data == null)
             return;
 
-        modList.SaveModList(data.Mods.ToArray());
+        modList.SaveModList(data.Mods.ToArray(), data.GameVersion);
     }
 
     private List<ServerInfo> LoadFromCache()

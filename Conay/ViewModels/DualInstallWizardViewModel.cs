@@ -149,6 +149,20 @@ public partial class DualInstallWizardViewModel(Steam steam) : ObservableObject
             }
         }
 
+        string modControllerCache = Path.Combine(DestPath, "ConanSandbox/Saved/ModControllerCache.json");
+        if (File.Exists(modControllerCache))
+        {
+            try
+            {
+                File.Delete(modControllerCache);
+            }
+            catch (Exception ex)
+            {
+                ErrorMessage = $"Failed to remove ModControllerCache: {ex.Message}" +
+                               "\nIf you run into issues, remove it manually from ConanSandbox/Saved.";
+            }
+        }
+
         Step = 2;
     }
 }

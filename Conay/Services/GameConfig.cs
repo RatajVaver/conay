@@ -163,10 +163,11 @@ public class GameConfig
         return true;
     }
 
-    public string GetLastConnected()
+    public string GetLastConnected(GameVersion? version = null)
     {
-        if (string.IsNullOrEmpty(_steam.AppInstallDir)) return string.Empty;
-        string savedConfigPath = Path.GetFullPath(Path.Combine(_steam.AppInstallDir,
+        string installDir = _steam.GetInstallDirForVersion(version ?? GameVersionHelper.Current);
+        if (string.IsNullOrEmpty(installDir)) return string.Empty;
+        string savedConfigPath = Path.GetFullPath(Path.Combine(installDir,
             "ConanSandbox/Saved/Config/WindowsNoEditor/Game.ini"));
         if (!File.Exists(savedConfigPath)) return string.Empty;
 

@@ -218,8 +218,7 @@ public partial class MainViewModel : ViewModelBase
         if (_serverList == null)
             return;
 
-        while (!_serverList.RemoteServersLoaded)
-            await Task.Delay(50);
+        await _serverList.WhenRemoteLoaded;
 
         IReadOnlyCollection<string> conflicts = _serverList.GetLocalRemoteConflicts();
         if (conflicts.Count > 0)
