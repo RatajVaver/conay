@@ -27,10 +27,6 @@ public class ModList(ILogger<ModList> logger, Steam steam)
     private string GetServerModListPath(GameVersion version) =>
         Path.GetFullPath(Path.Combine(steam.GetInstallDirForVersion(version), "ConanSandbox/servermodlist.txt"));
 
-    private string GetModRestartDataPath(GameVersion version) =>
-        Path.GetFullPath(Path.Combine(steam.GetInstallDirForVersion(version), "ConanSandbox/Saved/ModRestartData.json"));
-
-
     private void LoadModListFromFile(string path)
     {
         _currentMods.Clear();
@@ -135,7 +131,6 @@ public class ModList(ILogger<ModList> logger, Steam steam)
         }
 
         DeleteIfExists(GetServerModListPath(ver), "servermodlist.txt");
-        DeleteIfExists(GetModRestartDataPath(ver), "ModRestartData.json");
 
         logger.LogDebug("Modlist saved");
     }

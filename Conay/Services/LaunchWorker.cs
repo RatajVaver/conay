@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Conay.Data;
 using Conay.Factories;
@@ -135,6 +136,8 @@ public class LaunchWorker(
         if (launcherConfig.Data.DirectConnect && !string.IsNullOrEmpty(state.Ip))
         {
             gameConfig.SetLastConnected(state.Ip, state.Password, steam.GetInstallDirForVersion(state.Version));
+            if (state.Version == GameVersion.Enhanced)
+                WriteModRestartData(state.Ip, state.Password);
             launched = LaunchConan("-continuesession");
         }
         else
@@ -242,6 +245,26 @@ public class LaunchWorker(
 
         Protocol.Open(uri);
         return true;
+    }
+
+    private void WriteModRestartData(string serverAddress, string serverPassword)
+    {
+        string installDir = steam.GetInstallDirForVersion(GameVersion.Enhanced);
+        string path = Path.GetFullPath(Path.Combine(installDir, "ConanSandbox/Saved/ModRestartData.json"));
+        string? dir = Path.GetDirectoryName(path);
+        if (dir != null && !Directory.Exists(dir))
+            Directory.CreateDirectory(dir);
+
+        try
+        {
+            string json = JsonSerializer.Serialize(new { ServerAddress = serverAddress, ServerPassword = serverPassword });
+            File.WriteAllText(path, json);
+            logger.LogDebug("ModRestartData.json written for {Address}", serverAddress);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to write ModRestartData.json!");
+        }
     }
 
     private void BackupTotCustom()
