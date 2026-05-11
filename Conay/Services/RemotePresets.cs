@@ -5,6 +5,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Conay.Data;
+using Conay.Utils;
 using Microsoft.Extensions.Logging;
 
 namespace Conay.Services;
@@ -83,6 +84,7 @@ public class RemotePresets(
         if (preset == null) return null;
 
         preset.FileName = fileName;
+        preset.Ip = await DnsHelper.ResolveToIpv4Async(preset.Ip, logger);
         lock (_cacheLock) _presetsCache[fileName] = preset;
 
         return preset;

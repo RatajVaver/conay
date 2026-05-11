@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Conay.Data;
+using Conay.Utils;
 using Microsoft.Extensions.Logging;
 
 namespace Conay.Services;
@@ -78,10 +79,12 @@ public class LocalPresets : IPresetService
         return Task.FromResult(servers);
     }
 
-    public Task<ServerData?> FetchServerData(string fileName)
+    public async Task<ServerData?> FetchServerData(string fileName)
     {
         GetLocalPresets().TryGetValue(fileName, out ServerData? preset);
-        return Task.FromResult(preset);
+        if (preset == null) return null;
+        preset.Ip = await DnsHelper.ResolveToIpv4Async(preset.Ip, _logger);
+        return preset;
     }
 
     private void ClearCache() => _presetsCache = null;
