@@ -229,7 +229,12 @@ public partial class MainViewModel : ViewModelBase
 
     private async Task CheckConanRunning()
     {
-        Process[] processes = [..Process.GetProcessesByName("ConanSandbox"), ..Process.GetProcessesByName("ConanSandbox_BE")];
+        Process[] processes =
+        [
+            ..Process.GetProcessesByName("ConanSandbox"),
+            ..Process.GetProcessesByName("ConanSandbox_BE"),
+            ..Process.GetProcessesByName("ConanSandbox-Win64-Shipping")
+        ];
         if (processes.Length == 0) return;
 
         ShowConanRunningWarning = true;
@@ -287,7 +292,8 @@ public partial class MainViewModel : ViewModelBase
         try
         {
             foreach (Process process in Process.GetProcessesByName("ConanSandbox")
-                .Concat(Process.GetProcessesByName("ConanSandbox_BE")))
+                         .Concat(Process.GetProcessesByName("ConanSandbox_BE"))
+                         .Concat(Process.GetProcessesByName("ConanSandbox-Win64-Shipping")))
             {
                 process.Kill();
                 process.Dispose();
