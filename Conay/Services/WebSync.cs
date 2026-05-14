@@ -64,7 +64,7 @@ public class WebSync(
         return mod;
     }
 
-    public async Task CheckModUpdates(string[] modNames)
+    public async Task CheckModUpdates(string[] modNames, GameVersion version)
     {
         notifyService.UpdateStatus(this, "Checking external mod updates..");
 
@@ -73,7 +73,7 @@ public class WebSync(
             ExternalModInfo? mod = await GetModInfo(pakName);
             if (mod == null) continue;
 
-            DateTime localLastUpdated = modList.GetLocalModFileLastUpdate("@" + sourceName, pakName);
+            DateTime localLastUpdated = modList.GetLocalModFileLastUpdate("@" + sourceName, pakName, version);
 
             if (Epoch.ToDateTime(mod.LastUpdate) < localLastUpdated) continue;
             if (_updateQueue.Any(x => x.FileName == mod.FileName)) continue;
@@ -84,13 +84,13 @@ public class WebSync(
 
         if (_updateQueue.Count > 0)
         {
-            await UpdateMods();
+            await UpdateMods(version);
         }
 
         notifyService.UpdateStatus(this, "External mods are up to date!");
     }
 
-    private async Task UpdateMods()
+    private async Task UpdateMods(GameVersion version)
     {
         notifyService.UpdateProgress(this, 0);
 
@@ -102,7 +102,7 @@ public class WebSync(
                 $"Updating {_updateQueue.Count} {(_updateQueue.Count == 1 ? "mod" : "mods")} ({mod.Title ?? mod.FileName})..");
 
             bool success = await http.Download($"{modsUrl}/{mod.FileName}.pak",
-                $"{modList.LocalModsPath}/@{sourceName}/{mod.FileName}.pak", new Progress<float>(ReportProgress));
+                $"{modList.GetLocalModsPath(version)}/@{sourceName}/{mod.FileName}.pak", new Progress<float>(ReportProgress));
             if (!success)
                 logger.LogError("Failed to update mod ({Mod})!", mod.Title ?? mod.FileName);
 

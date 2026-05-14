@@ -82,7 +82,7 @@ public class LaunchWorker(
             if (externalMods.Count > 0)
             {
                 WebSync ratajmods = (WebSync)modSourceFactory.Get("ratajmods");
-                await ratajmods.CheckModUpdates(externalMods.ToArray());
+                await ratajmods.CheckModUpdates(externalMods.ToArray(), state.Version);
             }
 
             if (incompatibleMods.Count > 0)

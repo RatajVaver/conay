@@ -19,6 +19,10 @@ public class ModList(ILogger<ModList> logger, Steam steam)
         ? null
         : Path.GetFullPath(Path.Combine(steam.AppInstallDir, "ConanSandbox/Mods"));
 
+    public string? GetLocalModsPath(GameVersion version) => steam.AppInstallDir == string.Empty
+        ? null
+        : Path.GetFullPath(Path.Combine(steam.GetInstallDirForVersion(version), "ConanSandbox/Mods"));
+
     private readonly List<string> _currentMods = [];
 
     private string GetModListPath(GameVersion version) =>
@@ -71,12 +75,13 @@ public class ModList(ILogger<ModList> logger, Steam steam)
         return File.GetLastWriteTimeUtc(filePath);
     }
 
-    public DateTime GetLocalModFileLastUpdate(string directoryPath, string pakName)
+    public DateTime GetLocalModFileLastUpdate(string directoryPath, string pakName, GameVersion version)
     {
-        if (LocalModsPath == null)
+        string? localModsPath = GetLocalModsPath(version);
+        if (localModsPath == null)
             return Epoch.ToDateTime(Epoch.Current);
 
-        string filePath = Path.Combine(LocalModsPath, directoryPath, pakName + ".pak");
+        string filePath = Path.Combine(localModsPath, directoryPath, pakName + ".pak");
         return File.Exists(filePath) ? File.GetLastWriteTimeUtc(filePath) : Epoch.UnixEpoch;
     }
 

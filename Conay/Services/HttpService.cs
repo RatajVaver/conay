@@ -53,6 +53,7 @@ public class HttpService(ILogger<HttpService> logger)
         using CancellationTokenSource cts = new(TimeSpan.FromMinutes(5));
         try
         {
+            Directory.CreateDirectory(Path.GetDirectoryName(filePath)!);
             await using FileStream file = new(filePath, FileMode.Create, FileAccess.Write, FileShare.None);
             await Client.DownloadAsync(url, file, progress, cts.Token);
         }
