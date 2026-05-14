@@ -127,6 +127,9 @@ public class LocalPresets : IPresetService
         if (!GetLocalPresets().TryGetValue(fileName, out ServerData? data))
             return;
 
-        _modList.SaveModList(data.Mods.ToArray(), data.GameVersion);
+        GameVersion version = string.IsNullOrEmpty(data.Version)
+            ? GameVersionHelper.Current
+            : GameVersionHelper.FromPresetVersion(data.Version);
+        _modList.SaveModList(data.Mods.ToArray(), version);
     }
 }

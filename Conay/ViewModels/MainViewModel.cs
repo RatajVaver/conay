@@ -155,6 +155,10 @@ public partial class MainViewModel : ViewModelBase
                 await _steam!.WaitForSteam();
                 provider.SaveModlistFromPreset(server);
                 _launcherConfig?.SaveIntoHistory(server);
+                if (_launchState != null)
+                    _launchState.Version = string.IsNullOrEmpty(serverData.Version)
+                        ? GameVersionHelper.Current
+                        : GameVersionHelper.FromPresetVersion(serverData.Version);
                 ShowLaunchForPreset(serverData);
                 return;
             }
