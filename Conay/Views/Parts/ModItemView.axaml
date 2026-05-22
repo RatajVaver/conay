@@ -12,16 +12,16 @@
             behaviors:VisibilityHandler.LazyLoad="True">
         <Grid ColumnDefinitions="Auto, *, Auto">
             <Border Grid.Column="0">
-                <StackPanel Orientation="Horizontal">
-                    <Image Width="38" Height="38" Margin="0 0 10 0"
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <Image Width="52" Height="52" Margin="0 0 10 0"
                            IsVisible="{Binding ShowIcon, Mode=OneWay}"
                            asyncImageLoader:ImageLoader.Source="{Binding Icon, Mode=OneWay}" />
-                    <Image Width="38" Height="38" Margin="0 0 10 0"
+                    <Image Width="52" Height="52" Margin="0 0 10 0"
                            IsVisible="{Binding ShowDefaultIcon, Mode=OneWay}"
                            Source="/Assets/Images/default.jpg" Opacity="0.4" />
                 </StackPanel>
             </Border>
-            <StackPanel Grid.Column="1" Orientation="Vertical">
+            <StackPanel Grid.Column="1" Orientation="Vertical" VerticalAlignment="Center">
                 <Label Content="{Binding Title, Mode=OneWay}"></Label>
                 <StackPanel Orientation="Horizontal">
                     <Label Foreground="#999" FontSize="12" Content="{Binding Size, Mode=OneWay}"></Label>

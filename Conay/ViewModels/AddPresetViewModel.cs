@@ -1,13 +1,13 @@
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Platform.Storage;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using Conay.Data;
+using Conay.Utils;
 using System.Threading.Tasks;
 using Conay.Factories;
 using Conay.Services;
@@ -131,17 +131,14 @@ public partial class AddPresetViewModel : PageViewModel
     [RelayCommand]
     private async Task AddMod()
     {
-        Window? window = (Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)
-            ?.MainWindow;
-        if (window == null) return;
-        TopLevel? topLevel = TopLevel.GetTopLevel(window);
+        TopLevel? topLevel = AppWindow.GetTopLevel();
         if (topLevel == null) return;
 
         IStorageFolder? startFolder = _modList.WorkshopPath != null
             ? await topLevel.StorageProvider.TryGetFolderFromPathAsync(_modList.WorkshopPath)
             : null;
 
-        var files = await topLevel.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+        IReadOnlyList<IStorageFile> files = await topLevel.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
         {
             Title = "Select mod file(s)",
             AllowMultiple = true,
@@ -149,7 +146,7 @@ public partial class AddPresetViewModel : PageViewModel
             FileTypeFilter = [new FilePickerFileType("Mod files") { Patterns = ["*.pak"] }]
         });
 
-        foreach (var file in files)
+        foreach (IStorageFile file in files)
         {
             string? path = file.TryGetLocalPath();
             if (path == null) continue;

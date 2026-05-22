@@ -3,9 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
-using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Platform.Storage;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -40,12 +38,16 @@ public partial class LaunchViewModel : PageViewModel
     [ObservableProperty]
     private bool _launching;
 
+    public bool IsDirectLaunch => string.IsNullOrEmpty(_launchState.Name);
+
+    public bool ShowVersionSwitch => IsDirectLaunch && _steam.DualInstallMode;
+
+    public bool IsEnhancedVersion => _launchState.Version == GameVersion.Enhanced;
+    public bool IsLegacyVersion => _launchState.Version == GameVersion.Legacy;
+
     public bool ShowSupportBox { get; } = Random.Shared.NextDouble() < 0.02;
 
     public ObservableCollection<ModItemViewModel> Mods { get; } = [];
-
-    [ObservableProperty]
-    private bool _showVersionSelector;
 
     public LaunchViewModel(Steam steam, ModList modList, LaunchState launchState, LaunchWorker launchWorker,
         ModItemFactory modItemFactory, LauncherConfig launcherConfig)
@@ -62,8 +64,6 @@ public partial class LaunchViewModel : PageViewModel
             GameVersion? lastVersion = launcherConfig.Data.LastLaunchedVersion;
             if (lastVersion.HasValue)
                 ApplyVersion(lastVersion.Value);
-            else
-                ShowVersionSelector = true;
         }
 
         Mods.CollectionChanged += (_, _) => ModsLoaded = $"Currently loaded mods ({Mods.Count}):";
@@ -97,9 +97,13 @@ public partial class LaunchViewModel : PageViewModel
     private ModItemViewModel CreateMod(string modPath)
     {
         ModItemViewModel vm = _modItemFactory.Create(modPath, _launchState.Version);
-        vm.OnMoveUp = () => MoveMod(vm, -1);
-        vm.OnMoveDown = () => MoveMod(vm, 1);
-        vm.OnRemove = () => Mods.Remove(vm);
+        if (IsDirectLaunch)
+        {
+            vm.OnMoveUp = () => MoveMod(vm, -1);
+            vm.OnMoveDown = () => MoveMod(vm, 1);
+            vm.OnRemove = () => Mods.Remove(vm);
+        }
+
         return vm;
     }
 
@@ -115,13 +119,14 @@ public partial class LaunchViewModel : PageViewModel
     {
         _launchState.Version = version;
         _modList.LoadModList(version);
+        OnPropertyChanged(nameof(IsEnhancedVersion));
+        OnPropertyChanged(nameof(IsLegacyVersion));
     }
 
     [RelayCommand]
     private void SelectEnhanced()
     {
         ApplyVersion(GameVersion.Enhanced);
-        ShowVersionSelector = false;
         Mods.Clear();
         ModsLoaded = "Currently loaded mods:";
         _ = LoadModlist();
@@ -132,7 +137,6 @@ public partial class LaunchViewModel : PageViewModel
     private void SelectLegacy()
     {
         ApplyVersion(GameVersion.Legacy);
-        ShowVersionSelector = false;
         Mods.Clear();
         ModsLoaded = "Currently loaded mods:";
         _ = LoadModlist();
@@ -142,17 +146,14 @@ public partial class LaunchViewModel : PageViewModel
     [RelayCommand]
     private async Task AddMod()
     {
-        Window? window = (Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)
-            ?.MainWindow;
-        if (window == null) return;
-        TopLevel? topLevel = TopLevel.GetTopLevel(window);
+        TopLevel? topLevel = AppWindow.GetTopLevel();
         if (topLevel == null) return;
 
         IStorageFolder? startFolder = _modList.WorkshopPath != null
             ? await topLevel.StorageProvider.TryGetFolderFromPathAsync(_modList.WorkshopPath)
             : null;
 
-        var files = await topLevel.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+        IReadOnlyList<IStorageFile> files = await topLevel.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
         {
             Title = "Select mod file(s)",
             AllowMultiple = true,
@@ -160,7 +161,7 @@ public partial class LaunchViewModel : PageViewModel
             FileTypeFilter = [new FilePickerFileType("Mod files") { Patterns = ["*.pak"] }]
         });
 
-        foreach (var file in files)
+        foreach (IStorageFile file in files)
         {
             string? path = file.TryGetLocalPath();
             if (path == null) continue;
@@ -191,6 +192,8 @@ public partial class LaunchViewModel : PageViewModel
     private void Launch()
     {
         if (Launching) return;
+        if (IsDirectLaunch)
+            _modList.SaveModList([.. Mods.Select(m => m.ModPath)], _launchState.Version);
         Launching = true;
         _launchWorker.Launch();
     }

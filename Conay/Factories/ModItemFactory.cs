@@ -18,6 +18,9 @@ public class ModItemFactory(Steam steam, ModSourceFactory modSourceFactory, Laun
         }
 
         item.Version = version ?? GameVersionHelper.Current;
+        item.OnMoveUp = null;
+        item.OnMoveDown = null;
+        item.OnRemove = null;
         return item;
     }
 }

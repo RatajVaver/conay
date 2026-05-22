@@ -1,7 +1,4 @@
-﻿using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Input;
+﻿using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Threading;
 using System;
@@ -17,14 +14,7 @@ public static class Clipboard
     [DllImport("ole32.dll")]
     private static extern int OleFlushClipboard();
 
-    public static IClipboard? Get()
-    {
-        if (Application.Current?.ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop)
-            return null;
-
-        TopLevel? topLevel = TopLevel.GetTopLevel(desktop.MainWindow);
-        return topLevel?.Clipboard;
-    }
+    public static IClipboard? Get() => AppWindow.GetTopLevel()?.Clipboard;
 
     public static async Task SetTextAsync(string text)
     {
