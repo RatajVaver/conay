@@ -15,6 +15,7 @@
                 Saves also include your currently loaded modlist.
                 When loading a save, you'll be asked what to do with the currently loaded one first.
                 Save files are stored in the Conay/saves folder and can be freely backed up, moved or deleted.
+                Please note that in case of Dual Install, only Legacy version will be used for saves.
             </TextBlock>
             <Button Grid.Column="1" Command="{Binding OpenSavesFolderCommand}" VerticalAlignment="Top">
                 <StackPanel Orientation="Horizontal">

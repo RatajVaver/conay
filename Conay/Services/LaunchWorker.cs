@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using Conay.Data;
 using Conay.Factories;
 using Conay.Utils;
-using Avalonia.Input;
 using Microsoft.Extensions.Logging;
 
 namespace Conay.Services;
@@ -110,11 +109,7 @@ public class LaunchWorker(
                 notifyService.UpdateStatus(this, "All mods are updated.");
 
                 if (launcherConfig.Data.Clipboard && !string.IsNullOrEmpty(state.Ip))
-                {
-                    DataTransfer clipData = new();
-                    clipData.Add(DataTransferItem.CreateText(state.Ip));
-                    _ = Clipboard.Get()?.SetDataAsync(clipData);
-                }
+                    _ = Clipboard.SetTextAsync(state.Ip);
             }
         }
         catch (Exception ex)
@@ -152,11 +147,7 @@ public class LaunchWorker(
         }
 
         if (launcherConfig.Data.Clipboard && !string.IsNullOrEmpty(state.Ip))
-        {
-            DataTransfer clipData = new();
-            clipData.Add(DataTransferItem.CreateText(state.Ip));
-            _ = Clipboard.Get()?.SetDataAsync(clipData);
-        }
+            _ = Clipboard.SetTextAsync(state.Ip);
 
         int countdown = OperatingSystem.IsWindows() ? (state.Version == GameVersion.Enhanced ? 10 : 20) : 3;
         for (int i = countdown; i > 1; i--)
@@ -188,6 +179,7 @@ public class LaunchWorker(
                 {
                     FileName = exePath,
                     Arguments = args,
+                    WorkingDirectory = Path.GetDirectoryName(exePath),
                     UseShellExecute = true
                 });
                 return true;
