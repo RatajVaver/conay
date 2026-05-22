@@ -346,4 +346,35 @@
         <Setter Property="Background" Value="#242424"></Setter>
         <Setter Property="Foreground" Value="#bbb"></Setter>
     </Style>
+
+    <Style Selector="Button.enhancedVersion:disabled">
+        <Setter Property="Opacity" Value="1"></Setter>
+    </Style>
+
+    <Style Selector="Button.enhancedVersion:disabled /template/ ContentPresenter">
+        <Setter Property="Background" Value="#2d1a45"></Setter>
+        <Setter Property="Foreground" Value="#e8b8ff"></Setter>
+    </Style>
+
+    <Style Selector="Button.legacyVersion:disabled">
+        <Setter Property="Opacity" Value="1"></Setter>
+    </Style>
+
+    <Style Selector="Button.legacyVersion:disabled /template/ ContentPresenter">
+        <Setter Property="Background" Value="#3a270a"></Setter>
+        <Setter Property="Foreground" Value="#f0c878"></Setter>
+    </Style>
+
+    <Style Selector="Border.justMoved">
+        <Style.Animations>
+            <Animation Duration="0:0:0.5" FillMode="None">
+                <KeyFrame Cue="0%">
+                    <Setter Property="BorderBrush" Value="#aaa" />
+                </KeyFrame>
+                <KeyFrame Cue="100%">
+                    <Setter Property="BorderBrush" Value="#444" />
+                </KeyFrame>
+            </Animation>
+        </Style.Animations>
+    </Style>
 </Styles>

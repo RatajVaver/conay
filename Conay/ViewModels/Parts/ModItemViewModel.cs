@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -117,6 +118,22 @@ public partial class ModItemViewModel : ViewModelBase, ILazyLoad
                 Updated = "updated " + HumanReadable.TimeAgo(Epoch.ToDateTime(data.LastUpdate));
             }
         }
+    }
+
+    [ObservableProperty]
+    private bool _isJustMoved;
+
+    private CancellationTokenSource? _highlightCts;
+
+    public async void FlashHighlight()
+    {
+        _highlightCts?.Cancel();
+        _highlightCts = new CancellationTokenSource();
+        var cts = _highlightCts;
+        IsJustMoved = true;
+        try { await Task.Delay(500, cts.Token); }
+        catch (OperationCanceledException) { return; }
+        IsJustMoved = false;
     }
 
     public Action? OnMoveUp { get; set; }

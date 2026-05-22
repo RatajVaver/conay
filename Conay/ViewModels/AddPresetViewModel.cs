@@ -122,7 +122,10 @@ public partial class AddPresetViewModel : PageViewModel
         int index = Mods.IndexOf(mod);
         int newIndex = index + direction;
         if (newIndex < 0 || newIndex >= Mods.Count) return;
+        var neighbor = Mods[newIndex];
         Mods.Move(index, newIndex);
+        mod.FlashHighlight();
+        neighbor.FlashHighlight();
     }
 
     [RelayCommand]

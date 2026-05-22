@@ -60,14 +60,14 @@
                         <Label Classes="text" Content="Save modlist" />
                     </StackPanel>
                 </Button>
-                <StackPanel Orientation="Horizontal" Spacing="4" IsVisible="{Binding ShowVersionSwitch}" VerticalAlignment="Center">
-                    <Button Classes="compact" Command="{Binding SelectEnhancedCommand}" IsEnabled="{Binding !IsEnhancedVersion}">
+                <StackPanel Orientation="Horizontal" Spacing="10" IsVisible="{Binding ShowVersionSwitch}" VerticalAlignment="Center">
+                    <Button Classes="compact enhancedVersion" Command="{Binding SelectEnhancedCommand}" IsEnabled="{Binding !IsEnhancedVersion}">
                         <StackPanel Orientation="Horizontal">
                             <Label Classes="icon enhanced" Content="&#xE8F4;" />
                             <Label Classes="text" Content="Enhanced" />
                         </StackPanel>
                     </Button>
-                    <Button Classes="compact" Command="{Binding SelectLegacyCommand}" IsEnabled="{Binding !IsLegacyVersion}">
+                    <Button Classes="compact legacyVersion" Command="{Binding SelectLegacyCommand}" IsEnabled="{Binding !IsLegacyVersion}">
                         <StackPanel Orientation="Horizontal">
                             <Label Classes="icon legacy" Content="&#xE1EC;" />
                             <Label Classes="text" Content="Legacy" />

@@ -112,13 +112,15 @@ public partial class LaunchViewModel : PageViewModel
         int index = Mods.IndexOf(mod);
         int newIndex = index + direction;
         if (newIndex < 0 || newIndex >= Mods.Count) return;
+        var neighbor = Mods[newIndex];
         Mods.Move(index, newIndex);
+        mod.FlashHighlight();
+        neighbor.FlashHighlight();
     }
 
     private void ApplyVersion(GameVersion version)
     {
         _launchState.Version = version;
-        _modList.LoadModList(version);
         OnPropertyChanged(nameof(IsEnhancedVersion));
         OnPropertyChanged(nameof(IsLegacyVersion));
     }
