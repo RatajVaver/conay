@@ -53,7 +53,21 @@
                     </StackPanel>
                 </StackPanel>
             </Border>
-            <Label Content="{Binding ModsLoaded}" Foreground="#777" Margin="0 30 0 10"></Label>
+            <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center" Margin="0 30 0 10">
+                <Label Content="{Binding ModsLoaded}" Foreground="#777" VerticalAlignment="Center" />
+                <Button Classes="compact" Command="{Binding AddModCommand}">
+                    <StackPanel Orientation="Horizontal">
+                        <Label Classes="icon" Content="&#xe3d4;" />
+                        <Label Classes="text" Content="Add mod" />
+                    </StackPanel>
+                </Button>
+                <Button Classes="compact" Command="{Binding SaveModlistCommand}">
+                    <StackPanel Orientation="Horizontal">
+                        <Label Classes="icon" Content="&#xe248;" />
+                        <Label Classes="text" Content="Save modlist" />
+                    </StackPanel>
+                </Button>
+            </StackPanel>
             <ItemsControl ItemsSource="{Binding Mods}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>

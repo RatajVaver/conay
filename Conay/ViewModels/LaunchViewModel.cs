@@ -1,7 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading.Tasks;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Platform.Storage;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
@@ -61,6 +66,8 @@ public partial class LaunchViewModel : PageViewModel
                 ShowVersionSelector = true;
         }
 
+        Mods.CollectionChanged += (_, _) => ModsLoaded = $"Currently loaded mods ({Mods.Count}):";
+
         _ = LoadModlist();
         LoadLaunchData();
 
@@ -77,16 +84,31 @@ public partial class LaunchViewModel : PageViewModel
         List<string> currentMods = _modList.GetCurrentModList();
         foreach (string modPath in currentMods)
         {
-            Mods.Add(_modItemFactory.Create(modPath, _launchState.Version));
+            Mods.Add(CreateMod(modPath));
         }
-
-        ModsLoaded = $"Currently loaded mods ({Mods.Count}):";
     }
 
     private void LoadLaunchData()
     {
         Title = !string.IsNullOrEmpty(_launchState.Name) ? _launchState.Name : "Last played modlist";
         Subtitle = _launchState.IsSaveLaunch ? "Loaded game save" : _launchState.Ip;
+    }
+
+    private ModItemViewModel CreateMod(string modPath)
+    {
+        ModItemViewModel vm = _modItemFactory.Create(modPath, _launchState.Version);
+        vm.OnMoveUp = () => MoveMod(vm, -1);
+        vm.OnMoveDown = () => MoveMod(vm, 1);
+        vm.OnRemove = () => Mods.Remove(vm);
+        return vm;
+    }
+
+    private void MoveMod(ModItemViewModel mod, int direction)
+    {
+        int index = Mods.IndexOf(mod);
+        int newIndex = index + direction;
+        if (newIndex < 0 || newIndex >= Mods.Count) return;
+        Mods.Move(index, newIndex);
     }
 
     private void ApplyVersion(GameVersion version)
@@ -115,6 +137,48 @@ public partial class LaunchViewModel : PageViewModel
         ModsLoaded = "Currently loaded mods:";
         _ = LoadModlist();
         LoadLaunchData();
+    }
+
+    [RelayCommand]
+    private async Task AddMod()
+    {
+        Window? window = (Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)
+            ?.MainWindow;
+        if (window == null) return;
+        TopLevel? topLevel = TopLevel.GetTopLevel(window);
+        if (topLevel == null) return;
+
+        IStorageFolder? startFolder = _modList.WorkshopPath != null
+            ? await topLevel.StorageProvider.TryGetFolderFromPathAsync(_modList.WorkshopPath)
+            : null;
+
+        var files = await topLevel.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+        {
+            Title = "Select mod file(s)",
+            AllowMultiple = true,
+            SuggestedStartLocation = startFolder,
+            FileTypeFilter = [new FilePickerFileType("Mod files") { Patterns = ["*.pak"] }]
+        });
+
+        foreach (var file in files)
+        {
+            string? path = file.TryGetLocalPath();
+            if (path == null) continue;
+
+            string[] parts = path.Replace('\\', '/').Split('/');
+            if (parts.Length < 2) continue;
+
+            string modPath = $"{parts[^2]}/{parts[^1]}";
+            if (Mods.Any(m => m.ModPath == modPath)) continue;
+
+            Mods.Add(CreateMod(modPath));
+        }
+    }
+
+    [RelayCommand]
+    private void SaveModlist()
+    {
+        _modList.SaveModList([.. Mods.Select(m => m.ModPath)], _launchState.Version);
     }
 
     [RelayCommand]
