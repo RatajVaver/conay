@@ -226,7 +226,11 @@ public class Steam : IModSource
 
         foreach (PublishedFileDetails mod in mods)
         {
-            ulong modId = ulong.Parse(mod.Id);
+            if (!ulong.TryParse(mod.Id, out ulong modId))
+            {
+                _logger.LogWarning("Skipping mod with unparseable ID: {Id}", mod.Id);
+                continue;
+            }
             DateTime remoteLastUpdated = Epoch.ToDateTime(mod.LastUpdate ?? 0);
             DateTime localLastUpdated = ModList.GetModFileLastUpdate(_workshopPath, modId);
             if (remoteLastUpdated > localLastUpdated)

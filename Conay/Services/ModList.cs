@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Conay.Services;
 
-public class ModList(ILogger<ModList> logger, Steam steam)
+public class ModList(ILogger<ModList> logger, Steam steam, NotifyService notifyService)
 {
     public string? WorkshopPath => steam.AppInstallDir == string.Empty
         ? null
@@ -132,6 +132,7 @@ public class ModList(ILogger<ModList> logger, Steam steam)
         catch (Exception ex)
         {
             logger.LogError(ex, "Failed to save modlist!");
+            notifyService.UpdateStatus(this, "Failed to save modlist! Try running Conay as administrator.");
             return;
         }
 

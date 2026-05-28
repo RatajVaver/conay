@@ -49,6 +49,7 @@ public class GameConfig
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to toggle cinematic intro (DefaultGame.ini)!");
+            return false;
         }
 
         return true;

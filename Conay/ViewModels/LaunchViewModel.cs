@@ -78,6 +78,8 @@ public partial class LaunchViewModel : PageViewModel
     {
         await _steam.WaitForSteam();
 
+        _modItemFactory.ReleaseCallbacks();
+
         if (string.IsNullOrEmpty(_launchState.Name))
             _modList.LoadModList(_launchState.Version);
 

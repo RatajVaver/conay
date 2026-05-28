@@ -88,6 +88,7 @@ public partial class AddPresetViewModel : PageViewModel
 
     public void LoadCurrentModlist()
     {
+        _modItemFactory.ReleaseCallbacks();
         Mods.Clear();
         foreach (string modPath in _modList.ReloadCurrentModListForVersion(SelectedVersion))
             Mods.Add(CreateMod(modPath));
@@ -103,6 +104,7 @@ public partial class AddPresetViewModel : PageViewModel
         SelectedVersion = preset.GameVersion;
         Title = "Edit preset";
 
+        _modItemFactory.ReleaseCallbacks();
         Mods.Clear();
         foreach (string mod in preset.Mods)
             Mods.Add(CreateMod(mod));

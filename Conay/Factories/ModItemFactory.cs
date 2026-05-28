@@ -23,4 +23,14 @@ public class ModItemFactory(Steam steam, ModSourceFactory modSourceFactory, Laun
         item.OnRemove = null;
         return item;
     }
+
+    public void ReleaseCallbacks()
+    {
+        foreach (ModItemViewModel item in _modItems.Values)
+        {
+            item.OnMoveUp = null;
+            item.OnMoveDown = null;
+            item.OnRemove = null;
+        }
+    }
 }
