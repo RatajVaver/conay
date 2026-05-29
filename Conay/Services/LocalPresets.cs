@@ -83,7 +83,8 @@ public class LocalPresets : IPresetService
     {
         GetLocalPresets().TryGetValue(fileName, out ServerData? preset);
         if (preset == null) return null;
-        preset.Ip = await DnsHelper.ResolveToIpv4Async(preset.Ip, _logger);
+        if (preset.Ip != "singleplayer")
+            preset.Ip = await DnsHelper.ResolveToIpv4Async(preset.Ip, _logger);
         return preset;
     }
 
