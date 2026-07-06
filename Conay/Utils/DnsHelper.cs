@@ -18,7 +18,7 @@ internal static class DnsHelper
         string port = colonIndex >= 0 ? address[colonIndex..] : string.Empty;
 
         if (IPAddress.TryParse(host, out IPAddress? parsed) && parsed.AddressFamily == AddressFamily.InterNetwork)
-            return address;
+            return host;
 
         try
         {
@@ -31,6 +31,6 @@ internal static class DnsHelper
             logger.LogWarning(ex, "Failed to resolve hostname '{Host}' to IPv4!", host);
         }
 
-        return address;
+        return host;
     }
 }
