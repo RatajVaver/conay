@@ -116,6 +116,7 @@ public partial class AddPresetViewModel : PageViewModel
         vm.OnMoveUp = () => MoveMod(vm, -1);
         vm.OnMoveDown = () => MoveMod(vm, 1);
         vm.OnRemove = () => Mods.Remove(vm);
+        vm.OnDroppedOn = dragged => MoveModTo(dragged, vm);
         return vm;
     }
 
@@ -128,6 +129,15 @@ public partial class AddPresetViewModel : PageViewModel
         Mods.Move(index, newIndex);
         mod.FlashHighlight();
         neighbor.FlashHighlight();
+    }
+
+    private void MoveModTo(ModItemViewModel dragged, ModItemViewModel target)
+    {
+        int oldIndex = Mods.IndexOf(dragged);
+        int newIndex = Mods.IndexOf(target);
+        if (oldIndex < 0 || newIndex < 0 || oldIndex == newIndex) return;
+        Mods.Move(oldIndex, newIndex);
+        dragged.FlashHighlight();
     }
 
     [RelayCommand]

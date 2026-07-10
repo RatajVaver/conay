@@ -119,6 +119,10 @@
                 If you're not offline, something on your computer (e.g. antivirus)
                 is likely blocking Conay from communicating with the internet.
             </Label>
+            <Label Margin="0 10 0 0" FontSize="12">
+                You can also check ratajmods.net/conay/servers in your browser
+                as this may also be caused by Conay backend error.
+            </Label>
         </StackPanel>
 
         <Label IsVisible="{Binding HasNoFilterResults}" Foreground="#555" FontSize="14">

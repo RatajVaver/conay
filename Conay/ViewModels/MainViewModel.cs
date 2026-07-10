@@ -146,7 +146,12 @@ public partial class MainViewModel : ViewModelBase
         {
             _logger?.LogDebug("Server preset argument: {Server}", server);
 
-            foreach (string source in new[] { "local", "ratajmods", "github" })
+            foreach (string source in new[]
+                     {
+                         "local",
+                         "ratajmods",
+                         //"github"
+                     })
             {
                 IPresetService provider = _presetSourceFactory!.Get(source);
                 ServerData? serverData = await provider.FetchServerData(server);

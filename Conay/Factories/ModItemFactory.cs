@@ -21,6 +21,7 @@ public class ModItemFactory(Steam steam, ModSourceFactory modSourceFactory, Laun
         item.OnMoveUp = null;
         item.OnMoveDown = null;
         item.OnRemove = null;
+        item.OnDroppedOn = null;
         return item;
     }
 
@@ -31,6 +32,7 @@ public class ModItemFactory(Steam steam, ModSourceFactory modSourceFactory, Laun
             item.OnMoveUp = null;
             item.OnMoveDown = null;
             item.OnRemove = null;
+            item.OnDroppedOn = null;
         }
     }
 }

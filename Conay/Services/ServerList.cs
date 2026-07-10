@@ -19,6 +19,12 @@ public class ServerList
     public Task WhenLocalLoaded => _localLoadedTcs.Task;
     public Task WhenRemoteLoaded => _remoteLoadedTcs.Task;
 
+    private static readonly string[] ServerSources =
+    [
+        "ratajmods",
+        //"github"
+    ];
+
     public ServerList(PresetSourceFactory sourceFactory, LauncherConfig launcherConfig)
     {
         _sourceFactory = sourceFactory;
@@ -49,7 +55,7 @@ public class ServerList
 
         if (!_launcherConfig.Data.OfflineMode)
         {
-            List<Task<List<ServerInfo>>> remoteTasks = new[] { "ratajmods", "github" }
+            List<Task<List<ServerInfo>>> remoteTasks = ServerSources
                 .Select(origin => _sourceFactory.Get(origin).GetServerList())
                 .ToList();
 

@@ -123,6 +123,12 @@ public partial class ModItemViewModel : ViewModelBase, ILazyLoad
     [ObservableProperty]
     private bool _isJustMoved;
 
+    [ObservableProperty]
+    private bool _isDragging;
+
+    [ObservableProperty]
+    private bool _isDropTarget;
+
     private CancellationTokenSource? _highlightCts;
 
     public async void FlashHighlight()
@@ -139,6 +145,7 @@ public partial class ModItemViewModel : ViewModelBase, ILazyLoad
     public Action? OnMoveUp { get; set; }
     public Action? OnMoveDown { get; set; }
     public Action? OnRemove { get; set; }
+    public Action<ModItemViewModel>? OnDroppedOn { get; set; }
 
     public bool IsReorderable => OnMoveUp != null;
     public bool IsRemovable => OnRemove != null;

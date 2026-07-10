@@ -377,4 +377,18 @@
             </Animation>
         </Style.Animations>
     </Style>
+
+    <Style Selector="Border.modRow">
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="BorderBrush" Value="#444" />
+    </Style>
+
+    <Style Selector="Border.modRow.dragging">
+        <Setter Property="Opacity" Value="0.5" />
+    </Style>
+
+    <Style Selector="Border.modRow.dropTarget">
+        <Setter Property="BorderBrush" Value="#5b9cf6" />
+        <Setter Property="BorderThickness" Value="2" />
+    </Style>
 </Styles>

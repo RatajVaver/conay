@@ -7,9 +7,15 @@
              xmlns:asyncImageLoader="clr-namespace:AsyncImageLoader;assembly=AsyncImageLoader.Avalonia"
              mc:Ignorable="d" d:DesignWidth="550" d:DesignHeight="450"
              x:Class="Conay.Views.Parts.ModItemView"
-             x:DataType="vmp:ModItemViewModel">
-    <Border BorderThickness="1" BorderBrush="#444" Padding="10 5 15 5" Margin="0 0 0 10"
+             x:DataType="vmp:ModItemViewModel"
+             Background="Transparent"
+             PointerMoved="ModItemView_PointerMoved"
+             PointerReleased="ModItemView_PointerReleased"
+             PointerCaptureLost="ModItemView_PointerCaptureLost">
+    <Border x:Name="RootBorder" Classes="modRow" Padding="10 5 15 5" Margin="0 0 0 10"
             Classes.justMoved="{Binding IsJustMoved}"
+            Classes.dragging="{Binding IsDragging}"
+            Classes.dropTarget="{Binding IsDropTarget}"
             behaviors:VisibilityHandler.LazyLoad="True">
         <Grid ColumnDefinitions="Auto, *, Auto">
             <Border Grid.Column="0">
@@ -31,6 +37,12 @@
                 </StackPanel>
             </StackPanel>
             <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Spacing="2">
+                <Border IsVisible="{Binding IsReorderable, Mode=OneWay}"
+                        Background="Transparent" Cursor="SizeAll" VerticalAlignment="Stretch" Margin="0 0 4 0"
+                        PointerPressed="DragHandle_PointerPressed">
+                    <Label Classes="icon" Content="&#xeae2;" VerticalAlignment="Center"
+                           Foreground="#999" ToolTip.Tip="Drag to reorder"></Label>
+                </Border>
                 <StackPanel Orientation="Vertical" IsVisible="{Binding IsReorderable, Mode=OneWay}">
                     <Button Classes="small" Command="{Binding MoveUpCommand}" ToolTip.Tip="Move up">
                         <Label Classes="icon" Content="&#xe08e;"></Label>

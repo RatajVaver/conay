@@ -15,9 +15,9 @@ public class PresetSourceFactory(
     private readonly Dictionary<string, IPresetService> _sources = new()
     {
         ["local"] = localPresets,
-        ["github"] = new RemotePresets(logger, config, http, modList, "github",
+        /*["github"] = new RemotePresets(logger, config, http, modList, "github",
             "https://raw.githubusercontent.com/RatajVaver/conay/main/servers.json",
-            "https://raw.githubusercontent.com/RatajVaver/conay/main/servers"),
+            "https://raw.githubusercontent.com/RatajVaver/conay/main/servers"),*/
         ["ratajmods"] = new RemotePresets(logger, config, http, modList, "ratajmods",
             "https://ratajmods.net/conay/servers.json",
             "https://ratajmods.net/conay/servers")
