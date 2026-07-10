@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Threading;
 using Conay.Utils;
 using Microsoft.Extensions.Logging;
 
@@ -12,6 +13,7 @@ public class FileLogger(string categoryName, string filePath) : ILogger
         return null;
     }
 
+    private static readonly Lock WriteLock = new();
     private static bool _thrownError;
     public static bool AppLoaded { get; set; }
     public bool IsEnabled(LogLevel logLevel) => true;
@@ -29,15 +31,22 @@ public class FileLogger(string categoryName, string filePath) : ILogger
 
         try
         {
-            File.AppendAllText(filePath, message + Environment.NewLine);
+            lock (WriteLock)
+            {
+                File.AppendAllText(filePath, message + Environment.NewLine);
+            }
         }
-        catch
+        catch (UnauthorizedAccessException)
         {
             if (AppLoaded && !_thrownError)
             {
                 DumpHelper.FilePermWarn();
                 _thrownError = true;
             }
+        }
+        catch
+        {
+            // file locked, disk full and similar errors not related to permissions
         }
     }
 }
