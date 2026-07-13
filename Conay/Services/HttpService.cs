@@ -26,6 +26,11 @@ public class HttpService(ILogger<HttpService> logger)
         {
             return await Client.GetStringAsync(url, cts.Token).ConfigureAwait(false);
         }
+        catch (OperationCanceledException)
+        {
+            logger.LogWarning("Request to {Url} timed out.", url);
+            return string.Empty;
+        }
         catch (Exception ex)
         {
             logger.LogError(ex, "Failed to read data from: {Url}", url);

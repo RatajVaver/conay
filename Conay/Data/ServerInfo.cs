@@ -17,11 +17,32 @@ public class ServerInfo
     [JsonPropertyName("players")]
     public int? Players { get; set; }
 
-    [JsonPropertyName("maxplayers")]
+    [JsonPropertyName("maxPlayers")]
     public int? MaxPlayers { get; set; }
 
     [JsonPropertyName("map")]
     public string? Map { get; set; }
+
+    [JsonPropertyName("ip")]
+    public required string Ip { get; set; }
+
+    [JsonPropertyName("query")]
+    public int? QueryPort { get; set; }
+
+    [JsonPropertyName("tags")]
+    public string[]? Tags { get; set; }
+
+    [JsonPropertyName("version")]
+    public string? Version { get; set; }
+
+    [JsonPropertyName("discord")]
+    public string? Discord { get; set; }
+
+    [JsonPropertyName("website")]
+    public string? Website { get; set; }
+
+    [JsonPropertyName("mods")]
+    public int ModsCount { get; set; }
 
     [JsonIgnore]
     public IPresetService? Provider { get; set; }

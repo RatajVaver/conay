@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json.Serialization;
 
 namespace Conay.Data;
@@ -26,9 +27,6 @@ public class ServerData
     [JsonPropertyName("tags")]
     public string[]? Tags { get; set; }
 
-    [JsonPropertyName("battleye")]
-    public bool BattlEye { get; set; }
-
     [JsonPropertyName("version")]
     public string? Version { get; set; }
 
@@ -40,4 +38,7 @@ public class ServerData
 
     [JsonIgnore]
     public GameVersion GameVersion => GameVersionHelper.FromPresetVersion(Version);
+
+    [JsonIgnore]
+    public bool IsBattleEye => Tags?.Contains("battleye") ?? false;
 }

@@ -99,6 +99,7 @@ public partial class ServersViewModel : PageViewModel
         _serverList = serverList;
 
         FilteredPresets.CollectionChanged += (_, _) => OnPropertyChanged(nameof(HasNoFilterResults));
+        _serverList.ServersChanged += () => Dispatcher.UIThread.Post(RefreshServers);
 
         _ = LoadRemoteServers();
     }
@@ -184,8 +185,6 @@ public partial class ServersViewModel : PageViewModel
         _ => TagFilterState.None
     };
 
-    private CancellationTokenSource? _preloadCancel;
-
     private async Task LoadRemoteServers()
     {
         RefreshServers();
@@ -193,38 +192,6 @@ public partial class ServersViewModel : PageViewModel
         await _serverList.WhenRemoteLoaded;
 
         RefreshServers();
-
-        if (_preloadCancel != null)
-            await _preloadCancel.CancelAsync();
-        _preloadCancel = new CancellationTokenSource();
-        _ = PreloadServerDataAsync(_preloadCancel.Token);
-    }
-
-    private async Task PreloadServerDataAsync(CancellationToken token)
-    {
-        await Task.Delay(TimeSpan.FromSeconds(2), token);
-
-        using SemaphoreSlim sem = new(6);
-        List<Task> tasks = _allPresets.Select(async p =>
-        {
-            await sem.WaitAsync(token);
-            try
-            {
-                await p.WarmCacheAsync();
-            }
-            finally
-            {
-                sem.Release();
-            }
-        }).ToList();
-
-        try
-        {
-            await Task.WhenAll(tasks);
-        }
-        catch (OperationCanceledException)
-        {
-        }
     }
 
     private void RefreshServers()

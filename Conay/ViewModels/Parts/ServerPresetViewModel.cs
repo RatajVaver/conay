@@ -19,7 +19,7 @@ public partial class ServerPresetViewModel : ViewModelBase, ILazyLoad
 
     [ObservableProperty] private string _name = string.Empty;
 
-    [ObservableProperty] private string _ipAddress = "Loading..";
+    [ObservableProperty] private string _ipAddress = string.Empty;
 
     [ObservableProperty] private string _players = string.Empty;
     public int PlayerCount { get; private set; }
@@ -47,12 +47,11 @@ public partial class ServerPresetViewModel : ViewModelBase, ILazyLoad
     [NotifyPropertyChangedFor(nameof(IsMechPvP))]
     [NotifyPropertyChangedFor(nameof(IsDicePvP))]
     [NotifyPropertyChangedFor(nameof(IsErotic))]
+    [NotifyPropertyChangedFor(nameof(IsBattleEye))]
     [NotifyPropertyChangedFor(nameof(HasConaySync))]
     [NotifyPropertyChangedFor(nameof(ProvidedByServerAdmins))]
     [NotifyPropertyChangedFor(nameof(ProvidedByCommunity))]
     private string[]? _tags;
-
-    [ObservableProperty] private bool _battleEye;
 
     [ObservableProperty] [NotifyPropertyChangedFor(nameof(IsModded))] [NotifyPropertyChangedFor(nameof(ModdedTooltip))]
     private int _modsCount;
@@ -86,6 +85,7 @@ public partial class ServerPresetViewModel : ViewModelBase, ILazyLoad
     public bool IsMechPvP => Tags?.Contains("mech") ?? false;
     public bool IsDicePvP => Tags?.Contains("dice") ?? false;
     public bool IsErotic => Tags?.Contains("erp") ?? false;
+    public bool IsBattleEye => Tags?.Contains("battleye") ?? false;
 
     public TagMask TagBits { get; private set; }
 
@@ -98,7 +98,7 @@ public partial class ServerPresetViewModel : ViewModelBase, ILazyLoad
             (IsMechPvP  ? TagMask.MechPvP   : TagMask.None) |
             (IsDicePvP  ? TagMask.DicePvP   : TagMask.None) |
             (IsErotic   ? TagMask.Erotic    : TagMask.None) |
-            (BattleEye  ? TagMask.BattleEye : TagMask.None);
+            (IsBattleEye ? TagMask.BattleEye : TagMask.None);
 
         OnPropertyChanged(nameof(TagBits));
     }
@@ -106,7 +106,6 @@ public partial class ServerPresetViewModel : ViewModelBase, ILazyLoad
     partial void OnTagsChanged(string[]? value) => RebuildTagBits();
     partial void OnVersionChanged(string? value) => RebuildTagBits();
     partial void OnModsCountChanged(int value) => RebuildTagBits();
-    partial void OnBattleEyeChanged(bool value) => RebuildTagBits();
     public bool HasConaySync => Tags?.Contains("sync") ?? false;
     public bool ProvidedByServerAdmins => !HasConaySync && _provider.GetProviderName() == "ratajmods";
     public bool ProvidedByCommunity => !HasConaySync && _provider.GetProviderName() == "github";
@@ -138,6 +137,15 @@ public partial class ServerPresetViewModel : ViewModelBase, ILazyLoad
         Icon = serverInfo.Icon;
         File = serverInfo.File;
         IsFavorite = launcherConfig.IsServerFavorite(File);
+
+        IpAddress = serverInfo.Ip;
+        Discord = serverInfo.Discord;
+        Website = serverInfo.Website;
+        Version = serverInfo.Version;
+        Tags = serverInfo.Tags;
+        ModsCount = serverInfo.ModsCount;
+        _queryPort = serverInfo.QueryPort;
+        IsDataLoaded = true;
 
         LoadMapAndPlayersFromServerInfo();
     }
@@ -186,40 +194,16 @@ public partial class ServerPresetViewModel : ViewModelBase, ILazyLoad
         PingColor = new SolidColorBrush(new HslColor(1, Math.Max(0, 130 - ping / 2), 0.58, 0.66).ToRgb());
     }
 
-    public async Task WarmCacheAsync()
-    {
-        if (IsLoaded) return;
-        await _provider.FetchServerData(_serverInfo.File);
-    }
-
-    public async Task LoadDataAsync()
+    public Task LoadDataAsync()
     {
         IsLoaded = true;
-        await UpdateServerData();
-    }
-
-    private async Task UpdateServerData()
-    {
-        ServerData? preset = await _provider.FetchServerData(_serverInfo.File);
-        if (preset != null)
-        {
-            IpAddress = preset.Ip;
-            Discord = preset.Discord;
-            Website = preset.Website;
-            Version = preset.Version;
-            Tags = preset.Tags;
-            BattleEye = preset.BattlEye;
-            ModsCount = preset.Mods.Count;
-            _queryPort = preset.QueryPort;
-            _preset = preset;
-        }
-
-        IsDataLoaded = true;
 
         if (_launcherConfig.Data is { QueryServers: true, OfflineMode: false })
         {
             _ = GetServerOnlineStatus();
         }
+
+        return Task.CompletedTask;
     }
 
     public async Task GetServerOnlineStatus()
@@ -268,9 +252,9 @@ public partial class ServerPresetViewModel : ViewModelBase, ILazyLoad
     [RelayCommand]
     private async Task LaunchServerPreset()
     {
-        if (_preset != null && !_steam.DualInstallMode && EffectiveGameVersion != GameVersionHelper.Current)
+        if (!_steam.DualInstallMode && EffectiveGameVersion != GameVersionHelper.Current)
         {
-            string required = GameVersionHelper.ToDisplayName(_preset.GameVersion);
+            string required = GameVersionHelper.ToDisplayName(EffectiveGameVersion);
             string current = GameVersionHelper.ToDisplayName(GameVersionHelper.Current);
             bool confirmed = await MessageBox.Confirm(
                 $"This server requires Conan Exiles {required}, but you're currently on {current}.\n\n" +
@@ -278,6 +262,13 @@ public partial class ServerPresetViewModel : ViewModelBase, ILazyLoad
                 $"If you want to play both Legacy and Enhanced, you may also set up a dual install in the Settings tab of Conay.\n\nLaunch anyway?");
 
             if (!confirmed) return;
+        }
+
+        _preset = await _provider.FetchServerData(File);
+        if (_preset == null)
+        {
+            MessageBox.ShowInfo($"Failed to load connection details for '{Name}'. Check your internet connection and try again.");
+            return;
         }
 
         _router.BeforeLaunch(Name);

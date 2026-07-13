@@ -20,6 +20,10 @@ public class LocalPresets : IPresetService
 
     public string GetProviderName() => "local";
 
+#pragma warning disable CS0067
+    public event Action<List<ServerInfo>>? ServerListUpdated;
+#pragma warning restore CS0067
+
     public LocalPresets(ModList modList, ILogger<LocalPresets> logger)
     {
         _modList = modList;
@@ -73,7 +77,19 @@ public class LocalPresets : IPresetService
     {
         Dictionary<string, ServerData> presets = GetLocalPresets();
         List<ServerInfo> servers = presets.Values
-            .Select(x => new ServerInfo { File = x.FileName ?? string.Empty, Name = x.Name, Provider = this })
+            .Select(x => new ServerInfo
+            {
+                File = x.FileName ?? string.Empty,
+                Name = x.Name,
+                Ip = x.Ip,
+                QueryPort = x.QueryPort,
+                Tags = x.Tags,
+                Version = x.Version,
+                Discord = x.Discord,
+                Website = x.Website,
+                ModsCount = x.Mods.Count,
+                Provider = this
+            })
             .ToList();
 
         return Task.FromResult(servers);

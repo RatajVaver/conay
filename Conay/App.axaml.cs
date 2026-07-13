@@ -99,7 +99,7 @@ public class App : Application
             {
                 try
                 {
-                    DateTime cutoff = DateTime.Now.AddDays(-7);
+                    DateTime cutoff = DateTime.Now.AddDays(-14);
                     foreach (string file in Directory.GetFiles(cacheDirectory))
                     {
                         if (File.GetLastWriteTime(file) < cutoff && Path.GetExtension(file) != ".json")

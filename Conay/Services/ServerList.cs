@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -18,17 +19,21 @@ public class ServerList
 
     public Task WhenLocalLoaded => _localLoadedTcs.Task;
     public Task WhenRemoteLoaded => _remoteLoadedTcs.Task;
+    public event Action? ServersChanged;
 
     private static readonly string[] ServerSources =
     [
-        "ratajmods",
-        //"github"
+        "ratajmods"
     ];
 
     public ServerList(PresetSourceFactory sourceFactory, LauncherConfig launcherConfig)
     {
         _sourceFactory = sourceFactory;
         _launcherConfig = launcherConfig;
+
+        foreach (string source in ServerSources)
+            _sourceFactory.Get(source).ServerListUpdated += OnRemoteServerListUpdated;
+
         _ = LoadServers();
     }
 
@@ -59,27 +64,48 @@ public class ServerList
                 .Select(origin => _sourceFactory.Get(origin).GetServerList())
                 .ToList();
 
-            HashSet<string> localFiles = _servers
-                .Where(x => x.Provider is LocalPresets)
-                .Select(x => x.File)
-                .ToHashSet();
-            HashSet<string> allFiles = _serverIndex.Keys.ToHashSet();
-
             foreach (List<ServerInfo> remoteServers in await Task.WhenAll(remoteTasks))
-            {
-                foreach (ServerInfo server in remoteServers)
-                {
-                    if (localFiles.Contains(server.File))
-                        _localRemoteConflicts.Add(server.File);
-                    else if (allFiles.Add(server.File))
-                        AddServer(server);
-                }
-            }
+                MergeRemoteServers(remoteServers);
 
             OrderServersByHistory();
         }
 
         _remoteLoadedTcs.SetResult();
+    }
+
+    private void OnRemoteServerListUpdated(List<ServerInfo> remoteServers)
+    {
+        MergeRemoteServers(remoteServers);
+        OrderServersByHistory();
+        ServersChanged?.Invoke();
+    }
+
+    private void MergeRemoteServers(List<ServerInfo> remoteServers)
+    {
+        HashSet<string> localFiles = _servers
+            .Where(x => x.Provider is LocalPresets)
+            .Select(x => x.File)
+            .ToHashSet();
+
+        foreach (ServerInfo server in remoteServers)
+        {
+            if (localFiles.Contains(server.File))
+            {
+                _localRemoteConflicts.Add(server.File);
+                continue;
+            }
+
+            if (_serverIndex.TryGetValue(server.File, out ServerInfo? existing))
+            {
+                int index = _servers.IndexOf(existing);
+                if (index >= 0) _servers[index] = server;
+                _serverIndex[server.File] = server;
+            }
+            else
+            {
+                AddServer(server);
+            }
+        }
     }
 
     private void OrderServersByHistory()

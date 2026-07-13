@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Conay.Data;
 
@@ -10,4 +11,5 @@ public interface IPresetService
     public Task<List<ServerInfo>> GetServerList();
     public Task<ServerData?> FetchServerData(string fileName);
     public void SaveModlistFromPreset(string fileName);
+    public event Action<List<ServerInfo>>? ServerListUpdated;
 }

@@ -19,22 +19,52 @@ public class RemotePresets(
     string indexUrl,
     string serversDirectory) : IPresetService
 {
+    private static readonly TimeSpan[] RetryDelays =
+    [
+        TimeSpan.FromSeconds(5),
+        TimeSpan.FromSeconds(15),
+        TimeSpan.FromSeconds(30)
+    ];
+
     private readonly Dictionary<string, ServerData> _presetsCache = [];
     private readonly Lock _cacheLock = new();
 
     public string GetProviderName() => name;
 
+    public event Action<List<ServerInfo>>? ServerListUpdated;
+
     public async Task<List<ServerInfo>> GetServerList()
     {
         string json = await http.Get(indexUrl);
-        List<ServerInfo> servers;
+        if (json != string.Empty) return ParseServerList(json) ?? LoadFromCache();
+        logger.LogWarning("Failed to load server list from: {URL}", indexUrl);
+        _ = RetryServerListInBackground();
+        return LoadFromCache();
+    }
 
-        if (json == string.Empty)
+    private async Task RetryServerListInBackground()
+    {
+        foreach (TimeSpan delay in RetryDelays)
         {
-            logger.LogError("Failed to load server list from: {URL}", indexUrl);
-            return LoadFromCache();
+            await Task.Delay(delay);
+
+            string json = await http.Get(indexUrl);
+            if (json == string.Empty) continue;
+
+            List<ServerInfo>? servers = ParseServerList(json);
+            if (servers == null) continue;
+
+            logger.LogInformation("Recovered server list from: {URL}", indexUrl);
+            ServerListUpdated?.Invoke(servers);
+            return;
         }
 
+        logger.LogError("Failed to load server list from: {URL}", indexUrl);
+    }
+
+    private List<ServerInfo>? ParseServerList(string json)
+    {
+        List<ServerInfo> servers;
         try
         {
             servers = JsonSerializer.Deserialize<List<ServerInfo>>(json) ?? [];
@@ -42,7 +72,7 @@ public class RemotePresets(
         catch (Exception ex)
         {
             logger.LogError(ex, "Failed to parse server list from: {URL}", indexUrl);
-            return LoadFromCache();
+            return null;
         }
 
         foreach (ServerInfo server in servers)
