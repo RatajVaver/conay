@@ -112,7 +112,6 @@ public partial class ServerPresetViewModel : ViewModelBase, ILazyLoad
     public string ModdedTooltip => $"Modded ({ModsCount} mods)";
 
     public bool IsLoaded { get; set; }
-    public bool IsDataLoaded { get; private set; }
     public bool IsVisible { get; set; }
 
     public readonly string File;
@@ -122,7 +121,7 @@ public partial class ServerPresetViewModel : ViewModelBase, ILazyLoad
 
     [ObservableProperty] private int _mods;
 
-    private readonly ServerInfo _serverInfo;
+    private ServerInfo _serverInfo;
     private ServerData? _preset;
 
     public ServerPresetViewModel(Router router, Steam steam, LauncherConfig launcherConfig, ServerInfo serverInfo)
@@ -132,12 +131,18 @@ public partial class ServerPresetViewModel : ViewModelBase, ILazyLoad
         _steam = steam;
         _launcherConfig = launcherConfig;
         _provider = serverInfo.Provider!;
-
-        Name = serverInfo.Name;
-        Icon = serverInfo.Icon;
         File = serverInfo.File;
         IsFavorite = launcherConfig.IsServerFavorite(File);
 
+        UpdateFromServerInfo(serverInfo);
+    }
+
+    public void UpdateFromServerInfo(ServerInfo serverInfo)
+    {
+        _serverInfo = serverInfo;
+
+        Name = serverInfo.Name;
+        Icon = serverInfo.Icon;
         IpAddress = serverInfo.Ip;
         Discord = serverInfo.Discord;
         Website = serverInfo.Website;
@@ -145,7 +150,6 @@ public partial class ServerPresetViewModel : ViewModelBase, ILazyLoad
         Tags = serverInfo.Tags;
         ModsCount = serverInfo.ModsCount;
         _queryPort = serverInfo.QueryPort;
-        IsDataLoaded = true;
 
         LoadMapAndPlayersFromServerInfo();
     }

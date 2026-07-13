@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Avalonia.Threading;
 using Conay.Data;
 using Conay.Factories;
 
@@ -75,9 +76,12 @@ public class ServerList
 
     private void OnRemoteServerListUpdated(List<ServerInfo> remoteServers)
     {
-        MergeRemoteServers(remoteServers);
-        OrderServersByHistory();
-        ServersChanged?.Invoke();
+        Dispatcher.UIThread.Post(() =>
+        {
+            MergeRemoteServers(remoteServers);
+            OrderServersByHistory();
+            ServersChanged?.Invoke();
+        });
     }
 
     private void MergeRemoteServers(List<ServerInfo> remoteServers)

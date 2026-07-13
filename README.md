@@ -13,6 +13,8 @@ Main problem this app solves is the need to manually resubscribe Steam Workshop 
 
 Conay is also useful for people who want to play on multiple servers with mods or in singleplayer with a different set of mods. Conay can swap your modlists with a click of a button. Even when joining a server for the first time, you won't have to restart your game to reorder loaded mods. You can also save modlists even for unsupported servers on your own and load them later.
 
+Additionally, if you want to play both Enhanced and Legacy versions of the game, Conay helps you setup a dual install of the game and natively supports both versions, launching the appropriate one per server or preset.
+
 [![Download from GitHub](https://img.shields.io/badge/Windows_Installer-Download-14ba30?labelColor=333&style=for-the-badge)](https://github.com/RatajVaver/conay/releases/latest/download/ConayInstaller.exe)
 [![Download from Nexus Mods](https://img.shields.io/badge/Nexus_Mods-Download-c47127?labelColor=333&style=for-the-badge)](https://www.nexusmods.com/conanexiles/mods/143?tab=files)
 
@@ -28,9 +30,9 @@ Need assistance with installation? Join my [Discord](https://discord.gg/3WJNxCTn
 
 ## Updating
 
-To update to a new version of Conay, simply install it again, files will be overwritten.
+Conay will prompt you to update and download the new installer for you whenever there's a new update as long as you have this feature enabled in the Settings.
 
-Since version 0.1.0 there is also an updater included to download the new installer for you.
+To update manually to a new version of Conay, simply download and install it again to the same folder, files will be overwritten.
 
 ## Linux
 
@@ -40,6 +42,8 @@ To create shortcut for the native build, move `conay.desktop` into `$XDG_DATA_HO
 
 If you want to use Proton, make sure to force it to use the same version of Proton as the game in Steam properties.
 
+The native build currently doesn't support the dual install feature. If you want to play both Enhanced and Legacy versions of the game, use Proton.
+
 ## Usage
 
 Simply run `Conay.exe` and select a server you want to join.
@@ -48,7 +52,7 @@ Having a desktop shortcut is strongly recommended for ease of use.
 
 If your server is not on the list, you can either ask the server staff to add it to Conay for everyone, or you can connect to it as usual before pressing `Add preset` on the `Presets` tab in Conay, which will save it locally for you only.
 
-If you are using older version of Conay, or want to dive into advanced usage with CLI, please follow the instructions included with older installations.
+If you are using older version of Conay, or want to dive into advanced usage with CLI, please follow the instructions included with older releases.
 
 ## Bug reports
 
@@ -63,6 +67,5 @@ Do you want to expand this project? Feel free to fork it and open PR.
 ## Supported servers
 
 You can find a list of supported servers on [ratajmods.net/conay/servers](https://ratajmods.net/conay/servers)
-
 
 If you own a server and want to add it to the list, please follow the instructions on the website.

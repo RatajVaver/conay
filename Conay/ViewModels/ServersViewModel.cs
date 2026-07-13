@@ -5,7 +5,6 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Avalonia.Threading;
 using Conay.Data;
 using Conay.Factories;
 using Conay.Services;
@@ -23,9 +22,13 @@ public partial class ServersViewModel : PageViewModel
 
     public bool IsActuallyEmpty => _allPresets.Count == 0;
     public bool HasNoFilterResults => FilteredPresets.Count == 0 && _allPresets.Count > 0;
+    public bool ShowInitialLoadingSpinner => IsActuallyEmpty && IsInitialLoading;
+    public bool ShowNoServersMessage => IsActuallyEmpty && !IsInitialLoading;
 
     [ObservableProperty]
-    private bool _isLoadingForFilter;
+    [NotifyPropertyChangedFor(nameof(ShowInitialLoadingSpinner))]
+    [NotifyPropertyChangedFor(nameof(ShowNoServersMessage))]
+    private bool _isInitialLoading = true;
 
     public ObservableCollection<ServerPresetViewModel> FilteredPresets { get; } = [];
 
@@ -99,13 +102,20 @@ public partial class ServersViewModel : PageViewModel
         _serverList = serverList;
 
         FilteredPresets.CollectionChanged += (_, _) => OnPropertyChanged(nameof(HasNoFilterResults));
-        _serverList.ServersChanged += () => Dispatcher.UIThread.Post(RefreshServers);
+        _serverList.ServersChanged += RefreshServers;
 
         _ = LoadRemoteServers();
+        _ = HideInitialLoadingAfterDelay();
+    }
+
+    private async Task HideInitialLoadingAfterDelay()
+    {
+        await Task.Delay(TimeSpan.FromSeconds(2));
+        IsInitialLoading = false;
     }
 
     partial void OnSearchTextChanged(string value) => ApplyFilters();
-    partial void OnFilterModeAndChanged(bool value) => _ = ApplyFiltersWithLoad();
+    partial void OnFilterModeAndChanged(bool value) => ApplyFilters();
     partial void OnModdedFilterChanged(TagFilterState value) => OnTagFilterChanged();
     partial void OnEnhancedFilterChanged(TagFilterState value) => OnTagFilterChanged();
     partial void OnRoleplayFilterChanged(TagFilterState value) => OnTagFilterChanged();
@@ -113,44 +123,11 @@ public partial class ServersViewModel : PageViewModel
     partial void OnDicePvpFilterChanged(TagFilterState value) => OnTagFilterChanged();
     partial void OnEroticFilterChanged(TagFilterState value) => OnTagFilterChanged();
     partial void OnBattlEyeFilterChanged(TagFilterState value) => OnTagFilterChanged();
-    partial void OnMinPlayerCountChanged(double value) => _ = ApplyFiltersWithLoad();
+    partial void OnMinPlayerCountChanged(double value) => ApplyFilters();
 
     private void OnTagFilterChanged()
     {
         RebuildFilterMasks();
-        _ = ApplyFiltersWithLoad();
-    }
-
-    private bool _filterLoadInProgress;
-
-    private async Task ApplyFiltersWithLoad()
-    {
-        if (!AnyDataFilterActive)
-        {
-            ApplyFilters();
-            return;
-        }
-
-        if (_filterLoadInProgress)
-            return;
-
-        List<ServerPresetViewModel> unloaded = _allPresets.Where(p => !p.IsDataLoaded).ToList();
-        if (unloaded.Count > 0)
-        {
-            _filterLoadInProgress = true;
-            IsLoadingForFilter = true;
-            await Dispatcher.UIThread.InvokeAsync(() => { }, DispatcherPriority.Render);
-
-            await Task.WhenAll(unloaded.Select(async p =>
-            {
-                await p.LoadDataAsync();
-                ApplyFilters();
-            }));
-
-            IsLoadingForFilter = false;
-            _filterLoadInProgress = false;
-        }
-
         ApplyFilters();
     }
 
@@ -210,6 +187,8 @@ public partial class ServersViewModel : PageViewModel
         }
 
         OnPropertyChanged(nameof(IsActuallyEmpty));
+        OnPropertyChanged(nameof(ShowInitialLoadingSpinner));
+        OnPropertyChanged(nameof(ShowNoServersMessage));
         ApplyFilters();
     }
 

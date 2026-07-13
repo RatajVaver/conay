@@ -92,7 +92,7 @@ public class RemotePresets(
             if (_presetsCache.TryGetValue(fileName, out ServerData? cached)) return cached;
         }
 
-        string json = await http.Get($"{serversDirectory}/{fileName}.json");
+        string json = await FetchServerJsonWithRetry(fileName);
 
         if (json == string.Empty)
         {
@@ -119,6 +119,23 @@ public class RemotePresets(
         lock (_cacheLock) _presetsCache[fileName] = preset;
 
         return preset;
+    }
+
+    private async Task<string> FetchServerJsonWithRetry(string fileName)
+    {
+        const int maxAttempts = 2;
+        string url = $"{serversDirectory}/{fileName}.json";
+
+        for (int attempt = 1; attempt <= maxAttempts; attempt++)
+        {
+            string json = await http.Get(url);
+            if (json != string.Empty || attempt == maxAttempts) return json;
+
+            logger.LogWarning("Retrying server data fetch for: {File}", fileName);
+            await Task.Delay(TimeSpan.FromSeconds(1));
+        }
+
+        return string.Empty;
     }
 
     public void SaveModlistFromPreset(string fileName)

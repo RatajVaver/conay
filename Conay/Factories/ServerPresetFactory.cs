@@ -12,7 +12,10 @@ public class ServerPresetFactory(Router router, LauncherConfig launcherConfig, S
     public ServerPresetViewModel Create(ServerInfo serverInfo)
     {
         if (_serverPresets.TryGetValue(serverInfo.File, out ServerPresetViewModel? preset))
+        {
+            preset.UpdateFromServerInfo(serverInfo);
             return preset;
+        }
 
         preset = new ServerPresetViewModel(router, steam, launcherConfig, serverInfo);
         _serverPresets[serverInfo.File] = preset;

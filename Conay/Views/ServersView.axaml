@@ -28,8 +28,7 @@
         </Style>
     </UserControl.Styles>
     <StackPanel>
-        <Border Background="#0d0d0d" Padding="8 4" Margin="0 0 0 10"
-                IsEnabled="{Binding !IsLoadingForFilter}">
+        <Border Background="#0d0d0d" Padding="8 4" Margin="0 0 0 10">
             <Grid ColumnDefinitions="Auto, *, Auto, *, Auto" VerticalAlignment="Center">
                 <TextBox Grid.Column="0"
                          Classes="filterSearch"
@@ -106,14 +105,14 @@
             </Grid>
         </Border>
 
-        <StackPanel IsVisible="{Binding IsLoadingForFilter}"
+        <StackPanel IsVisible="{Binding ShowInitialLoadingSpinner}"
                     Orientation="Horizontal" Spacing="8" Margin="0 0 0 10">
             <Label Classes="spinner" Content="&#xeb44;" />
-            <Label Content="Loading server data for filters.." FontSize="12"
+            <Label Content="Loading servers.." FontSize="12"
                    Foreground="#888" VerticalAlignment="Center" />
         </StackPanel>
 
-        <StackPanel IsVisible="{Binding IsActuallyEmpty}">
+        <StackPanel IsVisible="{Binding ShowNoServersMessage}">
             <Label>No servers found! You might be offline.</Label>
             <Label Margin="0 10 0 0" FontSize="12">
                 If you're not offline, something on your computer (e.g. antivirus)
