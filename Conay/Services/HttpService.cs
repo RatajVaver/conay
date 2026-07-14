@@ -46,6 +46,11 @@ public class HttpService(ILogger<HttpService> logger)
             HttpResponseMessage response = await Client.PostAsync(url, postData, cts.Token).ConfigureAwait(false);
             return await response.Content.ReadAsStringAsync(cts.Token).ConfigureAwait(false);
         }
+        catch (OperationCanceledException)
+        {
+            logger.LogWarning("Request to {Url} timed out.", url);
+            return string.Empty;
+        }
         catch (Exception ex)
         {
             logger.LogError(ex, "Failed to post data to: {Url}", url);

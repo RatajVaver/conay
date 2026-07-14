@@ -200,7 +200,7 @@ public class Steam : IModSource
         string json = await _http.Post(WorkshopApiUrl, encoded);
         if (string.IsNullOrEmpty(json))
         {
-            _logger.LogError("Failed to check mod updates through API (slower fallback will be used)");
+            _logger.LogWarning("Failed to check mod updates through API (slower fallback will be used)");
             return null;
         }
 
@@ -250,13 +250,19 @@ public class Steam : IModSource
         string incompatibleTag = version == GameVersion.Enhanced ? "legacy" : "enhanced";
         List<string> incompatible = [];
 
+        int failedCount = 0;
+
         List<ulong>? mods = await GetModsInNeedOfUpdate(modIds);
         if (mods == null)
         {
             foreach (ulong modId in modIds)
             {
                 Item? mod = await Item.GetAsync(modId, 180);
-                if (mod == null) continue;
+                if (mod == null)
+                {
+                    failedCount++;
+                    continue;
+                }
 
                 _notifyService.UpdateStatus(this, $"Checking mod updates ({mod.Value.Title})..");
 
@@ -299,7 +305,9 @@ public class Steam : IModSource
             await UpdateMods();
         }
 
-        _notifyService.UpdateStatus(this, "Steam mods are up to date!");
+        _notifyService.UpdateStatus(this, failedCount > 0
+            ? $"Steam mods are up to date! (could not check {failedCount} mod{(failedCount == 1 ? "" : "s")})"
+            : "Steam mods are up to date!");
 
         return incompatible;
     }

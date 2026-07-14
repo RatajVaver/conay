@@ -7,30 +7,28 @@ using Microsoft.Extensions.Logging;
 
 namespace Conay.Services;
 
-public class GameConfig
+public class GameConfig(Steam steam, ILogger<GameConfig> logger)
 {
-    private readonly ILogger<GameConfig> _logger;
-    private readonly Steam _steam;
+    private const string MoviePlayerSection = "[/Script/MoviePlayer.MoviePlayerSettings]";
+    private const string StartupMoviesClearLine = "!StartupMovies=ClearArray";
 
-    public GameConfig(Steam steam, ILogger<GameConfig> logger)
-    {
-        _logger = logger;
-        _steam = steam;
-    }
+    private static string SavedConfigFolder(GameVersion version) =>
+        version == GameVersion.Enhanced ? "Windows" : "WindowsNoEditor";
 
     public bool ToggleCinematicIntro(bool disable = true)
     {
-        if (_steam.DualInstallMode)
-        {
-            bool s1 = ToggleCinematicIntroAt(disable, _steam.GetInstallDirForVersion(GameVersion.Enhanced));
-            bool s2 = ToggleCinematicIntroAt(disable, _steam.GetInstallDirForVersion(GameVersion.Legacy));
-            return s1 || s2;
-        }
-        return ToggleCinematicIntroAt(disable, _steam.AppInstallDir);
+        if (!steam.DualInstallMode)
+            return GameVersionHelper.Current == GameVersion.Legacy
+                ? ToggleCinematicIntroLegacy(disable)
+                : ToggleCinematicIntroEnhanced(disable);
+        bool s1 = ToggleCinematicIntroEnhanced(disable);
+        bool s2 = ToggleCinematicIntroLegacy(disable);
+        return s1 || s2;
     }
 
-    private bool ToggleCinematicIntroAt(bool disable, string installDir)
+    private bool ToggleCinematicIntroLegacy(bool disable)
     {
+        string installDir = steam.GetInstallDirForVersion(GameVersion.Legacy);
         if (string.IsNullOrEmpty(installDir)) return false;
         string path = Path.GetFullPath(Path.Combine(installDir, "ConanSandbox/Config/DefaultGame.ini"));
         if (!File.Exists(path)) return false;
@@ -44,11 +42,59 @@ public class GameConfig
                 if (line.StartsWith($"{(disable ? '+' : '-')}StartupMovies=") && line.Length > 18)
                     lines[i] = line.Replace(disable ? '+' : '-', disable ? '-' : '+');
             }
+
             File.WriteAllLines(path, lines);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to toggle cinematic intro (DefaultGame.ini)!");
+            logger.LogError(ex, "Failed to toggle cinematic intro (DefaultGame.ini)!");
+            return false;
+        }
+
+        return true;
+    }
+
+    private bool ToggleCinematicIntroEnhanced(bool disable)
+    {
+        string installDir = steam.GetInstallDirForVersion(GameVersion.Enhanced);
+        if (string.IsNullOrEmpty(installDir)) return false;
+        string path = Path.GetFullPath(Path.Combine(installDir, "ConanSandbox/Saved/Config/Windows/Game.ini"));
+        if (!File.Exists(path)) return false;
+
+        try
+        {
+            List<string> lines = File.ReadAllLines(path).ToList();
+            int sectionIndex = lines.FindIndex(l => l.Trim() == MoviePlayerSection);
+
+            if (sectionIndex == -1)
+            {
+                if (!disable) return true;
+
+                if (lines.Count > 0 && lines[^1].Length > 0) lines.Add("");
+                lines.Add(MoviePlayerSection);
+                lines.Add(StartupMoviesClearLine);
+            }
+            else
+            {
+                int sectionEnd = lines.FindIndex(sectionIndex + 1, l => l.TrimStart().StartsWith('['));
+                if (sectionEnd == -1) sectionEnd = lines.Count;
+
+                int clearLineIndex = -1;
+                for (int i = sectionIndex + 1; i < sectionEnd; i++)
+                    if (lines[i].Trim() == StartupMoviesClearLine)
+                        clearLineIndex = i;
+
+                if (disable && clearLineIndex == -1)
+                    lines.Insert(sectionIndex + 1, StartupMoviesClearLine);
+                else if (!disable && clearLineIndex != -1)
+                    lines.RemoveAt(clearLineIndex);
+            }
+
+            File.WriteAllLines(path, lines);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to toggle cinematic intro (Game.ini)!");
             return false;
         }
 
@@ -57,22 +103,23 @@ public class GameConfig
 
     public bool ToggleImmersiveMode(bool enable = true)
     {
-        if (_steam.DualInstallMode)
-        {
-            bool s1 = ToggleImmersiveModeAt(enable, _steam.GetInstallDirForVersion(GameVersion.Enhanced));
-            bool s2 = ToggleImmersiveModeAt(enable, _steam.GetInstallDirForVersion(GameVersion.Legacy));
-            return s1 || s2;
-        }
-        return ToggleImmersiveModeAt(enable, _steam.AppInstallDir);
+        if (!steam.DualInstallMode)
+            return ToggleImmersiveModeAt(enable, GameVersionHelper.Current, steam.AppInstallDir);
+        bool s1 = ToggleImmersiveModeAt(enable, GameVersion.Enhanced,
+            steam.GetInstallDirForVersion(GameVersion.Enhanced));
+        bool s2 = ToggleImmersiveModeAt(enable, GameVersion.Legacy,
+            steam.GetInstallDirForVersion(GameVersion.Legacy));
+        return s1 || s2;
     }
 
-    private bool ToggleImmersiveModeAt(bool enable, string installDir)
+    private bool ToggleImmersiveModeAt(bool enable, GameVersion version, string installDir)
     {
         if (string.IsNullOrEmpty(installDir)) return false;
+        string folder = SavedConfigFolder(version);
         string gamePath = Path.GetFullPath(Path.Combine(installDir,
-            "ConanSandbox/Saved/Config/WindowsNoEditor/Game.ini"));
+            $"ConanSandbox/Saved/Config/{folder}/Game.ini"));
         string enginePath = Path.GetFullPath(Path.Combine(installDir,
-            "ConanSandbox/Saved/Config/WindowsNoEditor/Engine.ini"));
+            $"ConanSandbox/Saved/Config/{folder}/Engine.ini"));
 
         if (!File.Exists(gamePath)) return false;
         if (!File.Exists(enginePath)) return false;
@@ -90,11 +137,12 @@ public class GameConfig
                 else if (line.StartsWith("ShowJourneyStepsUI="))
                     lines[i] = "ShowJourneyStepsUI=" + (enable ? "False" : "True");
             }
+
             File.WriteAllLines(gamePath, lines);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to toggle immersive mode (Game.ini)!");
+            logger.LogError(ex, "Failed to toggle immersive mode (Game.ini)!");
             return false;
         }
 
@@ -125,19 +173,20 @@ public class GameConfig
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to toggle immersive mode (Engine.ini)!");
+            logger.LogError(ex, "Failed to toggle immersive mode (Engine.ini)!");
             return false;
         }
 
         return true;
     }
 
-    public bool SetLastConnected(string ip, string password, string? installDir = null)
+    public bool SetLastConnected(string ip, string password, GameVersion? version = null)
     {
-        string dir = installDir ?? _steam.AppInstallDir;
+        GameVersion v = version ?? GameVersionHelper.Current;
+        string dir = steam.GetInstallDirForVersion(v);
         if (string.IsNullOrEmpty(dir)) return false;
         string savedConfigPath = Path.GetFullPath(Path.Combine(dir,
-            "ConanSandbox/Saved/Config/WindowsNoEditor/Game.ini"));
+            $"ConanSandbox/Saved/Config/{SavedConfigFolder(v)}/Game.ini"));
         if (!File.Exists(savedConfigPath)) return false;
 
         try
@@ -153,11 +202,12 @@ public class GameConfig
                 else if (line.StartsWith("StartedListenServerSession="))
                     lines[i] = "StartedListenServerSession=" + (ip == "singleplayer" ? "True" : "False");
             }
+
             File.WriteAllLines(savedConfigPath, lines);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to set last connected (Game.ini)!");
+            logger.LogError(ex, "Failed to set last connected (Game.ini)!");
             return false;
         }
 
@@ -166,10 +216,11 @@ public class GameConfig
 
     public string GetLastConnected(GameVersion? version = null)
     {
-        string installDir = _steam.GetInstallDirForVersion(version ?? GameVersionHelper.Current);
+        GameVersion v = version ?? GameVersionHelper.Current;
+        string installDir = steam.GetInstallDirForVersion(v);
         if (string.IsNullOrEmpty(installDir)) return string.Empty;
         string savedConfigPath = Path.GetFullPath(Path.Combine(installDir,
-            "ConanSandbox/Saved/Config/WindowsNoEditor/Game.ini"));
+            $"ConanSandbox/Saved/Config/{SavedConfigFolder(v)}/Game.ini"));
         if (!File.Exists(savedConfigPath)) return string.Empty;
 
         string ip = string.Empty;
@@ -186,7 +237,7 @@ public class GameConfig
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to get last connected (Game.ini)!");
+            logger.LogError(ex, "Failed to get last connected (Game.ini)!");
         }
 
         return ip;

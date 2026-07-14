@@ -130,7 +130,7 @@ public class LaunchWorker(
         bool launched;
         if (launcherConfig.Data.DirectConnect && !string.IsNullOrEmpty(state.Ip))
         {
-            gameConfig.SetLastConnected(state.Ip, state.Password, steam.GetInstallDirForVersion(state.Version));
+            gameConfig.SetLastConnected(state.Ip, state.Password, state.Version);
             if (state.Version == GameVersion.Enhanced)
                 WriteModRestartData(state.Ip, state.Password);
             launched = LaunchConan("-continuesession");
