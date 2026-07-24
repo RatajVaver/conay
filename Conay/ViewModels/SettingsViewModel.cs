@@ -71,6 +71,9 @@ public partial class SettingsViewModel : PageViewModel
     private bool _alternativeBorders;
 
     [ObservableProperty]
+    private bool _writeServerModList = true;
+
+    [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasCustomLegacyDir))]
     private string _customLegacyDir = string.Empty;
 
@@ -99,6 +102,7 @@ public partial class SettingsViewModel : PageViewModel
         QueryServers = config.Data.QueryServers;
         BackupTotCustom = config.Data.BackupTotCustom;
         AlternativeBorders = config.Data.AlternativeBorders;
+        WriteServerModList = config.Data.WriteServerModList;
         CustomLegacyDir = config.Data.CustomLegacyDir ?? string.Empty;
 
         int tabIndex = Array.IndexOf(_tabs, config.Data.DefaultTab);
@@ -225,6 +229,10 @@ public partial class SettingsViewModel : PageViewModel
         WeakReferenceMessenger.Default.Send(new AlternativeBordersChangedMessage(value));
     }
 
+    partial void OnWriteServerModListChanged(bool value) =>
+        UpdateConfig(_config.Data.WriteServerModList, value,
+            v => _config.Data.WriteServerModList = v);
+
     partial void OnKeepHistoryChanged(bool value)
     {
         if (value == _config.Data.KeepHistory) return;
@@ -267,7 +275,8 @@ public partial class SettingsViewModel : PageViewModel
 
     private static async Task<string?> BrowseForFolder()
     {
-        Window? window = (Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow;
+        Window? window = (Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)
+            ?.MainWindow;
         if (window == null) return null;
         TopLevel? topLevel = TopLevel.GetTopLevel(window);
         if (topLevel == null) return null;
@@ -298,7 +307,8 @@ public partial class SettingsViewModel : PageViewModel
             DataContext = new DualInstallWizardViewModel(_steam)
         };
 
-        Window? owner = (Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow;
+        Window? owner = (Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)
+            ?.MainWindow;
         if (owner != null)
         {
             await wizard.ShowDialog(owner);

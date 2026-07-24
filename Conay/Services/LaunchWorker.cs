@@ -249,7 +249,16 @@ public class LaunchWorker(
 
         try
         {
-            string json = JsonSerializer.Serialize(new { ServerAddress = serverAddress, ServerPassword = serverPassword });
+            Dictionary<string, string> data = new()
+            {
+                ["ServerAddress"] = serverAddress,
+                ["ServerPassword"] = serverPassword
+            };
+
+            if (launcherConfig.Data.WriteServerModList)
+                data["ModList"] = modList.GetServerModListPath(GameVersion.Enhanced).Replace('\\', '/');
+
+            string json = JsonSerializer.Serialize(data);
             File.WriteAllText(path, json);
             logger.LogDebug("ModRestartData.json written for {Address}", serverAddress);
         }

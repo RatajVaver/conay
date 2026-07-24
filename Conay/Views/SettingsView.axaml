@@ -85,6 +85,10 @@
                           Content="Back up TotCustom saves on launch"
                           ToolTip.Tip="Before launching the game, Conay will zip the TotCustom save folder and store up to 3 rotating backups in the Conay/backups folder.">
                 </CheckBox>
+                <CheckBox IsChecked="{Binding WriteServerModList, Mode=TwoWay}"
+                          Content="Overwrite server modlist file"
+                          ToolTip.Tip="When checked, Conay writes servermodlist.txt alongside modlist.txt so the game stays in sync no matter which one it reads. Uncheck to delete servermodlist.txt on save of modlist.txt.">
+                </CheckBox>
             </StackPanel>
         </Grid>
         <StackPanel Margin="0 0 0 30">

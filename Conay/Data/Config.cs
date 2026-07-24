@@ -67,4 +67,7 @@ public class Config
 
     [JsonPropertyName("lastVersion")]
     public GameVersion? LastLaunchedVersion { get; set; }
+
+    [JsonPropertyName("writeServerModList")]
+    public bool WriteServerModList { get; set; } = true;
 }

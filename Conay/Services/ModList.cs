@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Conay.Services;
 
-public class ModList(ILogger<ModList> logger, Steam steam, NotifyService notifyService)
+public class ModList(ILogger<ModList> logger, Steam steam, NotifyService notifyService, LauncherConfig config)
 {
     public string? WorkshopPath => steam.AppInstallDir == string.Empty
         ? null
@@ -28,7 +28,7 @@ public class ModList(ILogger<ModList> logger, Steam steam, NotifyService notifyS
     private string GetModListPath(GameVersion version) =>
         Path.GetFullPath(Path.Combine(steam.GetInstallDirForVersion(version), "ConanSandbox/Mods/modlist.txt"));
 
-    private string GetServerModListPath(GameVersion version) =>
+    public string GetServerModListPath(GameVersion version) =>
         Path.GetFullPath(Path.Combine(steam.GetInstallDirForVersion(version), "ConanSandbox/servermodlist.txt"));
 
     private void LoadModListFromFile(string path)
@@ -92,6 +92,7 @@ public class ModList(ILogger<ModList> logger, Steam steam, NotifyService notifyS
         GameVersion ver = version ?? GameVersionHelper.Current;
         string installDir = steam.GetInstallDirForVersion(ver);
         string modListPath = GetModListPath(ver);
+        string serverModListPath = GetServerModListPath(ver);
         string localModsPath = Path.GetFullPath(Path.Combine(installDir, "ConanSandbox/Mods"));
         string? modsDirectory = Path.GetDirectoryName(modListPath);
         if (modsDirectory == null)
@@ -100,8 +101,16 @@ public class ModList(ILogger<ModList> logger, Steam steam, NotifyService notifyS
             return;
         }
 
+        string? sandboxDirectory = Path.GetDirectoryName(modsDirectory);
+        if (sandboxDirectory == null)
+        {
+            logger.LogError("Can't resolve ConanSandbox directory!");
+            return;
+        }
+
         _currentMods.Clear();
         string[] resolvedMods = new string[mods.Length];
+        string[] resolvedServerMods = new string[mods.Length];
         for (int i = 0; i < mods.Length; i++)
         {
             _currentMods.Add(mods[i]);
@@ -110,6 +119,7 @@ public class ModList(ILogger<ModList> logger, Steam steam, NotifyService notifyS
                 ? Path.GetFullPath(Path.Combine(WorkshopPath, mods[i]))
                 : Path.GetFullPath(Path.Combine(localModsPath, mods[i]));
             resolvedMods[i] = Path.GetRelativePath(modsDirectory, fullPath);
+            resolvedServerMods[i] = "*" + Path.GetRelativePath(sandboxDirectory, fullPath);
         }
 
         if (!Directory.Exists(modsDirectory))
@@ -136,7 +146,21 @@ public class ModList(ILogger<ModList> logger, Steam steam, NotifyService notifyS
             return;
         }
 
-        DeleteIfExists(GetServerModListPath(ver), "servermodlist.txt");
+        if (config.Data.WriteServerModList)
+        {
+            try
+            {
+                File.WriteAllLines(serverModListPath, resolvedServerMods, Encoding.UTF8);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Failed to save servermodlist!");
+            }
+        }
+        else
+        {
+            DeleteIfExists(serverModListPath, "servermodlist.txt");
+        }
 
         logger.LogDebug("Modlist saved");
     }
