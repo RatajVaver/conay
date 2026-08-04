@@ -127,6 +127,9 @@ public class LaunchWorker(
     {
         notifyService.UpdateStatus(this, "Launching the game..");
 
+        if (state.Version == GameVersion.Enhanced)
+            gameConfig.RemoveServerModListEntry();
+
         bool launched;
         if (launcherConfig.Data.DirectConnect && !string.IsNullOrEmpty(state.Ip))
         {

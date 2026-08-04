@@ -214,6 +214,29 @@ public class GameConfig(Steam steam, ILogger<GameConfig> logger)
         return true;
     }
 
+    public bool RemoveServerModListEntry()
+    {
+        string installDir = steam.GetInstallDirForVersion(GameVersion.Enhanced);
+        if (string.IsNullOrEmpty(installDir)) return false;
+        string path = Path.GetFullPath(Path.Combine(installDir, "ConanSandbox/Saved/Config/Windows/ServerSettings.ini"));
+        if (!File.Exists(path)) return false;
+
+        try
+        {
+            string[] lines = File.ReadAllLines(path);
+            string[] filtered = lines.Where(l => !l.StartsWith("ServerModList=")).ToArray();
+            if (filtered.Length != lines.Length)
+                File.WriteAllLines(path, filtered);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to remove ServerModList entry (ServerSettings.ini)!");
+            return false;
+        }
+
+        return true;
+    }
+
     public string GetLastConnected(GameVersion? version = null)
     {
         GameVersion v = version ?? GameVersionHelper.Current;
