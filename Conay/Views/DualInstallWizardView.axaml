@@ -134,8 +134,8 @@
                         1. Switch the game to the
                         <Run FontWeight="Bold" Text="{Binding OtherVersion}" /> branch under:
                         Conan Exiles → Properties → Game Versions &amp; Betas.<LineBreak/>
-                        3. Swap to the Installed Files tab and click on Verify integrity of the game files.<LineBreak/>
-                        4. Close Conay and wait for the
+                        2. Swap to the Installed Files tab and click on Verify integrity of the game files.<LineBreak/>
+                        3. Close Conay and wait for the
                         <Run FontWeight="Bold" Text="{Binding OtherVersion}" /> version to install.
                     </TextBlock>
                     <TextBlock TextWrapping="Wrap" FontSize="13">

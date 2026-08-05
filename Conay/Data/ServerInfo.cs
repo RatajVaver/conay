@@ -32,6 +32,9 @@ public class ServerInfo
     [JsonPropertyName("tags")]
     public string[]? Tags { get; set; }
 
+    [JsonPropertyName("battleye")]
+    public bool BattlEye { get; set; }
+
     [JsonPropertyName("version")]
     public string? Version { get; set; }
 

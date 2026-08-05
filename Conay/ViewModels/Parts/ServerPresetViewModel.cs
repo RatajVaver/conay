@@ -53,6 +53,10 @@ public partial class ServerPresetViewModel : ViewModelBase, ILazyLoad
     [NotifyPropertyChangedFor(nameof(ProvidedByCommunity))]
     private string[]? _tags;
 
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsBattleEye))]
+    private bool _battlEye;
+
     [ObservableProperty] [NotifyPropertyChangedFor(nameof(IsModded))] [NotifyPropertyChangedFor(nameof(ModdedTooltip))]
     private int _modsCount;
 
@@ -85,7 +89,7 @@ public partial class ServerPresetViewModel : ViewModelBase, ILazyLoad
     public bool IsMechPvP => Tags?.Contains("mech") ?? false;
     public bool IsDicePvP => Tags?.Contains("dice") ?? false;
     public bool IsErotic => Tags?.Contains("erp") ?? false;
-    public bool IsBattleEye => Tags?.Contains("battleye") ?? false;
+    public bool IsBattleEye => BattlEye || (Tags?.Contains("battleye") ?? false);
 
     public TagMask TagBits { get; private set; }
 
@@ -104,6 +108,7 @@ public partial class ServerPresetViewModel : ViewModelBase, ILazyLoad
     }
 
     partial void OnTagsChanged(string[]? value) => RebuildTagBits();
+    partial void OnBattlEyeChanged(bool value) => RebuildTagBits();
     partial void OnVersionChanged(string? value) => RebuildTagBits();
     partial void OnModsCountChanged(int value) => RebuildTagBits();
     public bool HasConaySync => Tags?.Contains("sync") ?? false;
@@ -148,6 +153,7 @@ public partial class ServerPresetViewModel : ViewModelBase, ILazyLoad
         Website = serverInfo.Website;
         Version = serverInfo.Version;
         Tags = serverInfo.Tags;
+        BattlEye = serverInfo.BattlEye;
         ModsCount = serverInfo.ModsCount;
         _queryPort = serverInfo.QueryPort;
 

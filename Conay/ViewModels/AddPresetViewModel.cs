@@ -67,6 +67,9 @@ public partial class AddPresetViewModel : PageViewModel
     [ObservableProperty]
     private string _title = "New preset";
 
+    [ObservableProperty]
+    private bool _requiresBattlEye;
+
     public ObservableCollection<ModItemViewModel> Mods { get; } = [];
 
     public AddPresetViewModel(LocalPresets localPresets, ServerList serverList, ServerPresetFactory serverPresetFactory,
@@ -102,6 +105,7 @@ public partial class AddPresetViewModel : PageViewModel
         Ip = preset.Ip;
         Password = preset.Password ?? string.Empty;
         SelectedVersion = preset.GameVersion;
+        RequiresBattlEye = preset.BattlEye;
         Title = "Edit preset";
 
         _modItemFactory.ReleaseCallbacks();
@@ -186,6 +190,7 @@ public partial class AddPresetViewModel : PageViewModel
             Ip = Ip.Trim(),
             Password = string.IsNullOrWhiteSpace(Password) ? null : Password.Trim(),
             Version = SelectedVersion == GameVersion.Enhanced ? "enhanced" : "legacy",
+            BattlEye = RequiresBattlEye,
             Mods = [.. Mods.Select(m => m.ModPath)]
         };
 

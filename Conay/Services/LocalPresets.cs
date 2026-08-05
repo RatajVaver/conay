@@ -84,6 +84,7 @@ public class LocalPresets : IPresetService
                 Ip = x.Ip,
                 QueryPort = x.QueryPort,
                 Tags = x.Tags,
+                BattlEye = x.BattlEye,
                 Version = x.Version,
                 Discord = x.Discord,
                 Website = x.Website,
