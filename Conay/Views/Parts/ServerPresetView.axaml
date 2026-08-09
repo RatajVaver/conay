@@ -94,6 +94,10 @@
                     <Label Classes="badge" Content="&#xe142;"
                            Foreground="{Binding PingColor, Mode=OneWay}" ToolTip.Tip="{Binding Ping, Mode=OneWay}">
                     </Label>
+                    <Label Classes="badge red" Content="&#xe4e0;"
+                           IsVisible="{Binding IsInactive, Mode=OneWay}"
+                           ToolTip.Tip="Inactive server - may be removed soon.&#10;Average player count is unknown or near 0, and no one has connected via Conay in over 2 weeks.">
+                    </Label>
                 </StackPanel>
             </StackPanel>
             <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">

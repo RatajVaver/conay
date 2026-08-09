@@ -48,6 +48,7 @@ public partial class ServerPresetViewModel : ViewModelBase, ILazyLoad
     [NotifyPropertyChangedFor(nameof(IsDicePvP))]
     [NotifyPropertyChangedFor(nameof(IsErotic))]
     [NotifyPropertyChangedFor(nameof(IsBattleEye))]
+    [NotifyPropertyChangedFor(nameof(IsInactive))]
     [NotifyPropertyChangedFor(nameof(HasConaySync))]
     [NotifyPropertyChangedFor(nameof(ProvidedByServerAdmins))]
     [NotifyPropertyChangedFor(nameof(ProvidedByCommunity))]
@@ -90,6 +91,7 @@ public partial class ServerPresetViewModel : ViewModelBase, ILazyLoad
     public bool IsDicePvP => Tags?.Contains("dice") ?? false;
     public bool IsErotic => Tags?.Contains("erp") ?? false;
     public bool IsBattleEye => BattlEye || (Tags?.Contains("battleye") ?? false);
+    public bool IsInactive => Tags?.Contains("inactive") ?? false;
 
     public TagMask TagBits { get; private set; }
 
