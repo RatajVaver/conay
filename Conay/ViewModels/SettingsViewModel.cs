@@ -74,6 +74,9 @@ public partial class SettingsViewModel : PageViewModel
     private bool _writeServerModList = true;
 
     [ObservableProperty]
+    private bool _useAbsoluteModPaths;
+
+    [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasCustomLegacyDir))]
     private string _customLegacyDir = string.Empty;
 
@@ -103,6 +106,7 @@ public partial class SettingsViewModel : PageViewModel
         BackupTotCustom = config.Data.BackupTotCustom;
         AlternativeBorders = config.Data.AlternativeBorders;
         WriteServerModList = config.Data.WriteServerModList;
+        UseAbsoluteModPaths = config.Data.UseAbsoluteModPaths;
         CustomLegacyDir = config.Data.CustomLegacyDir ?? string.Empty;
 
         int tabIndex = Array.IndexOf(_tabs, config.Data.DefaultTab);
@@ -232,6 +236,10 @@ public partial class SettingsViewModel : PageViewModel
     partial void OnWriteServerModListChanged(bool value) =>
         UpdateConfig(_config.Data.WriteServerModList, value,
             v => _config.Data.WriteServerModList = v);
+
+    partial void OnUseAbsoluteModPathsChanged(bool value) =>
+        UpdateConfig(_config.Data.UseAbsoluteModPaths, value,
+            v => _config.Data.UseAbsoluteModPaths = v);
 
     partial void OnKeepHistoryChanged(bool value)
     {

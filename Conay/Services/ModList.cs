@@ -118,8 +118,12 @@ public class ModList(ILogger<ModList> logger, Steam steam, NotifyService notifyS
             string fullPath = ulong.TryParse(modIdOrFolder, out _)
                 ? Path.GetFullPath(Path.Combine(WorkshopPath, mods[i]))
                 : Path.GetFullPath(Path.Combine(localModsPath, mods[i]));
-            resolvedMods[i] = Path.GetRelativePath(modsDirectory, fullPath);
-            resolvedServerMods[i] = "*" + Path.GetRelativePath(sandboxDirectory, fullPath);
+            resolvedMods[i] = config.Data.UseAbsoluteModPaths
+                ? fullPath
+                : Path.GetRelativePath(modsDirectory, fullPath);
+            resolvedServerMods[i] = "*" + (config.Data.UseAbsoluteModPaths
+                ? fullPath
+                : Path.GetRelativePath(sandboxDirectory, fullPath));
         }
 
         if (!Directory.Exists(modsDirectory))

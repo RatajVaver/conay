@@ -70,4 +70,7 @@ public class Config
 
     [JsonPropertyName("writeServerModList")]
     public bool WriteServerModList { get; set; } = true;
+
+    [JsonPropertyName("useAbsoluteModPaths")]
+    public bool UseAbsoluteModPaths { get; set; }
 }

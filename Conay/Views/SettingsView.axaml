@@ -89,6 +89,10 @@
                           Content="Overwrite server modlist file"
                           ToolTip.Tip="When checked, Conay writes servermodlist.txt alongside modlist.txt so the game stays in sync no matter which one it reads. Uncheck to delete servermodlist.txt on save of modlist.txt.">
                 </CheckBox>
+                <CheckBox IsChecked="{Binding UseAbsoluteModPaths, Mode=TwoWay}"
+                          Content="Use absolute paths in modlist files"
+                          ToolTip.Tip="When checked, mods in modlist.txt and servermodlist.txt are written with absolute paths instead of relative paths.">
+                </CheckBox>
             </StackPanel>
         </Grid>
         <StackPanel Margin="0 0 0 30">
