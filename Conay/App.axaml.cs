@@ -90,8 +90,11 @@ public class App : Application
 
         LauncherConfig launcherConfig = services.GetRequiredService<LauncherConfig>();
 
+        Steam steamService = services.GetRequiredService<Steam>();
+        AppDomain.CurrentDomain.ProcessExit += (_, _) => steamService.Dispose();
+
         if (!string.IsNullOrEmpty(launcherConfig.Data.CustomLegacyDir))
-            services.GetRequiredService<Steam>().SetCustomLegacyDir(launcherConfig.Data.CustomLegacyDir);
+            steamService.SetCustomLegacyDir(launcherConfig.Data.CustomLegacyDir);
 
         if (launcherConfig.Data.UseCache)
         {

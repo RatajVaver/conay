@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Conay.Data;
@@ -128,7 +129,11 @@ public class LaunchWorker(
         notifyService.UpdateStatus(this, "Launching the game..");
 
         if (state.Version == GameVersion.Enhanced)
+        {
             gameConfig.RemoveServerModListEntry();
+            if (HasConaySyncMod() && !string.IsNullOrEmpty(state.Ip))
+                gameConfig.WriteConaySyncData(state.Name, state.Icon, state.Ip, state.Password);
+        }
 
         bool launched;
         if (launcherConfig.Data.DirectConnect && !string.IsNullOrEmpty(state.Ip))
@@ -241,6 +246,9 @@ public class LaunchWorker(
         Protocol.Open(uri);
         return true;
     }
+
+    private bool HasConaySyncMod() => modList.GetCurrentModList()
+        .Any(m => string.Equals(m.Split('/')[^1], "ConaySync.pak", StringComparison.OrdinalIgnoreCase));
 
     private void WriteModRestartData(string serverAddress, string serverPassword)
     {

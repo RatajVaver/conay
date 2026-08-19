@@ -3,14 +3,25 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Conay.Data;
+using Conay.Utils;
 using Microsoft.Extensions.Logging;
 
 namespace Conay.Services;
 
 public class GameConfig(Steam steam, ILogger<GameConfig> logger)
 {
-    private const string MoviePlayerSection = "[/Script/MoviePlayer.MoviePlayerSettings]";
-    private const string StartupMoviesClearLine = "!StartupMovies=ClearArray";
+    private static readonly string[] CinematicMovieNames =
+    [
+        "Exiles Cinematic Intro",
+        "Funcom Splash",
+        "Inflexion_Logo",
+        "Inflexion_Logo_1080",
+        "Intro_Cinematic_Siptah",
+        "Nvidia_Splash",
+        "Splash_Inflexion",
+        "StartupNvidia",
+        "StartupUnreal"
+    ];
 
     private static string SavedConfigFolder(GameVersion version) =>
         version == GameVersion.Enhanced ? "Windows" : "WindowsNoEditor";
@@ -58,47 +69,36 @@ public class GameConfig(Steam steam, ILogger<GameConfig> logger)
     {
         string installDir = steam.GetInstallDirForVersion(GameVersion.Enhanced);
         if (string.IsNullOrEmpty(installDir)) return false;
-        string path = Path.GetFullPath(Path.Combine(installDir, "ConanSandbox/Saved/Config/Windows/Game.ini"));
-        if (!File.Exists(path)) return false;
+        string moviesDir = Path.GetFullPath(Path.Combine(installDir, "ConanSandbox/Content/Movies"));
+        if (!Directory.Exists(moviesDir)) return false;
 
-        try
+        bool anyFailed = false;
+        foreach (string name in CinematicMovieNames)
         {
-            List<string> lines = File.ReadAllLines(path).ToList();
-            int sectionIndex = lines.FindIndex(l => l.Trim() == MoviePlayerSection);
+            string activePath = Path.Combine(moviesDir, name + ".bk2");
+            string disabledPath = Path.Combine(moviesDir, name + ".bk2.bak");
 
-            if (sectionIndex == -1)
+            try
             {
-                if (!disable) return true;
-
-                if (lines.Count > 0 && lines[^1].Length > 0) lines.Add("");
-                lines.Add(MoviePlayerSection);
-                lines.Add(StartupMoviesClearLine);
+                if (disable)
+                {
+                    if (File.Exists(activePath) && !File.Exists(disabledPath))
+                        File.Move(activePath, disabledPath);
+                }
+                else
+                {
+                    if (File.Exists(disabledPath) && !File.Exists(activePath))
+                        File.Move(disabledPath, activePath);
+                }
             }
-            else
+            catch (Exception ex)
             {
-                int sectionEnd = lines.FindIndex(sectionIndex + 1, l => l.TrimStart().StartsWith('['));
-                if (sectionEnd == -1) sectionEnd = lines.Count;
-
-                int clearLineIndex = -1;
-                for (int i = sectionIndex + 1; i < sectionEnd; i++)
-                    if (lines[i].Trim() == StartupMoviesClearLine)
-                        clearLineIndex = i;
-
-                if (disable && clearLineIndex == -1)
-                    lines.Insert(sectionIndex + 1, StartupMoviesClearLine);
-                else if (!disable && clearLineIndex != -1)
-                    lines.RemoveAt(clearLineIndex);
+                logger.LogError(ex, "Failed to toggle cinematic intro movie '{Name}'!", name);
+                anyFailed = true;
             }
-
-            File.WriteAllLines(path, lines);
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Failed to toggle cinematic intro (Game.ini)!");
-            return false;
         }
 
-        return true;
+        return !anyFailed;
     }
 
     public bool ToggleImmersiveMode(bool enable = true)
@@ -231,6 +231,70 @@ public class GameConfig(Steam steam, ILogger<GameConfig> logger)
         catch (Exception ex)
         {
             logger.LogError(ex, "Failed to remove ServerModList entry (ServerSettings.ini)!");
+            return false;
+        }
+
+        return true;
+    }
+
+    private const string ConaySyncSection =
+        "[/Game/Mods/ConaySync/PreLoad/W_ConaySync.W_ConaySync_C]";
+
+    public bool WriteConaySyncData(string name, string icon, string ip, string password)
+    {
+        string installDir = steam.GetInstallDirForVersion(GameVersion.Enhanced);
+        if (string.IsNullOrEmpty(installDir)) return false;
+        string enginePath = Path.GetFullPath(Path.Combine(installDir,
+            "ConanSandbox/Saved/Config/Windows/Engine.ini"));
+        if (!File.Exists(enginePath)) return false;
+
+        Dictionary<string, string> values = new()
+        {
+            ["Name"] = name,
+            ["IconURL"] = icon,
+            ["IP"] = ip,
+            ["Password"] = password,
+            ["Updated"] = Epoch.Current.ToString()
+        };
+
+        try
+        {
+            List<string> lines = File.ReadAllLines(enginePath).ToList();
+            int sectionIndex = lines.FindIndex(l => l.Trim() == ConaySyncSection);
+
+            if (sectionIndex == -1)
+            {
+                if (lines.Count > 0 && lines[^1].Length > 0) lines.Add("");
+                lines.Add(ConaySyncSection);
+                foreach (KeyValuePair<string, string> kv in values)
+                    lines.Add($"{kv.Key}={kv.Value}");
+            }
+            else
+            {
+                int sectionEnd = lines.FindIndex(sectionIndex + 1, l => l.TrimStart().StartsWith('['));
+                if (sectionEnd == -1) sectionEnd = lines.Count;
+
+                HashSet<string> remaining = [.. values.Keys];
+                for (int i = sectionIndex + 1; i < sectionEnd; i++)
+                {
+                    int eq = lines[i].IndexOf('=');
+                    if (eq <= 0) continue;
+
+                    string key = lines[i][..eq].Trim();
+                    if (remaining.Remove(key))
+                        lines[i] = $"{key}={values[key]}";
+                }
+
+                int insertAt = sectionEnd;
+                foreach (string key in remaining)
+                    lines.Insert(insertAt++, $"{key}={values[key]}");
+            }
+
+            File.WriteAllLines(enginePath, lines);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to write ConaySync data (Engine.ini)!");
             return false;
         }
 

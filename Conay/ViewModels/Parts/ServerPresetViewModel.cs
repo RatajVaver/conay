@@ -286,7 +286,7 @@ public partial class ServerPresetViewModel : ViewModelBase, ILazyLoad
         _router.BeforeLaunch(Name);
         await _steam.WaitForSteam();
         _provider.SaveModlistFromPreset(File);
-        _router.ReadyForLaunch(_preset, version: EffectiveGameVersion);
+        _router.ReadyForLaunch(_preset, version: EffectiveGameVersion, icon: Icon);
     }
 
     [RelayCommand]

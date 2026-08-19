@@ -19,7 +19,7 @@ using Steamworks.Ugc;
 
 namespace Conay.Services;
 
-public class Steam : IModSource
+public class Steam : IModSource, IDisposable
 {
     private const string WorkshopApiUrl =
         "https://api.steampowered.com/ISteamRemoteStorage/GetPublishedFileDetails/v1/";
@@ -36,6 +36,10 @@ public class Steam : IModSource
     private readonly List<Item> _updateQueue = [];
     private bool _updating;
     private static readonly SemaphoreSlim Semaphore = new(6, 6);
+
+    private readonly DispatcherTimer _syncTimer;
+    private readonly DispatcherTimer _callbackTimer;
+    private bool _disposed;
 
     public string AppInstallDir { get; private set; } = string.Empty;
     private string _workshopPath = string.Empty;
@@ -71,18 +75,28 @@ public class Steam : IModSource
             LaunchSteam();
         }
 
-        DispatcherTimer syncTimer = new() { Interval = TimeSpan.FromSeconds(5) };
-        syncTimer.Tick += (_, _) => SyncSteam();
-        syncTimer.Start();
+        _syncTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(5) };
+        _syncTimer.Tick += (_, _) => SyncSteam();
+        _syncTimer.Start();
 
-        DispatcherTimer callbackTimer = new() { Interval = TimeSpan.FromMilliseconds(100) };
-        callbackTimer.Tick += (_, _) => SteamClient.RunCallbacks();
-        callbackTimer.Start();
+        _callbackTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(100) };
+        _callbackTimer.Tick += (_, _) => SteamClient.RunCallbacks();
+        _callbackTimer.Start();
     }
 
-    ~Steam()
+    public void Dispose()
     {
-        SteamClient.Shutdown();
+        if (_disposed) return;
+        _disposed = true;
+
+        _syncTimer.Stop();
+        _callbackTimer.Stop();
+
+        if (_isInitialized)
+        {
+            _isInitialized = false;
+            SteamClient.Shutdown();
+        }
     }
 
     private void SyncSteam()
