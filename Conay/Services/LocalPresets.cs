@@ -73,6 +73,8 @@ public class LocalPresets : IPresetService
         return _presetsCache;
     }
 
+    public Task<List<ServerInfo>> GetUnlistedServers(List<string> names) => Task.FromResult(new List<ServerInfo>());
+
     public Task<List<ServerInfo>> GetServerList()
     {
         Dictionary<string, ServerData> presets = GetLocalPresets();

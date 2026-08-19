@@ -6,7 +6,7 @@
              x:Class="Conay.Views.SettingsView"
              xmlns:vm="clr-namespace:Conay.ViewModels"
              x:DataType="vm:SettingsViewModel">
-    <StackPanel Orientation="Vertical">
+    <StackPanel Orientation="Vertical" Background="Transparent" PointerPressed="Root_OnPointerPressed">
         <Grid ColumnDefinitions="Auto, Auto" Margin="0 0 0 30">
             <StackPanel Grid.Column="0" Margin="0 0 40 0">
                 <Label Content="Launcher Settings"></Label>
@@ -42,7 +42,11 @@
                           Content="Alternative window style"
                           ToolTip.Tip="Swaps the window border style between the Windows native and a custom version.">
                 </CheckBox>
-                <StackPanel Orientation="Horizontal">
+                <CheckBox IsChecked="{Binding BackupTotCustom, Mode=TwoWay}"
+                          Content="Back up TotCustom saves on launch"
+                          ToolTip.Tip="Before launching the game, Conay will zip the TotCustom save folder and store up to 3 rotating backups in the Conay/backups folder.">
+                </CheckBox>
+                <StackPanel Orientation="Horizontal" Margin="0 20 0 0">
                     <Label Content="Default tab:" VerticalAlignment="Center"></Label>
                     <ComboBox SelectedIndex="{Binding DefaultTabIndex, Mode=TwoWay}" MaxDropDownHeight="100" Margin="5"
                               Padding="10 0" MinWidth="120">
@@ -72,6 +76,19 @@
                           Content="Use cache for images and lists"
                           ToolTip.Tip="While this is enabled, Conay will save server icons and server lists into a cache folder to make the usage more seamless.">
                 </CheckBox>
+                <StackPanel x:Name="UnlistedServersPanel" Focusable="True" Spacing="4" Margin="0 8 0 0">
+                    <TextBlock Foreground="#666"
+                               ToolTip.Tip="Comma-separated list of private servers to show on the Servers tab.">
+                        Show unlisted servers:
+                    </TextBlock>
+                    <Border BorderThickness="2" CornerRadius="4" Padding="1"
+                            BorderBrush="Transparent" Classes.saved="{Binding UnlistedServersSaved}">
+                        <TextBox Text="{Binding UnlistedServersText, Mode=TwoWay}"
+                                 LostFocus="UnlistedServersTextBox_OnLostFocus"
+                                 KeyDown="UnlistedServersTextBox_OnKeyDown"
+                                 PlaceholderText="server1, server2" />
+                    </Border>
+                </StackPanel>
                 <Label Content="Game Settings" Margin="0 20 0 0"></Label>
                 <CheckBox IsChecked="{Binding DisableCinematic, Mode=TwoWay}"
                           Content="Disable Conan's cinematic intro"
@@ -80,10 +97,6 @@
                 <CheckBox IsChecked="{Binding ImmersiveMode, Mode=TwoWay}"
                           Content="Use recommended immersive settings"
                           ToolTip.Tip="Enabling this will: Hide sheathed weapons, hide journey UI and contextual controls, enable audio at 25% volume even when the game is minimized.">
-                </CheckBox>
-                <CheckBox IsChecked="{Binding BackupTotCustom, Mode=TwoWay}"
-                          Content="Back up TotCustom saves on launch"
-                          ToolTip.Tip="Before launching the game, Conay will zip the TotCustom save folder and store up to 3 rotating backups in the Conay/backups folder.">
                 </CheckBox>
                 <CheckBox IsChecked="{Binding WriteServerModList, Mode=TwoWay}"
                           Content="Overwrite server modlist file"

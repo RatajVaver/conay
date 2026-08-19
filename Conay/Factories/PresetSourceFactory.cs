@@ -17,7 +17,8 @@ public class PresetSourceFactory(
         ["local"] = localPresets,
         ["ratajmods"] = new RemotePresets(logger, config, http, modList, "ratajmods",
             "https://ratajmods.net/conay/servers.json",
-            "https://ratajmods.net/conay/servers")
+            "https://ratajmods.net/conay/servers",
+            supportsUnlisted: true)
     };
 
     public IPresetService Get(string name)

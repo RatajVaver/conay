@@ -98,6 +98,10 @@
                            IsVisible="{Binding IsInactive, Mode=OneWay}"
                            ToolTip.Tip="Inactive server - may be removed soon.&#10;Average player count is unknown or near 0, and no one has connected via Conay in over 2 weeks.">
                     </Label>
+                    <Label Classes="badge" Content="&#xe224;" Foreground="#918072"
+                           IsVisible="{Binding IsUnlisted, Mode=OneWay}"
+                           ToolTip.Tip="Unlisted (Not shown on the public server list)">
+                    </Label>
                 </StackPanel>
             </StackPanel>
             <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">

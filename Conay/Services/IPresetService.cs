@@ -9,6 +9,7 @@ public interface IPresetService
 {
     public string GetProviderName();
     public Task<List<ServerInfo>> GetServerList();
+    public Task<List<ServerInfo>> GetUnlistedServers(List<string> names);
     public Task<ServerData?> FetchServerData(string fileName);
     public void SaveModlistFromPreset(string fileName);
     public event Action<List<ServerInfo>>? ServerListUpdated;

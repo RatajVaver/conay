@@ -39,6 +39,8 @@ public partial class ServerPresetViewModel : ViewModelBase, ILazyLoad
 
     [ObservableProperty] private bool _isFavorite;
 
+    [ObservableProperty] private bool _isUnlisted;
+
     [ObservableProperty] [NotifyPropertyChangedFor(nameof(IsLegacy))] [NotifyPropertyChangedFor(nameof(IsEnhanced))]
     private string? _version;
 
@@ -157,6 +159,7 @@ public partial class ServerPresetViewModel : ViewModelBase, ILazyLoad
         Tags = serverInfo.Tags;
         BattlEye = serverInfo.BattlEye;
         ModsCount = serverInfo.ModsCount;
+        IsUnlisted = serverInfo.Unlisted;
         _queryPort = serverInfo.QueryPort;
 
         LoadMapAndPlayersFromServerInfo();

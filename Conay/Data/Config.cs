@@ -73,4 +73,7 @@ public class Config
 
     [JsonPropertyName("useAbsoluteModPaths")]
     public bool UseAbsoluteModPaths { get; set; }
+
+    [JsonPropertyName("unlistedServers")]
+    public List<string> UnlistedServers { get; set; } = [];
 }

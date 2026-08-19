@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
@@ -21,6 +23,7 @@ public partial class SettingsViewModel : PageViewModel
     private readonly LauncherConfig _config;
     private readonly GameConfig _gameConfig;
     private readonly Steam _steam;
+    private readonly ServerList _serverList;
 
     [ObservableProperty]
     private bool _checkUpdates = true;
@@ -82,13 +85,22 @@ public partial class SettingsViewModel : PageViewModel
 
     public bool HasCustomLegacyDir => !string.IsNullOrEmpty(CustomLegacyDir);
 
+    [ObservableProperty]
+    private string _unlistedServersText = string.Empty;
+
+    [ObservableProperty]
+    private bool _unlistedServersSaved;
+
+    private CancellationTokenSource? _unlistedServersSavedCts;
+
     private readonly string[] _tabs = ["launch", "favorite", "servers", "presets", "saves"];
 
-    public SettingsViewModel(LauncherConfig config, GameConfig gameConfig, Steam steam)
+    public SettingsViewModel(LauncherConfig config, GameConfig gameConfig, Steam steam, ServerList serverList)
     {
         _config = config;
         _gameConfig = gameConfig;
         _steam = steam;
+        _serverList = serverList;
 
         CheckUpdates = config.Data.CheckUpdates;
         UpdateSubscribedModsOnLaunch = config.Data.UpdateSubscribedModsOnLaunch;
@@ -108,6 +120,7 @@ public partial class SettingsViewModel : PageViewModel
         WriteServerModList = config.Data.WriteServerModList;
         UseAbsoluteModPaths = config.Data.UseAbsoluteModPaths;
         CustomLegacyDir = config.Data.CustomLegacyDir ?? string.Empty;
+        UnlistedServersText = string.Join(", ", config.Data.UnlistedServers);
 
         int tabIndex = Array.IndexOf(_tabs, config.Data.DefaultTab);
         if (tabIndex == -1) tabIndex = 2;
@@ -240,6 +253,34 @@ public partial class SettingsViewModel : PageViewModel
     partial void OnUseAbsoluteModPathsChanged(bool value) =>
         UpdateConfig(_config.Data.UseAbsoluteModPaths, value,
             v => _config.Data.UseAbsoluteModPaths = v);
+
+    public void SaveUnlistedServers()
+    {
+        List<string> names = UnlistedServersText
+            .Split([',', '\n', '\r'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Distinct()
+            .ToList();
+
+        if (names.SequenceEqual(_config.Data.UnlistedServers)) return;
+
+        _config.Data.UnlistedServers = names;
+        _ = _config.ScheduleConfigSave();
+        _ = _serverList.RefreshUnlistedServers();
+
+        FlashUnlistedServersSaved();
+    }
+
+    private async void FlashUnlistedServersSaved()
+    {
+        _unlistedServersSavedCts?.Cancel();
+        _unlistedServersSavedCts = new CancellationTokenSource();
+        CancellationToken token = _unlistedServersSavedCts.Token;
+
+        UnlistedServersSaved = true;
+        try { await Task.Delay(1200, token); }
+        catch (OperationCanceledException) { return; }
+        UnlistedServersSaved = false;
+    }
 
     partial void OnKeepHistoryChanged(bool value)
     {

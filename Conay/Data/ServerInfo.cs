@@ -49,4 +49,7 @@ public class ServerInfo
 
     [JsonIgnore]
     public IPresetService? Provider { get; set; }
+
+    [JsonIgnore]
+    public bool Unlisted { get; set; }
 }

@@ -68,10 +68,39 @@ public class ServerList
             foreach (List<ServerInfo> remoteServers in await Task.WhenAll(remoteTasks))
                 MergeRemoteServers(remoteServers);
 
+            await LoadUnlistedServers();
+
             OrderServersByHistory();
         }
 
         _remoteLoadedTcs.SetResult();
+    }
+
+    private async Task LoadUnlistedServers()
+    {
+        List<string> names = _launcherConfig.Data.UnlistedServers;
+        if (names.Count == 0) return;
+
+        List<Task<List<ServerInfo>>> unlistedTasks = ServerSources
+            .Select(origin => _sourceFactory.Get(origin).GetUnlistedServers(names))
+            .ToList();
+
+        foreach (List<ServerInfo> unlistedServers in await Task.WhenAll(unlistedTasks))
+        {
+            foreach (ServerInfo server in unlistedServers)
+                server.Unlisted = true;
+
+            MergeRemoteServers(unlistedServers);
+        }
+    }
+
+    public async Task RefreshUnlistedServers()
+    {
+        if (_launcherConfig.Data.OfflineMode) return;
+
+        await LoadUnlistedServers();
+        OrderServersByHistory();
+        ServersChanged?.Invoke();
     }
 
     private void OnRemoteServerListUpdated(List<ServerInfo> remoteServers)

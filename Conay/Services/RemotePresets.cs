@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,7 +18,8 @@ public class RemotePresets(
     ModList modList,
     string name,
     string indexUrl,
-    string serversDirectory) : IPresetService
+    string serversDirectory,
+    bool supportsUnlisted = false) : IPresetService
 {
     private static readonly TimeSpan[] RetryDelays =
     [
@@ -36,10 +38,26 @@ public class RemotePresets(
     public async Task<List<ServerInfo>> GetServerList()
     {
         string json = await http.Get(indexUrl);
-        if (json != string.Empty) return ParseServerList(json) ?? LoadFromCache();
-        logger.LogWarning("Failed to load server list from: {URL}", indexUrl);
+        List<ServerInfo>? servers = json != string.Empty ? ParseServerList(json) : null;
+        if (servers != null) return servers;
+
+        logger.LogWarning("Falling back to cached server list for: {URL}", indexUrl);
         _ = RetryServerListInBackground();
         return LoadFromCache();
+    }
+
+    public async Task<List<ServerInfo>> GetUnlistedServers(List<string> names)
+    {
+        if (names.Count == 0 || !supportsUnlisted) return [];
+
+        string query = string.Join(",", names.Select(Uri.EscapeDataString));
+        string baseUrl = indexUrl[..(indexUrl.LastIndexOf('/') + 1)];
+        string url = $"{baseUrl}unlisted.json?s={query}";
+
+        string json = await http.Get(url);
+        if (json != string.Empty) return ParseServerList(json, saveToCache: false, sourceUrl: url) ?? [];
+        logger.LogWarning("Failed to load unlisted servers from: {URL}", url);
+        return [];
     }
 
     private async Task RetryServerListInBackground()
@@ -62,7 +80,7 @@ public class RemotePresets(
         logger.LogError("Failed to load server list from: {URL}", indexUrl);
     }
 
-    private List<ServerInfo>? ParseServerList(string json)
+    private List<ServerInfo>? ParseServerList(string json, bool saveToCache = true, string? sourceUrl = null)
     {
         List<ServerInfo> servers;
         try
@@ -71,7 +89,7 @@ public class RemotePresets(
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Failed to parse server list from: {URL}", indexUrl);
+            logger.LogError("Failed to parse server list from: {URL}: {Error}", sourceUrl ?? indexUrl, ex.Message);
             return null;
         }
 
@@ -80,7 +98,7 @@ public class RemotePresets(
             server.Provider = this;
         }
 
-        SaveToCache(json);
+        if (saveToCache) SaveToCache(json);
 
         return servers;
     }
