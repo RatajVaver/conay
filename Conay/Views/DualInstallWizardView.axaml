@@ -30,7 +30,7 @@
                         </TextBlock>
                         <TextBlock TextWrapping="Wrap" FontSize="13">
                             Please move the Conay folder to a different location
-                            (e.g. <Run FontWeight="Bold" Text="C:\Conay" />) and relaunch.
+                            (e.g. <Run FontWeight="Bold" Text="{Binding ExampleConayPath}" />) and relaunch.
                         </TextBlock>
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0 8 0 0">
                             <Button Classes="dialog" Click="CloseWizard">Close</Button>
@@ -56,6 +56,22 @@
                         </TextBlock>
                         <TextBlock TextWrapping="Wrap" FontSize="13">
                             Please wait for all Steam downloads to finish, then reopen this wizard.
+                        </TextBlock>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0 8 0 0">
+                            <Button Classes="dialog" Click="CloseWizard">Close</Button>
+                        </StackPanel>
+                    </StackPanel>
+                    <StackPanel IsVisible="{Binding IsProtonUnavailable}" Spacing="12">
+                        <TextBlock FontSize="18" FontWeight="Bold" Text="Proton launch not available!" />
+                        <TextBlock TextWrapping="Wrap" Foreground="#aaa" FontSize="13">
+                            On Linux, Conay launches the second version of the game directly through Proton,
+                            which is not possible with your current setup.
+                        </TextBlock>
+                        <TextBlock TextWrapping="Wrap" FontSize="13">
+                            Dual install requires the native Steam package (not Flatpak or Snap)
+                            and Conan Exiles launched through Steam at least once.
+                            Try running the game through Steam once before attempting this,
+                            or you can alternatively use Windows version of Conay through Proton in Steam.
                         </TextBlock>
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0 8 0 0">
                             <Button Classes="dialog" Click="CloseWizard">Close</Button>

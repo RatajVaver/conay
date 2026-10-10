@@ -13,6 +13,7 @@ public static class HttpClientExtensions
     {
         using HttpResponseMessage response =
             await client.GetAsync(requestUri, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+        response.EnsureSuccessStatusCode();
         long? contentLength = response.Content.Headers.ContentLength;
 
         await using Stream download = await response.Content.ReadAsStreamAsync(cancellationToken);

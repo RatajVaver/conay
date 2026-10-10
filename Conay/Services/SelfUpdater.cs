@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Formats.Tar;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Runtime.Versioning;
 using System.Text.Json;
@@ -129,51 +131,145 @@ public class SelfUpdater(ILogger<SelfUpdater> logger, HttpService http, NotifySe
         }
     }
 
+    private const string LinuxExecutableName = "Conay";
+
+    private const UnixFileMode ExecutableMode =
+        UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute |
+        UnixFileMode.GroupRead | UnixFileMode.GroupExecute |
+        UnixFileMode.OtherRead | UnixFileMode.OtherExecute;
+
+    private const string LinuxUpdateScript =
+        """
+        pid="$1"; app="$2"; stage="$3"; exe="$4"
+
+        for _ in $(seq 1 120); do
+            kill -0 "$pid" 2>/dev/null || break
+            sleep 0.5
+        done
+
+        if kill -0 "$pid" 2>/dev/null; then
+            echo "Conay did not exit in time, update aborted."
+        else
+            for f in "$stage"/*; do
+                mv -f "$f" "$app/" || echo "Failed to update $(basename "$f")"
+            done
+            chmod +x "$app/$exe"
+            echo "Update applied."
+        fi
+
+        rm -rf "$stage"
+        "$app/$exe" >/dev/null 2>&1 &
+        """;
+
     [SupportedOSPlatform("linux")]
     private async Task DownloadLinuxArchive()
     {
         notifyService.UpdateStatus(this, "Downloading Conay update..");
 
         string appDirectory = AppContext.BaseDirectory.TrimEnd(Path.DirectorySeparatorChar);
-        string archivePath = Path.Combine(appDirectory, "conay-linux.tar.gz");
-        string scriptPath = Path.Combine(appDirectory, "conay-update.sh");
+        string archivePath = Path.Combine(appDirectory, "conay-update.tar.gz");
+        string stagingDir = Path.Combine(appDirectory, ".conay-update");
+        string logPath = Path.Combine(appDirectory, "logs", "update.log");
 
         bool success = await http.Download(LinuxArchiveDownloadUrl, archivePath, new Progress<float>(ReportProgress));
         if (!success)
         {
             logger.LogError("Failed to download Conay update!");
             notifyService.UpdateStatus(this, "Failed to update Conay!");
+            TryDelete(archivePath);
             return;
         }
 
-        string scriptContent =
-            $"#!/bin/bash\nsleep 5\ntar -xzf \"{archivePath}\" -C \"{appDirectory}\"\nrm \"{archivePath}\"\nrm -- \"$0\"\n";
-        await File.WriteAllTextAsync(scriptPath, scriptContent);
-
-        File.SetUnixFileMode(scriptPath,
-            UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute |
-            UnixFileMode.GroupRead | UnixFileMode.GroupExecute |
-            UnixFileMode.OtherRead | UnixFileMode.OtherExecute);
+        notifyService.UpdateStatus(this, "Verifying Conay update..");
 
         try
         {
-            Process.Start(new ProcessStartInfo
-            {
-                FileName = "bash",
-                Arguments = $"\"{scriptPath}\"",
-                UseShellExecute = false,
-                CreateNoWindow = true
-            });
+            await Task.Run(() => ExtractLinuxUpdate(archivePath, stagingDir));
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to unpack Conay update!");
+            notifyService.UpdateStatus(this, ex is UnauthorizedAccessException
+                ? "Failed to update Conay (no write access to its folder)!"
+                : "Failed to update Conay (downloaded update is invalid)!");
+            TryDeleteDirectory(stagingDir);
+            return;
+        }
+        finally
+        {
+            TryDelete(archivePath);
+        }
+
+        bool started;
+        try
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(logPath)!);
+            started = DetachedProcess.Start("conay",
+            [
+                "bash", "-c", LinuxUpdateScript.ReplaceLineEndings("\n"), "conay-update",
+                Environment.ProcessId.ToString(), appDirectory, stagingDir, LinuxExecutableName
+            ], logPath: logPath);
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Failed to run update script!");
+            started = false;
+        }
+
+        if (!started)
+        {
             notifyService.UpdateStatus(this, "Failed to run update script!");
+            TryDeleteDirectory(stagingDir);
             return;
         }
 
-        notifyService.UpdateStatus(this, "Update downloaded, applying after close..");
-        await Task.Delay(TimeSpan.FromSeconds(3));
+        notifyService.UpdateStatus(this, "Update downloaded, Conay will restart..");
+        await Task.Delay(TimeSpan.FromSeconds(2));
         Environment.Exit(0);
+    }
+
+    [SupportedOSPlatform("linux")]
+    private static void ExtractLinuxUpdate(string archivePath, string stagingDir)
+    {
+        if (Directory.Exists(stagingDir))
+            Directory.Delete(stagingDir, true);
+        Directory.CreateDirectory(stagingDir);
+
+        using (FileStream file = File.OpenRead(archivePath))
+        using (GZipStream gzip = new(file, CompressionMode.Decompress))
+        {
+            TarFile.ExtractToDirectory(gzip, stagingDir, overwriteFiles: true);
+        }
+
+        string executable = Path.Combine(stagingDir, LinuxExecutableName);
+        if (!File.Exists(executable) || new FileInfo(executable).Length == 0)
+            throw new InvalidDataException("Update archive does not contain the Conay executable.");
+
+        File.SetUnixFileMode(executable, ExecutableMode);
+    }
+
+    private static void TryDelete(string path)
+    {
+        try
+        {
+            File.Delete(path);
+        }
+        catch
+        {
+            // ignored
+        }
+    }
+
+    private static void TryDeleteDirectory(string path)
+    {
+        try
+        {
+            if (Directory.Exists(path))
+                Directory.Delete(path, true);
+        }
+        catch
+        {
+            // ignored
+        }
     }
 }

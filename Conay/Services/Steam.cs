@@ -245,6 +245,7 @@ public class Steam : IModSource, IDisposable
                 _logger.LogWarning("Skipping mod with unparseable ID: {Id}", mod.Id);
                 continue;
             }
+
             DateTime remoteLastUpdated = Epoch.ToDateTime(mod.LastUpdate ?? 0);
             DateTime localLastUpdated = ModList.GetModFileLastUpdate(_workshopPath, modId);
             if (remoteLastUpdated > localLastUpdated)
@@ -450,15 +451,61 @@ public class Steam : IModSource, IDisposable
             }
             catch
             {
+                // ignored
             }
 
             return false;
         }
     }
 
-    public bool IsGameRunning =>
-        Process.GetProcessesByName("ConanSandbox").Length > 0 ||
-        Process.GetProcessesByName("ConanSandbox_BE").Length > 0;
+    public bool IsGameRunning
+    {
+        get
+        {
+            List<Process> processes = GetGameProcesses();
+            foreach (Process process in processes)
+                process.Dispose();
+
+            return processes.Count > 0;
+        }
+    }
+
+    public static List<Process> GetGameProcesses()
+    {
+        List<Process> game = [];
+        foreach (Process process in Process.GetProcesses())
+        {
+            if (IsGameProcess(process))
+                game.Add(process);
+            else
+                process.Dispose();
+        }
+
+        return game;
+    }
+
+    private static bool IsGameProcess(Process process)
+    {
+        try
+        {
+            string name = process.ProcessName;
+            if (OperatingSystem.IsLinux() && !name.StartsWith("ConanSandbox", StringComparison.OrdinalIgnoreCase))
+                name = GetWineExecutableName(process.Id);
+
+            return name.StartsWith("ConanSandbox", StringComparison.OrdinalIgnoreCase) &&
+                   !name.Contains("Server", StringComparison.OrdinalIgnoreCase);
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private static string GetWineExecutableName(int pid)
+    {
+        string exe = File.ReadAllText($"/proc/{pid}/cmdline").Split('\0')[0];
+        return Path.GetFileNameWithoutExtension(exe.Replace('\\', '/'));
+    }
 
     private void DetectDualInstall()
     {
@@ -496,20 +543,16 @@ public class Steam : IModSource, IDisposable
         {
             try
             {
-                Process.Start(new ProcessStartInfo
-                {
-                    FileName = "bash",
-                    Arguments = "-c \"nohup steam -silent >/dev/null 2>&1 &\"",
-                    UseShellExecute = false,
-                    CreateNoWindow = true
-                });
-                return;
+                if (DetachedProcess.Start("steam", ["steam", "-silent"]))
+                    return;
             }
-            catch
+            catch (Exception ex)
             {
-                Protocol.Open("steam://");
-                return;
+                _logger.LogError(ex, "Failed to launch Steam!");
             }
+
+            Protocol.Open("steam://");
+            return;
         }
 
         Protocol.Open("steam://-/\" -silent");

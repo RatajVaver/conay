@@ -80,6 +80,11 @@ public partial class SettingsViewModel : PageViewModel
     private bool _useAbsoluteModPaths;
 
     [ObservableProperty]
+    private bool _useRico;
+
+    public bool RicoInstalled => Rico.IsInstalled;
+
+    [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasCustomLegacyDir))]
     private string _customLegacyDir = string.Empty;
 
@@ -119,6 +124,7 @@ public partial class SettingsViewModel : PageViewModel
         AlternativeBorders = config.Data.AlternativeBorders;
         WriteServerModList = config.Data.WriteServerModList;
         UseAbsoluteModPaths = config.Data.UseAbsoluteModPaths;
+        UseRico = config.Data.UseRico && Rico.IsInstalled;
         CustomLegacyDir = config.Data.CustomLegacyDir ?? string.Empty;
         UnlistedServersText = string.Join(", ", config.Data.UnlistedServers);
 
@@ -254,6 +260,12 @@ public partial class SettingsViewModel : PageViewModel
         UpdateConfig(_config.Data.UseAbsoluteModPaths, value,
             v => _config.Data.UseAbsoluteModPaths = v);
 
+    partial void OnUseRicoChanged(bool value)
+    {
+        if (!Rico.IsInstalled) return;
+        UpdateConfig(_config.Data.UseRico, value, v => _config.Data.UseRico = v);
+    }
+
     public void SaveUnlistedServers()
     {
         List<string> names = UnlistedServersText
@@ -337,14 +349,6 @@ public partial class SettingsViewModel : PageViewModel
     [RelayCommand]
     private async Task OpenDualInstallWizard()
     {
-        if (OperatingSystem.IsLinux())
-        {
-            MessageBox.ShowInfo(
-                "Dual install is not supported on the native Linux build.\n\n" +
-                "To run both Legacy and Enhanced on Linux, use the Windows version of Conay via Proton.");
-            return;
-        }
-
         if (!_steam.DualInstallMode && string.IsNullOrEmpty(_steam.AppInstallDir))
         {
             MessageBox.ShowInfo("Steam is not connected yet.\n\nPlease wait for Steam to load and try again.");

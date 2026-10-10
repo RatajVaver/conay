@@ -46,6 +46,11 @@
                           Content="Back up TotCustom saves on launch"
                           ToolTip.Tip="Before launching the game, Conay will zip the TotCustom save folder and store up to 3 rotating backups in the Conay/backups folder.">
                 </CheckBox>
+                <CheckBox IsChecked="{Binding UseRico, Mode=TwoWay}"
+                          IsEnabled="{Binding RicoInstalled}"
+                          Content="Launch with Rico client overlay"
+                          ToolTip.Tip="Experimental: Launches the game with the Rico executable. Requires Rico installed inside the Conay folder (rico/Rico.exe).">
+                </CheckBox>
                 <StackPanel Orientation="Horizontal" Margin="0 20 0 0">
                     <Label Content="Default tab:" VerticalAlignment="Center"></Label>
                     <ComboBox SelectedIndex="{Binding DefaultTabIndex, Mode=TwoWay}" MaxDropDownHeight="100" Margin="5"

@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using AsyncImageLoader;
-using AsyncImageLoader.Loaders;
+using AsyncImageLoader.Core.Pipeline;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
@@ -116,7 +116,9 @@ public class App : Application
             }
 
             ImageLoader.AsyncImageLoader.Dispose();
-            ImageLoader.AsyncImageLoader = new DiskCachedWebImageLoader(cacheDirectory + Path.DirectorySeparatorChar);
+            ImageLoader.AsyncImageLoader = ImageLoaderPipelineBuilder
+                .DiskCached(cacheDirectory + Path.DirectorySeparatorChar)
+                .Build();
         }
 
         desktop.MainWindow = new MainView(launcherConfig)

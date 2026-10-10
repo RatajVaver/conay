@@ -24,6 +24,7 @@ public class LaunchWorker(
     NotifyService notifyService)
 {
     private bool _launching;
+    private bool _launchedViaProton;
 
     public void Launch()
     {
@@ -157,7 +158,9 @@ public class LaunchWorker(
         if (launcherConfig.Data.Clipboard && !string.IsNullOrEmpty(state.Ip))
             _ = Clipboard.SetTextAsync(state.Ip);
 
-        int countdown = OperatingSystem.IsWindows() ? (state.Version == GameVersion.Enhanced ? 10 : 20) : 3;
+        int countdown = OperatingSystem.IsWindows() || _launchedViaProton
+            ? (state.Version == GameVersion.Enhanced ? 10 : 20)
+            : 3;
         for (int i = countdown; i > 1; i--)
         {
             notifyService.UpdateStatus(this, $"Launching the game (this window will close in {i} seconds)..");
@@ -170,14 +173,36 @@ public class LaunchWorker(
 
     private bool LaunchConan(string? args = null)
     {
-        if (!OperatingSystem.IsWindows())
-            return LaunchViaSteamUri(args);
-
         string installDir = steam.GetInstallDirForVersion(state.Version);
         string exe = state.BattlEye
             ? "ConanSandbox_BE.exe"
             : (state.Version == GameVersion.Enhanced ? "ConanSandbox-Win64-Shipping.exe" : "ConanSandbox.exe");
         string exePath = Path.GetFullPath(Path.Combine(installDir, $"ConanSandbox/Binaries/Win64/{exe}"));
+        string? exeArgs = args;
+
+        if (launcherConfig.Data.UseRico && Rico.IsInstalled)
+        {
+            exePath = Rico.ExePath;
+            exeArgs = state.Version == GameVersion.Enhanced ? "--launch --enhanced" : "--launch";
+        }
+
+        if (OperatingSystem.IsLinux())
+        {
+            _launchedViaProton = Proton.Launch(logger, steam.AppInstallDir, installDir, exePath, exeArgs,
+                state.BattlEye);
+            if (_launchedViaProton)
+                return true;
+
+            if (!steam.DualInstallMode || state.Version == GameVersionHelper.Current)
+                return LaunchViaSteamUri();
+
+            string version = GameVersionHelper.ToDisplayName(state.Version);
+            notifyService.UpdateStatus(this, $"Failed to launch {version} via Proton!");
+            return false;
+        }
+
+        if (!OperatingSystem.IsWindows())
+            return LaunchViaSteamUri(args);
 
         if (File.Exists(exePath))
         {
@@ -186,7 +211,7 @@ public class LaunchWorker(
                 Process.Start(new ProcessStartInfo
                 {
                     FileName = exePath,
-                    Arguments = args,
+                    Arguments = exeArgs,
                     WorkingDirectory = Path.GetDirectoryName(exePath),
                     UseShellExecute = true
                 });
@@ -219,28 +244,17 @@ public class LaunchWorker(
 
         if (OperatingSystem.IsLinux())
         {
-            string scriptPath = Path.Combine(AppContext.BaseDirectory, "launch.sh");
-            File.WriteAllText(scriptPath,
-                $"#!/bin/bash\nsleep 5\n" +
-                $"if command -v steam >/dev/null 2>&1; then nohup steam \"{uri}\" >/dev/null 2>&1 &\n" +
-                $"else xdg-open \"{uri}\"\nfi\nrm -f \"$0\"\n");
+            const string script =
+                "sleep 5; if command -v steam >/dev/null 2>&1; then exec steam \"$1\"; else exec xdg-open \"$1\"; fi";
             try
             {
-                Process.Start(new ProcessStartInfo
-                {
-                    FileName = "bash",
-                    Arguments = scriptPath,
-                    UseShellExecute = false,
-                    CreateNoWindow = true
-                });
+                if (DetachedProcess.Start("steam", ["bash", "-c", script, "conay-steam-uri", uri]))
+                    return true;
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Failed to launch Steam URI via script!");
-                Protocol.Open(uri);
+                logger.LogError(ex, "Failed to launch Steam URI!");
             }
-
-            return true;
         }
 
         Protocol.Open(uri);

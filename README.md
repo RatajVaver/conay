@@ -42,7 +42,7 @@ To create shortcut for the native build, move `conay.desktop` into `$XDG_DATA_HO
 
 If you want to use Proton, make sure to force it to use the same version of Proton as the game in Steam properties.
 
-The native build currently doesn't support the dual install feature. If you want to play both Enhanced and Legacy versions of the game, use Proton.
+The native build launches the game directly through Proton. Make sure to run the game through Steam at least once first before using Conay.
 
 ## Usage
 

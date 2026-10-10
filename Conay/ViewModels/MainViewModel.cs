@@ -238,13 +238,8 @@ public partial class MainViewModel : ViewModelBase
 
     private async Task CheckConanRunning()
     {
-        Process[] processes =
-        [
-            ..Process.GetProcessesByName("ConanSandbox"),
-            ..Process.GetProcessesByName("ConanSandbox_BE"),
-            ..Process.GetProcessesByName("ConanSandbox-Win64-Shipping")
-        ];
-        if (processes.Length == 0) return;
+        List<Process> processes = Steam.GetGameProcesses();
+        if (processes.Count == 0) return;
 
         ShowConanRunningWarning = true;
         await Task.WhenAll(processes.Select(async p =>
@@ -300,9 +295,7 @@ public partial class MainViewModel : ViewModelBase
     {
         try
         {
-            foreach (Process process in Process.GetProcessesByName("ConanSandbox")
-                         .Concat(Process.GetProcessesByName("ConanSandbox_BE"))
-                         .Concat(Process.GetProcessesByName("ConanSandbox-Win64-Shipping")))
+            foreach (Process process in Steam.GetGameProcesses())
             {
                 process.Kill();
                 process.Dispose();

@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Conay.Data;
 using Conay.Services;
+using Conay.Utils;
 
 namespace Conay.ViewModels;
 
@@ -32,8 +33,13 @@ public partial class DualInstallWizardViewModel(Steam steam) : ObservableObject
     public bool IsGameUpdating => !steam.DualInstallMode && !CheckConayInsideInstall() && !steam.IsGameRunning &&
                                   steam.IsGameDownloading;
 
+    public bool IsProtonUnavailable => !steam.DualInstallMode && !CheckConayInsideInstall() &&
+                                       !steam.IsGameRunning && !steam.IsGameDownloading && CheckProtonUnavailable();
+
     public bool IsReadyForInstall => !steam.DualInstallMode && !CheckConayInsideInstall() && !steam.IsGameRunning &&
-                                     !steam.IsGameDownloading;
+                                     !steam.IsGameDownloading && !CheckProtonUnavailable();
+
+    private bool CheckProtonUnavailable() => OperatingSystem.IsLinux() && !Proton.CanLaunch(steam.AppInstallDir);
 
     private bool CheckConayInsideInstall()
     {
@@ -54,6 +60,8 @@ public partial class DualInstallWizardViewModel(Steam steam) : ObservableObject
     public string EnhancedPath => steam.GetInstallDirForVersion(GameVersion.Enhanced);
     public string LegacyPath => steam.GetInstallDirForVersion(GameVersion.Legacy);
 
+    public string ExampleConayPath => OperatingSystem.IsWindows() ? @"C:\Conay" : "~/Conay";
+
     public string SourcePath => steam.AppInstallDir;
 
     public string DestPath => string.IsNullOrEmpty(steam.AppInstallDir)
@@ -64,7 +72,8 @@ public partial class DualInstallWizardViewModel(Steam steam) : ObservableObject
     [RelayCommand]
     private void Start()
     {
-        if (CheckConayInsideInstall() || steam.IsGameRunning || steam.IsGameDownloading) return;
+        if (CheckConayInsideInstall() || steam.IsGameRunning || steam.IsGameDownloading ||
+            CheckProtonUnavailable()) return;
         if (!string.IsNullOrEmpty(DestPath) && Directory.Exists(DestPath))
         {
             Step = 2;

@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -127,7 +126,7 @@ public partial class SavesViewModel : PageViewModel
 
     private void OnLoadRequested(SaveItemViewModel item)
     {
-        if (Process.GetProcessesByName("ConanSandbox").Length > 0 || Process.GetProcessesByName("ConanSandbox_BE").Length > 0)
+        if (_steam.IsGameRunning)
         {
             MessageBox.ShowInfo("Cannot swap saves while Conan Exiles is running. Close the game first.");
             return;
