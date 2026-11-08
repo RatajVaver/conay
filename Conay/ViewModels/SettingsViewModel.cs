@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,8 +12,10 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.Mvvm.Messaging.Messages;
+using Conay.Data;
 using Conay.Services;
 using Conay.Utils;
+using Conay.ViewModels.Parts;
 
 namespace Conay.ViewModels;
 
@@ -23,6 +26,7 @@ public partial class SettingsViewModel : PageViewModel
     private readonly LauncherConfig _config;
     private readonly GameConfig _gameConfig;
     private readonly Steam _steam;
+    private readonly SteamAccounts _steamAccounts;
     private readonly ServerList _serverList;
 
     [ObservableProperty]
@@ -98,13 +102,20 @@ public partial class SettingsViewModel : PageViewModel
 
     private CancellationTokenSource? _unlistedServersSavedCts;
 
+    public ObservableCollection<SteamAccountItemViewModel> SavedAccounts { get; } = [];
+
+    [ObservableProperty]
+    private bool _hasSavedAccounts;
+
     private readonly string[] _tabs = ["launch", "favorite", "servers", "presets", "saves"];
 
-    public SettingsViewModel(LauncherConfig config, GameConfig gameConfig, Steam steam, ServerList serverList)
+    public SettingsViewModel(LauncherConfig config, GameConfig gameConfig, Steam steam, SteamAccounts steamAccounts,
+        ServerList serverList)
     {
         _config = config;
         _gameConfig = gameConfig;
         _steam = steam;
+        _steamAccounts = steamAccounts;
         _serverList = serverList;
 
         CheckUpdates = config.Data.CheckUpdates;
@@ -306,6 +317,29 @@ public partial class SettingsViewModel : PageViewModel
 
         _ = _config.ScheduleConfigSave();
     }
+
+    public void RefreshSteamAccounts()
+    {
+        ulong currentSteamId = _steam.CurrentSteamId;
+
+        SavedAccounts.Clear();
+        foreach (SteamAccount account in _steamAccounts.GetSavedAccounts())
+        {
+            bool isCurrent = currentSteamId != 0 ? account.SteamId == currentSteamId : account.MostRecent;
+            SavedAccounts.Add(new SteamAccountItemViewModel(account, isCurrent, SwitchSteamAccount));
+        }
+
+        HasSavedAccounts = SavedAccounts.Count > 0;
+    }
+
+    private async Task SwitchSteamAccount(SteamAccount account)
+    {
+        await _steamAccounts.SwitchTo(account);
+        RefreshSteamAccounts();
+    }
+
+    [RelayCommand]
+    private Task AddSteamAccount() => _steamAccounts.AddAccount();
 
     public bool DualInstallActive => _steam.DualInstallMode;
     public bool DualInstallNotActive => !_steam.DualInstallMode;

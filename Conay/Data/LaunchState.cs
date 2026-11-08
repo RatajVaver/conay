@@ -9,4 +9,6 @@ public class LaunchState
     public bool IsSaveLaunch { get; set; }
     public bool BattlEye { get; set; }
     public GameVersion Version { get; set; } = GameVersionHelper.Current;
+    public ulong SteamAccountId { get; set; }
+    public string? ServerFile { get; set; }
 }

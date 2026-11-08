@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <IsPackable>false</IsPackable>
+        <IsTestProject>true</IsTestProject>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.13.0" />
+        <PackageReference Include="xunit" Version="2.9.3" />
+        <PackageReference Include="xunit.runner.visualstudio" Version="3.0.2" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Conay\Conay.csproj" />
+    </ItemGroup>
+
+    <!-- Same Steam API library as Conay, for the tests that use it directly -->
+    <ItemGroup Condition="!$(RuntimeIdentifier.StartsWith('linux'))">
+        <Reference Include="Facepunch.Steamworks.Win64">
+            <HintPath>..\Conay\lib\Facepunch.Steamworks.Win64.dll</HintPath>
+        </Reference>
+    </ItemGroup>
+    <ItemGroup Condition="$(RuntimeIdentifier.StartsWith('linux'))">
+        <Reference Include="Facepunch.Steamworks.Posix">
+            <HintPath>../Conay/lib/Facepunch.Steamworks.Posix.dll</HintPath>
+        </Reference>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="Xunit" />
+    </ItemGroup>
+</Project>

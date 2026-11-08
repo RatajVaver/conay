@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Media;
@@ -13,7 +15,8 @@ namespace Conay.ViewModels.Parts;
 public partial class ServerPresetViewModel : ViewModelBase, ILazyLoad
 {
     private readonly Router _router;
-    private readonly Steam _steam;
+    private readonly ISteamConnection _steam;
+    private readonly SteamAccounts _steamAccounts;
     private readonly LauncherConfig _launcherConfig;
     private readonly IPresetService _provider;
 
@@ -70,6 +73,23 @@ public partial class ServerPresetViewModel : ViewModelBase, ILazyLoad
     [ObservableProperty] private string _ping = "Ping: N/A";
 
     [ObservableProperty] private bool _refreshInProgress;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasAccountLabel))]
+    [NotifyPropertyChangedFor(nameof(AccountTooltip))]
+    private string? _accountLabel;
+
+    [ObservableProperty] private bool _showAccountButton;
+
+    public bool HasAccountLabel => AccountLabel != null;
+
+    public string AccountTooltip => _launcherConfig.AsksForServerAccount(File)
+        ? "Asks which Steam account to use on every launch"
+        : HasAccountLabel
+            ? $"Launches with Steam account: {AccountLabel}"
+            : "Choose a Steam account for this server";
+
+    public ObservableCollection<SteamAccountOption> AccountOptions { get; } = [];
 
     private GameVersion EffectiveGameVersion => string.IsNullOrEmpty(Version) && _provider.GetProviderName() == "local"
         ? GameVersionHelper.Current
@@ -133,11 +153,13 @@ public partial class ServerPresetViewModel : ViewModelBase, ILazyLoad
     private ServerInfo _serverInfo;
     private ServerData? _preset;
 
-    public ServerPresetViewModel(Router router, Steam steam, LauncherConfig launcherConfig, ServerInfo serverInfo)
+    public ServerPresetViewModel(Router router, ISteamConnection steam, SteamAccounts steamAccounts,
+        LauncherConfig launcherConfig, ServerInfo serverInfo)
     {
         _serverInfo = serverInfo;
         _router = router;
         _steam = steam;
+        _steamAccounts = steamAccounts;
         _launcherConfig = launcherConfig;
         _provider = serverInfo.Provider!;
         File = serverInfo.File;
@@ -163,6 +185,53 @@ public partial class ServerPresetViewModel : ViewModelBase, ILazyLoad
         _queryPort = serverInfo.QueryPort;
 
         LoadMapAndPlayersFromServerInfo();
+        UpdateAccountLabel();
+    }
+
+    private void UpdateAccountLabel()
+    {
+        IReadOnlyList<SteamAccount> accounts = _steamAccounts.GetSavedAccounts();
+        ulong assigned = _launcherConfig.GetServerAccount(File);
+        bool ask = _launcherConfig.AsksForServerAccount(File);
+
+        AccountLabel = ask
+            ? "Ask"
+            : assigned == 0
+                ? null
+                : accounts.FirstOrDefault(a => a.SteamId == assigned)?.DisplayName ?? assigned.ToString();
+        ShowAccountButton = ask || assigned != 0 || accounts.Count > 1;
+    }
+
+    public void RefreshAccountOptions()
+    {
+        IReadOnlyList<SteamAccount> accounts = _steamAccounts.GetSavedAccounts();
+        ulong assigned = _launcherConfig.GetServerAccount(File);
+        bool ask = _launcherConfig.AsksForServerAccount(File);
+
+        AccountOptions.Clear();
+        AccountOptions.Add(new SteamAccountOption("Current Steam account", () => SetAccount(0),
+            !ask && assigned == 0));
+        AccountOptions.Add(new SteamAccountOption("Ask every time", () => SetAccount(0, askEveryTime: true), ask));
+
+        foreach (SteamAccount account in accounts)
+        {
+            string name = account.PersonaName == string.Empty || account.PersonaName == account.AccountName
+                ? account.AccountName
+                : $"{account.PersonaName} ({account.AccountName})";
+            AccountOptions.Add(new SteamAccountOption(name, () => SetAccount(account.SteamId),
+                account.SteamId == assigned));
+        }
+
+        if (assigned != 0 && accounts.All(a => a.SteamId != assigned))
+            AccountOptions.Add(new SteamAccountOption($"Unknown account ({assigned})", () => SetAccount(assigned), true));
+
+        AccountOptions.Add(new SteamAccountOption("Add account…", () => _ = _steamAccounts.AddAccount()));
+    }
+
+    private void SetAccount(ulong steamId, bool askEveryTime = false)
+    {
+        _launcherConfig.SetServerAccount(File, steamId, askEveryTime);
+        UpdateAccountLabel();
     }
 
     private void LoadMapAndPlayersFromServerInfo()
@@ -279,6 +348,13 @@ public partial class ServerPresetViewModel : ViewModelBase, ILazyLoad
             if (!confirmed) return;
         }
 
+        ulong? steamAccountId = null;
+        if (_launcherConfig.AsksForServerAccount(File))
+        {
+            steamAccountId = await _steamAccounts.ChooseAccount(Name);
+            if (steamAccountId == null) return;
+        }
+
         _preset = await _provider.FetchServerData(File);
         if (_preset == null)
         {
@@ -289,7 +365,7 @@ public partial class ServerPresetViewModel : ViewModelBase, ILazyLoad
         _router.BeforeLaunch(Name);
         await _steam.WaitForSteam();
         _provider.SaveModlistFromPreset(File);
-        _router.ReadyForLaunch(_preset, version: EffectiveGameVersion, icon: Icon);
+        _router.ReadyForLaunch(_preset, version: EffectiveGameVersion, icon: Icon, steamAccountId: steamAccountId);
     }
 
     [RelayCommand]

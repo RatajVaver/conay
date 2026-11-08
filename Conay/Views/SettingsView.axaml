@@ -5,6 +5,7 @@
              mc:Ignorable="d" d:DesignWidth="850" d:DesignHeight="550"
              x:Class="Conay.Views.SettingsView"
              xmlns:vm="clr-namespace:Conay.ViewModels"
+             xmlns:vmp="clr-namespace:Conay.ViewModels.Parts"
              x:DataType="vm:SettingsViewModel">
     <StackPanel Orientation="Vertical" Background="Transparent" PointerPressed="Root_OnPointerPressed">
         <Grid ColumnDefinitions="Auto, Auto" Margin="0 0 0 30">
@@ -144,6 +145,39 @@
                        Text="Dual install is active" />
             <TextBlock IsVisible="{Binding DualInstallNotActive}" Foreground="#666" FontSize="12" Margin="2 4 0 0"
                        Text="Not configured" />
+        </StackPanel>
+        <StackPanel Margin="0 0 0 30">
+            <Label Content="Steam Accounts"></Label>
+            <TextBlock Foreground="#666" FontSize="12" Margin="2 0 0 10" TextWrapping="Wrap"
+                       Text="Accounts saved in Steam on this computer. Switching or adding an account restarts Steam and Conay." />
+            <ItemsControl ItemsSource="{Binding SavedAccounts}" HorizontalAlignment="Left" MinWidth="360">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vmp:SteamAccountItemViewModel">
+                        <Grid ColumnDefinitions="Auto, *, Auto" Margin="0 0 0 8">
+                            <Image Grid.Column="0" Width="32" Height="32" Margin="0 0 10 0"
+                                   IsVisible="{Binding HasAvatar}" Source="{Binding Avatar}" />
+                            <Image Grid.Column="0" Width="32" Height="32" Margin="0 0 10 0"
+                                   IsVisible="{Binding !HasAvatar}" Source="/Assets/Images/default.jpg" Opacity="0.4" />
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0 0 20 0">
+                                <TextBlock Text="{Binding DisplayName}" FontSize="14" />
+                                <TextBlock Text="{Binding Details}" Foreground="#666" FontSize="11" />
+                            </StackPanel>
+                            <TextBlock Grid.Column="2" IsVisible="{Binding IsCurrent}" VerticalAlignment="Center"
+                                       Foreground="#6db86d" FontSize="12" Text="Current" />
+                            <Button Grid.Column="2" IsVisible="{Binding !IsCurrent}" VerticalAlignment="Center"
+                                    Command="{Binding SwitchCommand}" Padding="8 3" FontSize="11">
+                                Switch
+                            </Button>
+                        </Grid>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <TextBlock IsVisible="{Binding !HasSavedAccounts}" Foreground="#666" FontSize="12" Margin="2 0 0 0"
+                       Text="No saved Steam accounts found" />
+            <Button Command="{Binding AddSteamAccountCommand}" Padding="8 3" FontSize="11" Margin="0 6 0 0"
+                    ToolTip.Tip="Restarts Steam to its sign-in screen so you can sign in with another account.">
+                Add account
+            </Button>
         </StackPanel>
         <TextBlock Foreground="#999" FontSize="13" LineHeight="18" TextWrapping="Wrap">
             Conay is free and open source software maintained by a solo developer.

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 using System.Threading;
@@ -19,13 +20,16 @@ public class LauncherConfig
     private CancellationTokenSource? _saveToken;
 
     public LauncherConfig(ILogger<LauncherConfig> logger, NotifyService notifyService)
+        : this(logger, notifyService, Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "config.json")))
+    {
+    }
+
+    internal LauncherConfig(ILogger<LauncherConfig> logger, NotifyService notifyService, string configPath)
     {
         _logger = logger;
         _notifyService = notifyService;
         Data = new Config();
-
-        string appDirectory = AppContext.BaseDirectory;
-        _configPath = Path.GetFullPath(Path.Combine(appDirectory, "config.json"));
+        _configPath = configPath;
 
         if (!File.Exists(_configPath)) return;
 
@@ -57,6 +61,30 @@ public class LauncherConfig
     {
         if (!Data.Favorites.Remove(fileName)) return;
         _ = ScheduleConfigSave();
+    }
+
+    public ulong GetServerAccount(string fileName) => Data.ServerAccounts.GetValueOrDefault(fileName);
+
+    public bool AsksForServerAccount(string fileName) => Data.AskAccountServers.Contains(fileName);
+
+    public void SetServerAccount(string fileName, ulong steamId, bool askEveryTime = false)
+    {
+        bool changed = askEveryTime
+            ? Data.AskAccountServers.Add(fileName)
+            : Data.AskAccountServers.Remove(fileName);
+
+        if (steamId == 0)
+        {
+            changed |= Data.ServerAccounts.Remove(fileName);
+        }
+        else if (GetServerAccount(fileName) != steamId)
+        {
+            Data.ServerAccounts[fileName] = steamId;
+            changed = true;
+        }
+
+        if (changed)
+            _ = ScheduleConfigSave();
     }
 
     public void SaveLastLaunchedVersion(GameVersion version)
@@ -107,7 +135,7 @@ public class LauncherConfig
         }
     }
 
-    private void SaveConfig()
+    public void SaveConfig()
     {
         try
         {

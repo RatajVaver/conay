@@ -12,8 +12,6 @@ namespace Conay.Utils;
 [SupportedOSPlatform("linux")]
 public static class Proton
 {
-    private static readonly string Home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-
     public static bool Launch(ILogger logger, string steamInstallDir, string installDir, string exePath, string? args,
         bool battlEye)
     {
@@ -135,7 +133,7 @@ public static class Proton
             string.IsNullOrEmpty(steamInstallDir) ? installDir : steamInstallDir, "../.."));
         string compatData = Path.Combine(steamApps, "compatdata", appId);
 
-        string? steamRoot = FindSteamRoot();
+        string? steamRoot = SteamPaths.FindLinuxSteamRoot();
         string? proton = FindProton(compatData);
         if (steamRoot is null || proton is null)
         {
@@ -157,29 +155,6 @@ public static class Proton
         }
 
         return new Setup(steamRoot, steamApps, compatData, proton, runtimeDir, libraries);
-    }
-
-    private static string? FindSteamRoot()
-    {
-        foreach (string dir in new[] { ".steam/root", ".local/share/Steam" }.Select(d => Path.Combine(Home, d)))
-        {
-            if (!Directory.Exists(Path.Combine(dir, "steamapps"))) continue;
-
-            try
-            {
-                FileSystemInfo? target = Directory.ResolveLinkTarget(dir, returnFinalTarget: true);
-                if (target is { Exists: true })
-                    return target.FullName;
-            }
-            catch
-            {
-                // ignored
-            }
-
-            return dir;
-        }
-
-        return null;
     }
 
     private static string? FindProton(string compatData)

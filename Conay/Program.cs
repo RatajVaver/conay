@@ -12,6 +12,7 @@ class Program
     [STAThread]
     public static void Main(string[] args)
     {
+        StartupEnvironment.Capture();
         DumpHelper.Enable();
         BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
     }

@@ -124,6 +124,28 @@
                         <Label Classes="icon" Content="&#xe4a6;"></Label>
                     </Button>
                 </StackPanel>
+                <Button Classes="account" Classes.assigned="{Binding HasAccountLabel, Mode=OneWay}"
+                        IsVisible="{Binding ShowAccountButton, Mode=OneWay}" Margin="0 0 10 0"
+                        ToolTip.Tip="{Binding AccountTooltip, Mode=OneWay}">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="{Binding AccountLabel, Mode=OneWay}"
+                                   IsVisible="{Binding HasAccountLabel, Mode=OneWay}" />
+                        <Label Content="&#xe4c2;"></Label>
+                    </StackPanel>
+                    <Button.Flyout>
+                        <MenuFlyout ItemsSource="{Binding AccountOptions}" Opening="AccountFlyout_OnOpening">
+                            <MenuFlyout.ItemContainerTheme>
+                                <ControlTheme TargetType="MenuItem" BasedOn="{StaticResource {x:Type MenuItem}}"
+                                              x:DataType="vmp:SteamAccountOption">
+                                    <Setter Property="Header" Value="{Binding Name}" />
+                                    <Setter Property="Command" Value="{Binding SelectCommand}" />
+                                    <Setter Property="ToggleType" Value="{Binding ToggleType}" />
+                                    <Setter Property="IsChecked" Value="{Binding IsSelected, Mode=OneWay}" />
+                                </ControlTheme>
+                            </MenuFlyout.ItemContainerTheme>
+                        </MenuFlyout>
+                    </Button.Flyout>
+                </Button>
                 <Button Classes="play" Command="{Binding LaunchServerPresetCommand}">
                     <Label Content="&#xe3d0;"></Label>
                 </Button>

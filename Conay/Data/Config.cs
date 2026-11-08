@@ -79,4 +79,10 @@ public class Config
 
     [JsonPropertyName("unlistedServers")]
     public List<string> UnlistedServers { get; set; } = [];
+
+    [JsonPropertyName("serverAccounts")]
+    public Dictionary<string, ulong> ServerAccounts { get; set; } = [];
+
+    [JsonPropertyName("askAccountServers")]
+    public HashSet<string> AskAccountServers { get; set; } = [];
 }

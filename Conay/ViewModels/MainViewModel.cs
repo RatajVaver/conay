@@ -21,12 +21,14 @@ public partial class MainViewModel : ViewModelBase
 {
     private readonly PageFactory? _pageFactory;
     private readonly Steam? _steam;
+    private readonly SteamAccounts? _steamAccounts;
     private readonly LaunchState? _launchState;
     private readonly LauncherConfig? _launcherConfig;
     private readonly SelfUpdater? _selfUpdater;
     private readonly PresetSourceFactory? _presetSourceFactory;
     private readonly ServerPresetFactory? _serverPresetFactory;
     private readonly ServerList? _serverList;
+    private readonly Router? _router;
     private readonly ILogger<MainViewModel>? _logger;
 
     [ObservableProperty]
@@ -68,18 +70,21 @@ public partial class MainViewModel : ViewModelBase
     }
 
     public MainViewModel(PageFactory pageFactory, LaunchState launchState, LauncherConfig launcherConfig,
-        SelfUpdater selfUpdater, Steam steam, NotifyService notifyService, PresetSourceFactory presetSourceFactory,
-        ServerPresetFactory serverPresetFactory, ServerList serverList, Router router, ILogger<MainViewModel> logger)
+        SelfUpdater selfUpdater, Steam steam, SteamAccounts steamAccounts, NotifyService notifyService,
+        PresetSourceFactory presetSourceFactory, ServerPresetFactory serverPresetFactory, ServerList serverList,
+        Router router, ILogger<MainViewModel> logger)
     {
         _pageFactory = pageFactory;
         _launchState = launchState;
         _launcherConfig = launcherConfig;
         _selfUpdater = selfUpdater;
         _steam = steam;
+        _steamAccounts = steamAccounts;
         _logger = logger;
         _presetSourceFactory = presetSourceFactory;
         _serverPresetFactory = serverPresetFactory;
         _serverList = serverList;
+        _router = router;
 
         notifyService.StatusChanged += OnStatusChanged;
         notifyService.DownloadProgressChanged += OnModDownloadProgressChanged;
@@ -93,6 +98,9 @@ public partial class MainViewModel : ViewModelBase
         router.OnShowPresets += ShowPresets;
 
         IsMenuCollapsed = launcherConfig.Data.MenuCollapsed;
+
+        // A switch handed over by the previous instance, Steam stays out of reach until it's done
+        _ = steamAccounts.FinishPendingSwitch();
 
         switch (launcherConfig.Data.DefaultTab)
         {
@@ -158,13 +166,26 @@ public partial class MainViewModel : ViewModelBase
                 if (serverData == null) continue;
                 BeforeLaunch(serverData.Name);
                 await _steam!.WaitForSteam();
+
+                // After a restart for an account switch, keep the account that was switched to
+                ulong switchedTo = SwitchRequest.Current?.SteamId ?? 0;
+                ulong? steamAccountId = switchedTo != 0 ? switchedTo : null;
+                if (steamAccountId == null && _launcherConfig!.AsksForServerAccount(server))
+                {
+                    // This can still run while the main window is being created, with the splash screen as owner
+                    await Task.Yield();
+                    steamAccountId = await _steamAccounts!.ChooseAccount(serverData.Name);
+                    if (steamAccountId == null)
+                    {
+                        StatusText = string.Empty;
+                        return;
+                    }
+                }
+
                 provider.SaveModlistFromPreset(server);
-                _launcherConfig?.SaveIntoHistory(server);
-                if (_launchState != null)
-                    _launchState.Version = string.IsNullOrEmpty(serverData.Version)
-                        ? GameVersionHelper.Current
-                        : GameVersionHelper.FromPresetVersion(serverData.Version);
-                ShowLaunchForPreset(serverData);
+                _router!.ReadyForLaunch(serverData, version: string.IsNullOrEmpty(serverData.Version)
+                    ? GameVersionHelper.Current
+                    : GameVersionHelper.FromPresetVersion(serverData.Version), steamAccountId: steamAccountId);
                 return;
             }
 
@@ -288,7 +309,10 @@ public partial class MainViewModel : ViewModelBase
     private void ShowSaves() => CurrentPage = _pageFactory!.GetPageViewModel<SavesViewModel>();
 
     [RelayCommand]
-    private void ShowSettings() => CurrentPage = _pageFactory!.GetPageViewModel<SettingsViewModel>();
+    private void ShowSettings() => CurrentPage = _pageFactory!.GetPageViewModel<SettingsViewModel>(svm =>
+    {
+        svm.RefreshSteamAccounts();
+    });
 
     [RelayCommand]
     private void KillConanProcess()

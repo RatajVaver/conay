@@ -147,6 +147,9 @@ public class App : Application
         });
 
         collection.AddSingleton<Steam>();
+        collection.AddSingleton<ISteamConnection>(x => x.GetRequiredService<Steam>());
+        collection.AddSingleton<ISteamHost, SteamHost>();
+        collection.AddSingleton<SteamAccounts>();
         collection.AddSingleton<ModList>();
         collection.AddSingleton<Router>();
         collection.AddSingleton<HttpService>();

@@ -24,8 +24,10 @@ public static class DetachedProcess
         fi
         """;
 
+    // With startupEnvironment, the process gets Conay's environment from before it connected to Steam (for anything
+    // that isn't the game)
     public static bool Start(string appId, IEnumerable<string> command, string? workingDirectory = null,
-        string? logPath = null, IDictionary<string, string>? environment = null)
+        string? logPath = null, IDictionary<string, string>? environment = null, bool startupEnvironment = false)
     {
         ProcessStartInfo psi = new()
         {
@@ -43,8 +45,15 @@ public static class DetachedProcess
         foreach (string arg in command)
             psi.ArgumentList.Add(arg);
 
-        foreach (string key in new[] { "SteamAppId", "SteamGameId", "SteamOverlayGameId" })
-            psi.Environment.Remove(key);
+        if (startupEnvironment)
+        {
+            StartupEnvironment.ApplyTo(psi);
+        }
+        else
+        {
+            foreach (string key in new[] { "SteamAppId", "SteamGameId", "SteamOverlayGameId" })
+                psi.Environment.Remove(key);
+        }
 
         if (environment != null)
         {

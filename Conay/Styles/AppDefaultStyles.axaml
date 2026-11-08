@@ -181,6 +181,33 @@
         <Setter Property="FontFamily" Value="{DynamicResource PhosphorFill}"></Setter>
     </Style>
 
+    <Style Selector="Button.account">
+        <Setter Property="Background" Value="Transparent"></Setter>
+        <Setter Property="Foreground" Value="#555"></Setter>
+        <Setter Property="Padding" Value="0"></Setter>
+        <Setter Property="VerticalAlignment" Value="Center"></Setter>
+    </Style>
+
+    <Style Selector="Button.account.assigned">
+        <Setter Property="Foreground" Value="#66c0f4"></Setter>
+    </Style>
+
+    <Style Selector="Button.account:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="Transparent"></Setter>
+        <Setter Property="Foreground" Value="#8fd3fb"></Setter>
+    </Style>
+
+    <Style Selector="Button.account Label">
+        <Setter Property="FontSize" Value="22"></Setter>
+        <Setter Property="FontFamily" Value="{DynamicResource Phosphor}"></Setter>
+    </Style>
+
+    <Style Selector="Button.account TextBlock">
+        <Setter Property="FontSize" Value="13"></Setter>
+        <Setter Property="VerticalAlignment" Value="Center"></Setter>
+        <Setter Property="Margin" Value="0 0 2 0"></Setter>
+    </Style>
+
     <Style Selector="Button.killIt">
         <Setter Property="Padding" Value="3"></Setter>
         <Setter Property="Margin" Value="10 0 0 0"></Setter>
