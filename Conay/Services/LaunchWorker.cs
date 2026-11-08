@@ -184,6 +184,12 @@ public class LaunchWorker(
         {
             exePath = Rico.ExePath;
             exeArgs = state.Version == GameVersion.Enhanced ? "--launch --enhanced" : "--launch";
+            if (launcherConfig.Data.DirectConnect && !string.IsNullOrEmpty(state.Ip))
+            {
+                exeArgs += $" --connect {state.Ip}";
+                if (!string.IsNullOrEmpty(state.Password))
+                    exeArgs += $" --password \"{state.Password.Replace("\"", "\\\"")}\"";
+            }
         }
 
         if (OperatingSystem.IsLinux())
