@@ -63,4 +63,8 @@
         <AvaloniaResource Include="Assets\**"/>
         <None Remove="Assets\**"/>
     </ItemGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="Conay.Tests" />
+    </ItemGroup>
 </Project>

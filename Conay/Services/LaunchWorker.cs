@@ -18,6 +18,7 @@ public class LaunchWorker(
     LaunchState state,
     ModList modList,
     Steam steam,
+    SteamAccounts steamAccounts,
     GameConfig gameConfig,
     LauncherConfig launcherConfig,
     ModSourceFactory modSourceFactory,
@@ -26,9 +27,9 @@ public class LaunchWorker(
     private bool _launching;
     private bool _launchedViaProton;
 
-    public void Launch()
+    public Task Launch()
     {
-        if (_launching) return;
+        if (_launching) return Task.CompletedTask;
         _launching = true;
 
         string presetName = string.IsNullOrEmpty(state.Name) ? "last played modlist" : state.Name;
@@ -36,13 +37,16 @@ public class LaunchWorker(
         logger.LogDebug("Launching '{Preset}'..", presetName);
         notifyService.UpdateStatus(this, $"Launching {presetName}..");
 
-        _ = LaunchSequence();
+        return LaunchSequence();
     }
 
     private async Task LaunchSequence()
     {
         try
         {
+            if (state.SteamAccountId != 0 && !await steamAccounts.SwitchTo(state.SteamAccountId, state.ServerFile))
+                return;
+
             if (launcherConfig.Data.BackupTotCustom)
             {
                 BackupTotCustom();

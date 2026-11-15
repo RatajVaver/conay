@@ -203,12 +203,13 @@ public partial class LaunchViewModel : PageViewModel
     private static void OpenDiscord() => Protocol.Open("https://discord.gg/3WJNxCTn8m");
 
     [RelayCommand]
-    private void Launch()
+    private async Task Launch()
     {
         if (Launching) return;
         if (IsDirectLaunch)
             _modList.SaveModList([.. Mods.Select(m => m.ModPath)], _launchState.Version);
         Launching = true;
-        _launchWorker.Launch();
+        await _launchWorker.Launch();
+        Launching = false;
     }
 }

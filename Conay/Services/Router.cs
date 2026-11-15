@@ -21,7 +21,7 @@ public class Router(LaunchState launchState, LauncherConfig launcherConfig)
     public void ShowPresets() => OnShowPresets?.Invoke();
 
     public void ReadyForLaunch(ServerData? preset, bool isSaveLaunch = false, GameVersion? version = null,
-        string? icon = null)
+        string? icon = null, ulong? steamAccountId = null)
     {
         if (preset?.FileName != null)
         {
@@ -35,6 +35,9 @@ public class Router(LaunchState launchState, LauncherConfig launcherConfig)
         launchState.IsSaveLaunch = isSaveLaunch;
         launchState.BattlEye = preset?.BattlEye ?? false;
         launchState.Version = version ?? GameVersionHelper.Current;
+        launchState.ServerFile = preset?.FileName;
+        launchState.SteamAccountId = steamAccountId ??
+                                     (preset?.FileName != null ? launcherConfig.GetServerAccount(preset.FileName) : 0);
         ShowLaunchForPreset?.Invoke(preset);
     }
 }
