@@ -101,6 +101,9 @@ public class LaunchWorker(
                 }
             }
 
+            if (state.Version == GameVersion.Enhanced)
+                gameConfig.SetMountModsInPlace(launcherConfig.Data.MountModsInPlace);
+
             if (launcherConfig.Data.LaunchGame)
             {
                 if (await RunGame())

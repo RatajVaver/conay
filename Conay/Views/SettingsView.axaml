@@ -111,6 +111,10 @@
                           Content="Use absolute paths in modlist files"
                           ToolTip.Tip="When checked, mods in modlist.txt and servermodlist.txt are written with absolute paths instead of relative paths.">
                 </CheckBox>
+                <CheckBox IsChecked="{Binding MountModsInPlace, Mode=TwoWay}"
+                          Content="Fast mod loading (Enhanced only)"
+                          ToolTip.Tip="Mount mod pak files directly without extracting platform-specific files. This speeds up launch time and saves disk space (you can delete everything in ConanSandbox/Saved/ExtractedMods).">
+                </CheckBox>
             </StackPanel>
         </Grid>
         <StackPanel Margin="0 0 0 30">

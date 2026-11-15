@@ -74,6 +74,9 @@ public class Config
     [JsonPropertyName("useAbsoluteModPaths")]
     public bool UseAbsoluteModPaths { get; set; }
 
+    [JsonPropertyName("mountModsInPlace")]
+    public bool MountModsInPlace { get; set; } = true;
+
     [JsonPropertyName("rico")]
     public bool UseRico { get; set; }
 

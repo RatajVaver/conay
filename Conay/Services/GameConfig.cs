@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using Conay.Data;
 using Conay.Utils;
 using Microsoft.Extensions.Logging;
@@ -37,6 +36,8 @@ public class GameConfig(Steam steam, ILogger<GameConfig> logger)
         return s1 || s2;
     }
 
+    private const string MoviePlayerSection = "[/Script/MoviePlayer.MoviePlayerSettings]";
+
     private bool ToggleCinematicIntroLegacy(bool disable)
     {
         string installDir = steam.GetInstallDirForVersion(GameVersion.Legacy);
@@ -46,15 +47,9 @@ public class GameConfig(Steam steam, ILogger<GameConfig> logger)
 
         try
         {
-            string[] lines = File.ReadAllLines(path);
-            for (int i = 0; i < lines.Length; i++)
-            {
-                string line = lines[i];
-                if (line.StartsWith($"{(disable ? '+' : '-')}StartupMovies=") && line.Length > 18)
-                    lines[i] = line.Replace(disable ? '+' : '-', disable ? '-' : '+');
-            }
-
-            File.WriteAllLines(path, lines);
+            IniFile ini = IniFile.Load(path);
+            ini.SwapArrayOp(MoviePlayerSection, "StartupMovies", disable ? '+' : '-', disable ? '-' : '+');
+            ini.Save();
         }
         catch (Exception ex)
         {
@@ -101,6 +96,10 @@ public class GameConfig(Steam steam, ILogger<GameConfig> logger)
         return !anyFailed;
     }
 
+    private const string GameplaySection = "[Settings.Gameplay]";
+    private const string AudioSection = "[Audio]";
+    private const string UnfocusedVolumeKey = "UnfocusedVolumeMultiplier";
+
     public bool ToggleImmersiveMode(bool enable = true)
     {
         if (!steam.DualInstallMode)
@@ -126,19 +125,11 @@ public class GameConfig(Steam steam, ILogger<GameConfig> logger)
 
         try
         {
-            string[] lines = File.ReadAllLines(gamePath);
-            for (int i = 0; i < lines.Length; i++)
-            {
-                string line = lines[i];
-                if (line.StartsWith("VisibleSheathedWeapons="))
-                    lines[i] = "VisibleSheathedWeapons=" + (enable ? 2 : 0);
-                else if (line.StartsWith("showContextualControls="))
-                    lines[i] = "showContextualControls=" + (enable ? "False" : "True");
-                else if (line.StartsWith("ShowJourneyStepsUI="))
-                    lines[i] = "ShowJourneyStepsUI=" + (enable ? "False" : "True");
-            }
-
-            File.WriteAllLines(gamePath, lines);
+            IniFile ini = IniFile.Load(gamePath);
+            ini.Set(GameplaySection, "VisibleSheathedWeapons", enable ? "2" : "0");
+            ini.Set(GameplaySection, "showContextualControls", enable ? "False" : "True");
+            ini.Set(GameplaySection, "ShowJourneyStepsUI", enable ? "False" : "True");
+            ini.Save();
         }
         catch (Exception ex)
         {
@@ -148,28 +139,10 @@ public class GameConfig(Steam steam, ILogger<GameConfig> logger)
 
         try
         {
-            string[] lines = File.ReadAllLines(enginePath);
-            bool lineFound = false;
-            for (int i = 0; i < lines.Length; i++)
-            {
-                string line = lines[i];
-                if (line.StartsWith("UnfocusedVolumeMultiplier="))
-                {
-                    lines[i] = "UnfocusedVolumeMultiplier=" + (enable ? "0.25" : "0.0");
-                    lineFound = true;
-                }
-            }
-
-            if (!lineFound && enable)
-            {
-                List<string> temp = lines.ToList();
-                temp.Add("");
-                temp.Add("[Audio]");
-                temp.Add("UnfocusedVolumeMultiplier=0.25");
-                lines = temp.ToArray();
-            }
-
-            File.WriteAllLines(enginePath, lines);
+            IniFile ini = IniFile.Load(enginePath);
+            if (enable || ini.Get(AudioSection, UnfocusedVolumeKey) != null)
+                ini.Set(AudioSection, UnfocusedVolumeKey, enable ? "0.25" : "0.0");
+            ini.Save();
         }
         catch (Exception ex)
         {
@@ -179,6 +152,9 @@ public class GameConfig(Steam steam, ILogger<GameConfig> logger)
 
         return true;
     }
+
+    private const string SavedServersSection = "[SavedServers]";
+    private const string SavedCoopDataSection = "[SavedCoopData]";
 
     public bool SetLastConnected(string ip, string password, GameVersion? version = null)
     {
@@ -191,19 +167,13 @@ public class GameConfig(Steam steam, ILogger<GameConfig> logger)
 
         try
         {
-            string[] lines = File.ReadAllLines(savedConfigPath);
-            for (int i = 0; i < lines.Length; i++)
-            {
-                string line = lines[i];
-                if (line.StartsWith("LastConnected=") && ip != "singleplayer")
-                    lines[i] = "LastConnected=" + ip;
-                else if (line.StartsWith("LastPassword=") && password != string.Empty)
-                    lines[i] = "LastPassword=" + password;
-                else if (line.StartsWith("StartedListenServerSession="))
-                    lines[i] = "StartedListenServerSession=" + (ip == "singleplayer" ? "True" : "False");
-            }
-
-            File.WriteAllLines(savedConfigPath, lines);
+            IniFile ini = IniFile.Load(savedConfigPath);
+            if (ip != "singleplayer")
+                ini.Set(SavedServersSection, "LastConnected", ip);
+            if (password != string.Empty)
+                ini.Set(SavedServersSection, "LastPassword", password);
+            ini.Set(SavedCoopDataSection, "StartedListenServerSession", ip == "singleplayer" ? "True" : "False");
+            ini.Save();
         }
         catch (Exception ex)
         {
@@ -218,15 +188,15 @@ public class GameConfig(Steam steam, ILogger<GameConfig> logger)
     {
         string installDir = steam.GetInstallDirForVersion(GameVersion.Enhanced);
         if (string.IsNullOrEmpty(installDir)) return false;
-        string path = Path.GetFullPath(Path.Combine(installDir, "ConanSandbox/Saved/Config/Windows/ServerSettings.ini"));
+        string path =
+            Path.GetFullPath(Path.Combine(installDir, "ConanSandbox/Saved/Config/Windows/ServerSettings.ini"));
         if (!File.Exists(path)) return false;
 
         try
         {
-            string[] lines = File.ReadAllLines(path);
-            string[] filtered = lines.Where(l => !l.StartsWith("ServerModList=")).ToArray();
-            if (filtered.Length != lines.Length)
-                File.WriteAllLines(path, filtered);
+            IniFile ini = IniFile.Load(path);
+            ini.Remove("[ServerSettings]", "ServerModList");
+            ini.Save();
         }
         catch (Exception ex)
         {
@@ -259,42 +229,47 @@ public class GameConfig(Steam steam, ILogger<GameConfig> logger)
 
         try
         {
-            List<string> lines = File.ReadAllLines(enginePath).ToList();
-            int sectionIndex = lines.FindIndex(l => l.Trim() == ConaySyncSection);
-
-            if (sectionIndex == -1)
-            {
-                if (lines.Count > 0 && lines[^1].Length > 0) lines.Add("");
-                lines.Add(ConaySyncSection);
-                foreach (KeyValuePair<string, string> kv in values)
-                    lines.Add($"{kv.Key}={kv.Value}");
-            }
-            else
-            {
-                int sectionEnd = lines.FindIndex(sectionIndex + 1, l => l.TrimStart().StartsWith('['));
-                if (sectionEnd == -1) sectionEnd = lines.Count;
-
-                HashSet<string> remaining = [.. values.Keys];
-                for (int i = sectionIndex + 1; i < sectionEnd; i++)
-                {
-                    int eq = lines[i].IndexOf('=');
-                    if (eq <= 0) continue;
-
-                    string key = lines[i][..eq].Trim();
-                    if (remaining.Remove(key))
-                        lines[i] = $"{key}={values[key]}";
-                }
-
-                int insertAt = sectionEnd;
-                foreach (string key in remaining)
-                    lines.Insert(insertAt++, $"{key}={values[key]}");
-            }
-
-            File.WriteAllLines(enginePath, lines);
+            IniFile ini = IniFile.Load(enginePath);
+            ini.Set(ConaySyncSection, values);
+            ini.Save();
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Failed to write ConaySync data (Engine.ini)!");
+            return false;
+        }
+
+        return true;
+    }
+
+    private const string SystemSettingsSection = "[/Script/ConanSandbox.SystemSettings]";
+    private const string MountModsInPlaceKey = "dw.MountModsInPlace";
+
+    public bool SetMountModsInPlace(bool enable)
+    {
+        string installDir = steam.GetInstallDirForVersion(GameVersion.Enhanced);
+        if (string.IsNullOrEmpty(installDir) || !Directory.Exists(Path.Combine(installDir, "ConanSandbox")))
+            return false;
+        string enginePath = Path.GetFullPath(Path.Combine(installDir,
+            "ConanSandbox/Saved/Config/Windows/Engine.ini"));
+
+        try
+        {
+            IniFile ini = IniFile.Load(enginePath);
+            if (enable)
+            {
+                ini.Set(SystemSettingsSection, MountModsInPlaceKey, "1");
+            }
+            else
+            {
+                ini.Remove(SystemSettingsSection, MountModsInPlaceKey);
+            }
+
+            ini.Save();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to set {Key} (Engine.ini)!", MountModsInPlaceKey);
             return false;
         }
 
@@ -310,23 +285,19 @@ public class GameConfig(Steam steam, ILogger<GameConfig> logger)
             $"ConanSandbox/Saved/Config/{SavedConfigFolder(v)}/Game.ini"));
         if (!File.Exists(savedConfigPath)) return string.Empty;
 
-        string ip = string.Empty;
         try
         {
-            string[] lines = File.ReadAllLines(savedConfigPath);
-            foreach (string line in lines)
-            {
-                if (line.StartsWith("LastConnected="))
-                    ip = line.Replace("LastConnected=", "");
-                else if (line.StartsWith("StartedListenServerSession=True"))
-                    return "singleplayer";
-            }
+            IniFile ini = IniFile.Load(savedConfigPath);
+            string? listen = ini.Get(SavedCoopDataSection, "StartedListenServerSession");
+            if (string.Equals(listen?.Trim(), "True", StringComparison.OrdinalIgnoreCase))
+                return "singleplayer";
+            return ini.Get(SavedServersSection, "LastConnected") ?? string.Empty;
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Failed to get last connected (Game.ini)!");
         }
 
-        return ip;
+        return string.Empty;
     }
 }

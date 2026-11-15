@@ -80,6 +80,9 @@ public partial class SettingsViewModel : PageViewModel
     private bool _useAbsoluteModPaths;
 
     [ObservableProperty]
+    private bool _mountModsInPlace = true;
+
+    [ObservableProperty]
     private bool _useRico;
 
     public bool RicoInstalled => Rico.IsInstalled;
@@ -124,6 +127,7 @@ public partial class SettingsViewModel : PageViewModel
         AlternativeBorders = config.Data.AlternativeBorders;
         WriteServerModList = config.Data.WriteServerModList;
         UseAbsoluteModPaths = config.Data.UseAbsoluteModPaths;
+        MountModsInPlace = config.Data.MountModsInPlace;
         UseRico = config.Data.UseRico && Rico.IsInstalled;
         CustomLegacyDir = config.Data.CustomLegacyDir ?? string.Empty;
         UnlistedServersText = string.Join(", ", config.Data.UnlistedServers);
@@ -256,6 +260,10 @@ public partial class SettingsViewModel : PageViewModel
         UpdateConfig(_config.Data.WriteServerModList, value,
             v => _config.Data.WriteServerModList = v);
 
+    partial void OnMountModsInPlaceChanged(bool value) =>
+        UpdateConfig(_config.Data.MountModsInPlace, value,
+            v => _config.Data.MountModsInPlace = v);
+
     partial void OnUseAbsoluteModPathsChanged(bool value) =>
         UpdateConfig(_config.Data.UseAbsoluteModPaths, value,
             v => _config.Data.UseAbsoluteModPaths = v);
@@ -289,8 +297,15 @@ public partial class SettingsViewModel : PageViewModel
         CancellationToken token = _unlistedServersSavedCts.Token;
 
         UnlistedServersSaved = true;
-        try { await Task.Delay(1200, token); }
-        catch (OperationCanceledException) { return; }
+        try
+        {
+            await Task.Delay(1200, token);
+        }
+        catch (OperationCanceledException)
+        {
+            return;
+        }
+
         UnlistedServersSaved = false;
     }
 
