@@ -5,16 +5,16 @@ Set-Location ..\dist
 
 # Windows package
 New-Item -ItemType Directory -Force -Path Conay | Out-Null
-Copy-Item ..\Conay\bin\Release\net9.0\win-x64\publish\Conay.exe .\Conay\
-Copy-Item ..\Conay\bin\Release\net9.0\win-x64\publish\av_libglesv2.dll .\Conay\
-Copy-Item ..\Conay\bin\Release\net9.0\win-x64\publish\libHarfBuzzSharp.dll .\Conay\
-Copy-Item ..\Conay\bin\Release\net9.0\win-x64\publish\libSkiaSharp.dll .\Conay\
-Copy-Item ..\Conay\bin\Release\net9.0\win-x64\publish\steam_api64.dll .\Conay\
+Copy-Item ..\Conay\bin\Release\net10.0\win-x64\publish\Conay.exe .\Conay\
+Copy-Item ..\Conay\bin\Release\net10.0\win-x64\publish\av_libglesv2.dll .\Conay\
+Copy-Item ..\Conay\bin\Release\net10.0\win-x64\publish\libHarfBuzzSharp.dll .\Conay\
+Copy-Item ..\Conay\bin\Release\net10.0\win-x64\publish\libSkiaSharp.dll .\Conay\
+Copy-Item ..\Conay\bin\Release\net10.0\win-x64\publish\steam_api64.dll .\Conay\
 Compress-Archive -Path .\Conay -DestinationPath .\Conay.zip -Force
 
 # Linux package
 New-Item -ItemType Directory -Force -Path ConayLinux | Out-Null
-Copy-Item ..\Conay\bin\Release\net9.0\linux-x64\publish\* .\ConayLinux\
+Copy-Item ..\Conay\bin\Release\net10.0\linux-x64\publish\* .\ConayLinux\
 Copy-Item ..\assets\conay.desktop .\ConayLinux\conay.desktop
 Copy-Item ..\assets\icon.png .\ConayLinux\conay.png
 python $PSScriptRoot\package-linux.py
